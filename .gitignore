@@ -1,0 +1,48 @@
+# Secrets and local config (never commit)
+.env
+.env.*
+!.env.example
+*.pfx
+*.jks
+*.keystore
+*.pem
+*.tfvars
+!*.tfvars.example
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+out/
+bin/
+obj/
+__pycache__/
+.venv/
+.pytest_cache/
+.dart_tool/
+.gradle/
+target/
+
+# Reference-site screenshots are working material (they contain third-party content)
+.dev-pipeline/reference/screenshots/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+
+# Project-specific (SEC-003): database backups contain enquiries and the admin password hash
+*.dump
+*.backup
+backups/
+# Uploaded and generated media (re-created by the seed / admin uploads)
+backend/media/uploads/
+backend/media/seed/
+# Pre-render build output
+dist-ssr/
+# Raw reference capture contains third-party text (CLAUDE.md rule 11); only our reference-notes.md is committed
+.dev-pipeline/reference/analysis.json
+.dev-pipeline/reference/summary.md

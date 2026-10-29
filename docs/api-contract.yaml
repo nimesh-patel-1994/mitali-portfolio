@@ -1,0 +1,2734 @@
+openapi: 3.1.0
+info:
+  title: mitali-portfolio API
+  version: 0.1.0
+  description: |
+    Contract-first: the FastAPI backend and the React frontend (pre-renderer, public pages, admin) build against this file.
+    Design: docs/tech-spec.md (TS-003 errors and pagination, TS-004 public API, TS-007 enquiries, TS-008 auth,
+    TS-010 admin CRUD, TS-011 media, TS-012 markdown, TS-013 profile/settings, TS-014 enquiries, TS-015 dashboard).
+    Every operation carries x-status (status-tracker format) and x-implements (REQ IDs).
+    Errors always use the envelope { "error": { "code", "message", "fields"? } }.
+    All request bodies reject unknown fields on the server (Pydantic extra="forbid"); *Input schemas are not marked
+    additionalProperties: false only because they are reused in allOf response schemas.
+    Admin operations need the mp_session cookie; every admin POST/PUT/PATCH/DELETE except login also needs the
+    X-CSRF-Token header (value from the login or me response, equal to the mp_csrf cookie).
+servers:
+  - url: http://localhost:8000
+    description: Local backend (dev; the Vite dev server proxies /api from http://localhost:5173)
+security: []
+tags:
+  - name: public
+    description: Read-only published content (used by the pre-renderer) and the contact form
+  - name: admin-auth
+  - name: admin-dashboard
+  - name: admin-content
+  - name: admin-media
+  - name: admin-site
+    description: Profile and site settings
+  - name: admin-enquiries
+
+paths:
+  # ------------------------------------------------------------------ health
+  /api/health:
+    get:
+      operationId: getHealth
+      tags: [public]
+      summary: Liveness and database check
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-NFR-006]
+      responses:
+        "200":
+          description: Service and database reachable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+        "503":
+          description: Database unreachable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  # ------------------------------------------------------------------ public
+  /api/public/site:
+    get:
+      operationId: getPublicSite
+      tags: [public]
+      summary: Site bundle (public settings + profile + server time used as the build snapshot)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-002, REQ-004, REQ-014, REQ-040, REQ-050, REQ-052]
+      responses:
+        "200":
+          description: Site bundle
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SiteBundle" }
+
+  /api/public/case-studies:
+    get:
+      operationId: listPublicCaseStudies
+      tags: [public]
+      summary: Published case studies in display order
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-011, REQ-020, REQ-022, REQ-051]
+      parameters:
+        - name: featured
+          in: query
+          required: false
+          description: When true, only featured case studies
+          schema: { type: boolean }
+      responses:
+        "200":
+          description: Case-study summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CaseStudySummary" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/public/case-studies/{slug}:
+    get:
+      operationId: getPublicCaseStudy
+      tags: [public]
+      summary: Published case study with results, gallery and two "more work" items
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-021, REQ-022, REQ-023, REQ-050]
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Case-study detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CaseStudyDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/public/writing-samples:
+    get:
+      operationId: listPublicWritingSamples
+      tags: [public]
+      summary: Published writing samples in display order, optionally filtered by format
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-022, REQ-030, REQ-051]
+      parameters:
+        - name: format
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/WritingFormat" }
+      responses:
+        "200":
+          description: Writing-sample summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/WritingSampleSummary" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/public/writing-samples/{slug}:
+    get:
+      operationId: getPublicWritingSample
+      tags: [public]
+      summary: Published writing sample with sanitized body HTML
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-022, REQ-023, REQ-031, REQ-050]
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Writing-sample detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WritingSampleDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/public/services:
+    get:
+      operationId: listPublicServices
+      tags: [public]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-012]
+      responses:
+        "200":
+          description: Published services in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Service" }
+
+  /api/public/engagement-models:
+    get:
+      operationId: listPublicEngagementModels
+      tags: [public]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-013]
+      responses:
+        "200":
+          description: Published engagement models in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/EngagementModel" }
+
+  /api/public/testimonials:
+    get:
+      operationId: listPublicTestimonials
+      tags: [public]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-015]
+      responses:
+        "200":
+          description: Published testimonials in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Testimonial" }
+
+  /api/public/faqs:
+    get:
+      operationId: listPublicFaqGroups
+      tags: [public]
+      summary: Published FAQ categories (with at least one published FAQ) and their FAQs, in order
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-041]
+      responses:
+        "200":
+          description: FAQ groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FaqGroup" }
+
+  /api/public/faqs/preview:
+    get:
+      operationId: listPublicFaqPreview
+      tags: [public]
+      summary: Published FAQs marked show_in_preview, ordered by category then FAQ position
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-006]
+      responses:
+        "200":
+          description: FAQ preview list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Faq" }
+
+  /api/public/values:
+    get:
+      operationId: listPublicValues
+      tags: [public]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-040]
+      responses:
+        "200":
+          description: Published values in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CoreValue" }
+
+  /api/public/process-steps:
+    get:
+      operationId: listPublicProcessSteps
+      tags: [public]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-040]
+      responses:
+        "200":
+          description: Published process steps in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ProcessStep" }
+
+  /api/public/enquiries:
+    post:
+      operationId: createEnquiry
+      tags: [public]
+      summary: Submit the contact form (honeypot + per-client rate limit, 5 per 10 minutes)
+      description: |
+        A filled honeypot field (`website`) returns the same 201 response but nothing is stored.
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-042, REQ-043, REQ-NFR-005]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EnquiryCreate" }
+      responses:
+        "201":
+          description: Received
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EnquiryReceived" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  # ------------------------------------------------------------------ admin auth
+  /api/admin/auth/login:
+    post:
+      operationId: adminLogin
+      tags: [admin-auth]
+      summary: Log in; sets mp_session (HttpOnly) and mp_csrf cookies
+      description: Origin header must be an allowed origin. Throttled per account and per client (5 failures / 15 min).
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-060, REQ-061, REQ-NFR-005]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Logged in
+          headers:
+            Set-Cookie:
+              description: "mp_session=<token>; HttpOnly; SameSite=Strict; Path=/ (Secure when configured) and mp_csrf=<token>; SameSite=Strict; Path=/"
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminSession" }
+        "401":
+          description: "Wrong email or password (code invalid_credentials, generic message)"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyAttempts" }
+
+  /api/admin/auth/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin-auth]
+      summary: End the session and clear cookies
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-060]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+
+  /api/admin/auth/me:
+    get:
+      operationId: getAdminMe
+      tags: [admin-auth]
+      summary: Current session (also returns the CSRF token for the in-memory store)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-060]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Active session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminSession" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  # ------------------------------------------------------------------ admin dashboard
+  /api/admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin-dashboard]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-052, REQ-066]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dashboard" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  # ------------------------------------------------------------------ admin case studies
+  /api/admin/case-studies:
+    get:
+      operationId: listAdminCaseStudies
+      tags: [admin-content]
+      summary: All case studies (published and unpublished) in display order
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Case-study list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminCaseStudyListItem" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      operationId: createAdminCaseStudy
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-067]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaseStudyInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCaseStudy" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/case-studies/order:
+    put:
+      operationId: reorderAdminCaseStudies
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/case-studies/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminCaseStudy
+      tags: [admin-content]
+      summary: Case study with its results and gallery images
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-067]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Case study
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCaseStudy" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminCaseStudy
+      tags: [admin-content]
+      summary: Replace the editable fields (includes is_published, is_featured, is_sample)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-067]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaseStudyInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCaseStudy" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminCaseStudy
+      tags: [admin-content]
+      summary: Delete the case study with its results and gallery entries
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/admin/case-studies/{id}/results:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: createAdminCaseStudyResult
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-067]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaseStudyResultInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCaseStudyResult" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/case-studies/{id}/results/order:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    put:
+      operationId: reorderAdminCaseStudyResults
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/case-studies/{id}/results/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - $ref: "#/components/parameters/ItemId"
+    put:
+      operationId: updateAdminCaseStudyResult
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-067]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaseStudyResultInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCaseStudyResult" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminCaseStudyResult
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/admin/case-studies/{id}/images:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: createAdminCaseStudyImage
+      tags: [admin-content]
+      summary: Add an uploaded media asset to the gallery (alt text required)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaseStudyImageInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCaseStudyImage" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/case-studies/{id}/images/order:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    put:
+      operationId: reorderAdminCaseStudyImages
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/case-studies/{id}/images/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - $ref: "#/components/parameters/ItemId"
+    put:
+      operationId: updateAdminCaseStudyImage
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaseStudyImageInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCaseStudyImage" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminCaseStudyImage
+      tags: [admin-content]
+      summary: Remove the gallery entry (the media asset itself is kept)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin writing samples
+  /api/admin/writing-samples:
+    get:
+      operationId: listAdminWritingSamples
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: format
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/WritingFormat" }
+      responses:
+        "200":
+          description: Writing-sample list in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminWritingSampleListItem" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    post:
+      operationId: createAdminWritingSample
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064, REQ-067]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WritingSampleInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminWritingSample" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/writing-samples/order:
+    put:
+      operationId: reorderAdminWritingSamples
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/writing-samples/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminWritingSample
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Writing sample
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminWritingSample" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminWritingSample
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064, REQ-067]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WritingSampleInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminWritingSample" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminWritingSample
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin services
+  /api/admin/services:
+    get:
+      operationId: listAdminServices
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Services in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminService" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      operationId: createAdminService
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ServiceInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminService" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/services/order:
+    put:
+      operationId: reorderAdminServices
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/services/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminService
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Service
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminService" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminService
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ServiceInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminService" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminService
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin engagement models
+  /api/admin/engagement-models:
+    get:
+      operationId: listAdminEngagementModels
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Engagement models in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminEngagementModel" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      operationId: createAdminEngagementModel
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EngagementModelInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminEngagementModel" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/engagement-models/order:
+    put:
+      operationId: reorderAdminEngagementModels
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/engagement-models/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminEngagementModel
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Engagement model
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminEngagementModel" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminEngagementModel
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EngagementModelInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminEngagementModel" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminEngagementModel
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin testimonials
+  /api/admin/testimonials:
+    get:
+      operationId: listAdminTestimonials
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Testimonials in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminTestimonial" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      operationId: createAdminTestimonial
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TestimonialInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminTestimonial" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/testimonials/order:
+    put:
+      operationId: reorderAdminTestimonials
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/testimonials/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminTestimonial
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Testimonial
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminTestimonial" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminTestimonial
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TestimonialInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminTestimonial" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminTestimonial
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin FAQ categories
+  /api/admin/faq-categories:
+    get:
+      operationId: listAdminFaqCategories
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: FAQ categories in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminFaqCategory" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      operationId: createAdminFaqCategory
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FaqCategoryInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminFaqCategory" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/faq-categories/order:
+    put:
+      operationId: reorderAdminFaqCategories
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/faq-categories/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminFaqCategory
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: FAQ category
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminFaqCategory" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminFaqCategory
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FaqCategoryInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminFaqCategory" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminFaqCategory
+      tags: [admin-content]
+      summary: Delete an empty category (409 category_not_empty while it still has FAQs)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  # ------------------------------------------------------------------ admin FAQs
+  /api/admin/faqs:
+    get:
+      operationId: listAdminFaqs
+      tags: [admin-content]
+      summary: FAQs ordered by category position then FAQ position
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: category_id
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: FAQs
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminFaq" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    post:
+      operationId: createAdminFaq
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064, REQ-006]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FaqInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminFaq" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/faqs/order:
+    put:
+      operationId: reorderAdminFaqs
+      tags: [admin-content]
+      summary: Reorder the FAQs of one category
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FaqOrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/faqs/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminFaq
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: FAQ
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminFaq" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminFaq
+      tags: [admin-content]
+      summary: Replace the FAQ (a new category_id moves it to the end of that category)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064, REQ-006]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FaqInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminFaq" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminFaq
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin values
+  /api/admin/values:
+    get:
+      operationId: listAdminValues
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Values in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminCoreValue" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      operationId: createAdminValue
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CoreValueInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCoreValue" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/values/order:
+    put:
+      operationId: reorderAdminValues
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/values/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminValue
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Value
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCoreValue" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminValue
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CoreValueInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCoreValue" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminValue
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin process steps
+  /api/admin/process-steps:
+    get:
+      operationId: listAdminProcessSteps
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Process steps in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminProcessStep" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      operationId: createAdminProcessStep
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProcessStepInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminProcessStep" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/process-steps/order:
+    put:
+      operationId: reorderAdminProcessSteps
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderRequest" }
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/process-steps/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminProcessStep
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Process step
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminProcessStep" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: updateAdminProcessStep
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProcessStepInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminProcessStep" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminProcessStep
+      tags: [admin-content]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ admin media and markdown
+  /api/admin/media:
+    get:
+      operationId: listAdminMedia
+      tags: [admin-media]
+      summary: Uploaded and seeded media, newest first (for re-use in pickers)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-064, REQ-065]
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Media page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaPage" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    post:
+      operationId: uploadAdminMedia
+      tags: [admin-media]
+      summary: Upload a JPEG, PNG, WebP or SVG image (max 10 MB); rasters become responsive WebP variants
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-064, REQ-065, REQ-NFR-004]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: "#/components/schemas/MediaUpload" }
+      responses:
+        "201":
+          description: Stored
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaAsset" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "413": { $ref: "#/components/responses/PayloadTooLarge" }
+        "415": { $ref: "#/components/responses/UnsupportedMediaType" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/media/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    delete:
+      operationId: deleteAdminMedia
+      tags: [admin-media]
+      summary: Delete an unreferenced media asset and its files (409 media_in_use while referenced)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-063, REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/admin/markdown/preview:
+    post:
+      operationId: previewAdminMarkdown
+      tags: [admin-content]
+      summary: Render and sanitize Markdown exactly as on save (live preview)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-031, REQ-064]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MarkdownPreviewRequest" }
+      responses:
+        "200":
+          description: Sanitized HTML
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MarkdownPreview" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  # ------------------------------------------------------------------ admin profile and settings
+  /api/admin/profile:
+    get:
+      operationId: getAdminProfile
+      tags: [admin-site]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-065, REQ-014]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminProfile" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    put:
+      operationId: updateAdminProfile
+      tags: [admin-site]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-065, REQ-014]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProfileInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminProfile" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [admin-site]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-065, REQ-002, REQ-004]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Site settings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminSettings" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    put:
+      operationId: updateAdminSettings
+      tags: [admin-site]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-065, REQ-002, REQ-004]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SettingsInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminSettings" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  # ------------------------------------------------------------------ admin enquiries
+  /api/admin/enquiries:
+    get:
+      operationId: listAdminEnquiries
+      tags: [admin-enquiries]
+      summary: Enquiries, newest first, optionally filtered by status (paginated)
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-066, REQ-NFR-005]
+      security:
+        - sessionCookie: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/EnquiryStatus" }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Enquiry page
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EnquiryPage" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /api/admin/enquiries/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getAdminEnquiry
+      tags: [admin-enquiries]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-066, REQ-NFR-005]
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Enquiry
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Enquiry" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      operationId: updateAdminEnquiryStatus
+      tags: [admin-enquiries]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-066]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EnquiryStatusUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Enquiry" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      operationId: deleteAdminEnquiry
+      tags: [admin-enquiries]
+      x-status: NEW 2026-10-29 16:06
+      x-implements: [REQ-NFR-005]
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "204": { $ref: "#/components/responses/NoContent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/CsrfFailed" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: mp_session
+      description: HttpOnly, SameSite=Strict session cookie set by adminLogin (8 h idle, 7 d absolute expiry).
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Required on admin POST/PUT/PATCH/DELETE (except login); must equal the mp_csrf cookie and the session's token.
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      description: Id of the nested result or gallery image
+      schema: { type: string, format: uuid }
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Slug" }
+    Page:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  responses:
+    NoContent:
+      description: Done, no body
+    Unauthenticated:
+      description: "No valid session (code unauthenticated)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    CsrfFailed:
+      description: "Missing or wrong X-CSRF-Token (code csrf_failed) or disallowed Origin (code origin_rejected)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: "Unknown, unpublished (public) or mismatched resource (code not_found)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Conflict:
+      description: "Conflicting state (codes slug_taken with fields.slug, category_not_empty, media_in_use)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ValidationError:
+      description: "Invalid input (codes validation_error, order_mismatch, invalid_image); fields maps paths to messages"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    PayloadTooLarge:
+      description: "Body or file too large (codes payload_too_large, file_too_large)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    UnsupportedMediaType:
+      description: "File is not a JPEG, PNG, WebP or SVG image (code unsupported_media_type)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    RateLimited:
+      description: "Too many submissions from this client (code rate_limited)"
+      headers:
+        Retry-After:
+          description: Seconds until the window resets
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    TooManyAttempts:
+      description: "Login blocked for 15 minutes after 5 failures (code too_many_attempts)"
+      headers:
+        Retry-After:
+          description: Seconds until the block ends
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    # ---------------------------------------------------------------- common
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [validation_error, not_found, unauthenticated, invalid_credentials, csrf_failed, origin_rejected,
+                     slug_taken, category_not_empty, media_in_use, order_mismatch, rate_limited, too_many_attempts,
+                     file_too_large, unsupported_media_type, invalid_image, payload_too_large, service_unavailable,
+                     internal_error]
+            message: { type: string }
+            fields:
+              type: object
+              description: Field path (e.g. "email", "results.0.value") to message
+              additionalProperties: { type: string }
+    Health:
+      type: object
+      required: [status, database]
+      properties:
+        status: { type: string, enum: [ok] }
+        database: { type: string, enum: [ok] }
+    Slug:
+      type: string
+      pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      maxLength: 80
+    StringList:
+      type: array
+      maxItems: 30
+      items: { type: string, minLength: 1, maxLength: 60 }
+    OrderRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          description: Every id in the scope exactly once, in the new order (else 422 order_mismatch)
+          minItems: 1
+          items: { type: string, format: uuid }
+    FaqOrderRequest:
+      type: object
+      required: [category_id, ids]
+      properties:
+        category_id: { type: string, format: uuid }
+        ids:
+          type: array
+          minItems: 1
+          items: { type: string, format: uuid }
+    ImageSource:
+      type: object
+      required: [width, url]
+      properties:
+        width: { type: integer }
+        url: { type: string, description: "Root-relative URL under /media/" }
+    ImageRef:
+      type: object
+      required: [url, alt, width, height, mime, srcset]
+      properties:
+        url: { type: string, description: "Root-relative URL of the largest variant or the SVG" }
+        alt: { type: string }
+        width: { type: integer }
+        height: { type: integer }
+        mime: { type: string, enum: [image/webp, image/svg+xml] }
+        srcset:
+          type: array
+          description: Responsive WebP variants (empty for SVG)
+          items: { $ref: "#/components/schemas/ImageSource" }
+    AdminMeta:
+      type: object
+      required: [id, position, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer, minimum: 0 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    # ---------------------------------------------------------------- public: site
+    SocialLink:
+      type: object
+      required: [label, url]
+      properties:
+        label: { type: string, minLength: 1, maxLength: 40 }
+        url: { type: string, format: uri, maxLength: 500 }
+    PublicSettings:
+      type: object
+      required: [contact_email, booking_url, social_links, footer_signoff]
+      properties:
+        contact_email: { type: string, format: email }
+        booking_url:
+          type: [string, "null"]
+          description: Absolute http(s) URL, "#" or null (null/"#" means link to /contact)
+        social_links:
+          type: array
+          items: { $ref: "#/components/schemas/SocialLink" }
+        footer_signoff: { type: string }
+    VisionBlock:
+      type: object
+      required: [heading, body]
+      properties:
+        heading: { type: string, minLength: 1, maxLength: 80 }
+        body: { type: string, minLength: 1, maxLength: 600 }
+    PublicProfile:
+      type: object
+      required: [name, headline, bio, skills, tools, years_experience, origin_statement, vision_blocks, portrait]
+      properties:
+        name: { type: string }
+        headline: { type: string }
+        bio:
+          type: array
+          description: Paragraphs
+          items: { type: string }
+        skills: { type: array, items: { type: string } }
+        tools: { type: array, items: { type: string } }
+        years_experience: { type: [integer, "null"] }
+        origin_statement: { type: string }
+        vision_blocks:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { $ref: "#/components/schemas/VisionBlock" }
+        portrait:
+          anyOf:
+            - { $ref: "#/components/schemas/ImageRef" }
+            - { type: "null" }
+    SiteBundle:
+      type: object
+      required: [generated_at, settings, profile]
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+          description: Server time of this response; the pre-renderer records it as content_snapshot_at
+        settings: { $ref: "#/components/schemas/PublicSettings" }
+        profile: { $ref: "#/components/schemas/PublicProfile" }
+
+    # ---------------------------------------------------------------- public: case studies
+    CaseStudySummary:
+      type: object
+      required: [slug, title, client_name, campaign_type, summary, cover, is_featured, is_sample, updated_at]
+      properties:
+        slug: { $ref: "#/components/schemas/Slug" }
+        title: { type: string }
+        client_name: { type: string }
+        campaign_type: { type: string }
+        summary: { type: string }
+        cover:
+          anyOf:
+            - { $ref: "#/components/schemas/ImageRef" }
+            - { type: "null" }
+        is_featured: { type: boolean }
+        is_sample: { type: boolean }
+        updated_at: { type: string, format: date-time }
+    CaseStudyResult:
+      type: object
+      required: [id, metric_label, value, before_value, change_text, period, is_sample]
+      properties:
+        id: { type: string, format: uuid }
+        metric_label: { type: string }
+        value: { type: string }
+        before_value: { type: [string, "null"] }
+        change_text: { type: [string, "null"] }
+        period: { type: [string, "null"] }
+        is_sample: { type: boolean }
+    CaseStudyImage:
+      type: object
+      required: [id, layout, image, caption]
+      properties:
+        id: { type: string, format: uuid }
+        layout: { $ref: "#/components/schemas/ImageLayout" }
+        image: { $ref: "#/components/schemas/ImageRef" }
+        caption: { type: [string, "null"] }
+    ImageLayout:
+      type: string
+      enum: [full, half]
+    CaseStudyDetail:
+      allOf:
+        - $ref: "#/components/schemas/CaseStudySummary"
+        - type: object
+          required: [client_industry, year, timeline, channels, goals, problem_html, solution_html, results, images, more_work]
+          properties:
+            client_industry: { type: string }
+            year: { type: integer }
+            timeline: { type: string }
+            channels: { type: array, items: { type: string } }
+            goals: { type: array, items: { type: string } }
+            problem_html: { type: string, description: Sanitized HTML (TS-012) }
+            solution_html: { type: string, description: Sanitized HTML (TS-012) }
+            results:
+              type: array
+              items: { $ref: "#/components/schemas/CaseStudyResult" }
+            images:
+              type: array
+              items: { $ref: "#/components/schemas/CaseStudyImage" }
+            more_work:
+              type: array
+              maxItems: 2
+              description: Next published case studies by position (wrapping), excluding this one
+              items: { $ref: "#/components/schemas/CaseStudySummary" }
+
+    # ---------------------------------------------------------------- public: writing
+    WritingFormat:
+      type: string
+      enum: [blog, web_copy, email, social, landing_page, newsletter]
+    WritingSampleSummary:
+      type: object
+      required: [slug, title, format, excerpt, thumbnail, client_name, published_on, reading_time_min, is_featured, is_sample, updated_at]
+      properties:
+        slug: { $ref: "#/components/schemas/Slug" }
+        title: { type: string }
+        format: { $ref: "#/components/schemas/WritingFormat" }
+        excerpt: { type: string }
+        thumbnail:
+          anyOf:
+            - { $ref: "#/components/schemas/ImageRef" }
+            - { type: "null" }
+        client_name: { type: [string, "null"] }
+        published_on: { type: string, format: date }
+        reading_time_min: { type: integer, minimum: 1 }
+        is_featured: { type: boolean }
+        is_sample: { type: boolean }
+        updated_at: { type: string, format: date-time }
+    WritingSampleDetail:
+      allOf:
+        - $ref: "#/components/schemas/WritingSampleSummary"
+        - type: object
+          required: [industry, tags, body_html, word_count]
+          properties:
+            industry: { type: [string, "null"] }
+            tags: { type: array, items: { type: string } }
+            body_html: { type: string, description: Sanitized HTML (TS-012) }
+            word_count: { type: integer, minimum: 0 }
+
+    # ---------------------------------------------------------------- public: other content
+    Service:
+      type: object
+      required: [id, name, description, deliverables]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        deliverables: { type: array, items: { type: string } }
+    CtaTarget:
+      type: string
+      enum: [booking, contact]
+    EngagementModel:
+      type: object
+      required: [id, name, description, features, cta_label, cta_target]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        features: { type: array, items: { type: string } }
+        cta_label: { type: string }
+        cta_target: { $ref: "#/components/schemas/CtaTarget" }
+    Testimonial:
+      type: object
+      required: [id, quote, author_name, author_role, company, case_study_slug]
+      properties:
+        id: { type: string, format: uuid }
+        quote: { type: string }
+        author_name: { type: string }
+        author_role: { type: string }
+        company: { type: string }
+        case_study_slug:
+          type: [string, "null"]
+          description: Set only when the linked case study is published
+    Faq:
+      type: object
+      required: [id, question, answer]
+      properties:
+        id: { type: string, format: uuid }
+        question: { type: string }
+        answer: { type: string, description: Plain text; blank lines separate paragraphs }
+    FaqGroup:
+      type: object
+      required: [id, name, faqs]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        faqs:
+          type: array
+          items: { $ref: "#/components/schemas/Faq" }
+    CoreValue:
+      type: object
+      required: [id, title, body]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        body: { type: string }
+    ProcessStep:
+      type: object
+      required: [id, title, body]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        body: { type: string }
+
+    # ---------------------------------------------------------------- enquiries
+    EnquiryType:
+      type: string
+      enum: [content_strategy, copywriting, seo_content, brand_messaging, campaign_planning, other]
+    BudgetRange:
+      type: string
+      description: Currency and labels to be confirmed (tech-spec open question 2)
+      enum: [under_1000, 1000_3000, 3000_7500, 7500_15000, over_15000, not_sure]
+    EnquiryStatus:
+      type: string
+      enum: [new, replied, archived]
+    EnquiryCreate:
+      type: object
+      required: [name, email, enquiry_type, message]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        email: { type: string, format: email, maxLength: 254 }
+        enquiry_type: { $ref: "#/components/schemas/EnquiryType" }
+        budget_range:
+          anyOf:
+            - { $ref: "#/components/schemas/BudgetRange" }
+            - { type: "null" }
+        company: { type: [string, "null"], maxLength: 120 }
+        message: { type: string, minLength: 1, maxLength: 5000 }
+        website:
+          type: [string, "null"]
+          maxLength: 200
+          description: Honeypot; must be empty. When filled the response is 201 but nothing is stored.
+    EnquiryReceived:
+      type: object
+      required: [received]
+      properties:
+        received: { type: boolean, const: true }
+    EnquirySummary:
+      type: object
+      required: [id, name, email, company, enquiry_type, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        company: { type: [string, "null"] }
+        enquiry_type: { $ref: "#/components/schemas/EnquiryType" }
+        status: { $ref: "#/components/schemas/EnquiryStatus" }
+        created_at: { type: string, format: date-time }
+    Enquiry:
+      allOf:
+        - $ref: "#/components/schemas/EnquirySummary"
+        - type: object
+          required: [budget_range, message, status_changed_at, updated_at]
+          properties:
+            budget_range:
+              anyOf:
+                - { $ref: "#/components/schemas/BudgetRange" }
+                - { type: "null" }
+            message: { type: string }
+            status_changed_at: { type: [string, "null"], format: date-time }
+            updated_at: { type: string, format: date-time }
+    EnquiryPage:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/EnquirySummary" }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, minimum: 1, maximum: 100 }
+    EnquiryStatusUpdate:
+      type: object
+      required: [status]
+      additionalProperties: false
+      properties:
+        status: { $ref: "#/components/schemas/EnquiryStatus" }
+
+    # ---------------------------------------------------------------- admin auth and dashboard
+    LoginRequest:
+      type: object
+      required: [email, password]
+      additionalProperties: false
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, minLength: 1, maxLength: 128 }
+    AdminSession:
+      type: object
+      required: [email, csrf_token, idle_expires_at, absolute_expires_at]
+      properties:
+        email: { type: string, format: email }
+        csrf_token: { type: string, description: Send as X-CSRF-Token; keep in memory only }
+        idle_expires_at: { type: string, format: date-time }
+        absolute_expires_at: { type: string, format: date-time }
+    ContentCount:
+      type: object
+      required: [total, published]
+      properties:
+        total: { type: integer, minimum: 0 }
+        published: { type: integer, minimum: 0 }
+    LastBuild:
+      type: object
+      required: [built_at, content_snapshot_at]
+      properties:
+        built_at: { type: string, format: date-time }
+        content_snapshot_at: { type: string, format: date-time }
+    Dashboard:
+      type: object
+      required: [new_enquiries, content_changed_at, last_build, needs_rebuild, rebuild_command, content_counts]
+      properties:
+        new_enquiries: { type: integer, minimum: 0 }
+        content_changed_at: { type: string, format: date-time }
+        last_build:
+          anyOf:
+            - { $ref: "#/components/schemas/LastBuild" }
+            - { type: "null" }
+        needs_rebuild:
+          type: boolean
+          description: True when there is no build or content_changed_at > last_build.content_snapshot_at
+        rebuild_command: { type: string, examples: ["cd frontend; npm run build:site"] }
+        content_counts:
+          type: object
+          description: Keys case_studies, writing_samples, services, engagement_models, testimonials, faq_categories, faqs, values, process_steps
+          additionalProperties: { $ref: "#/components/schemas/ContentCount" }
+
+    # ---------------------------------------------------------------- admin case studies
+    CaseStudyInput:
+      type: object
+      required: [slug, title, client_name, client_industry, campaign_type, channels, goals, summary, problem_md,
+                 solution_md, year, timeline, cover_media_id, cover_alt, is_featured, is_published, is_sample]
+      properties:
+        slug: { $ref: "#/components/schemas/Slug" }
+        title: { type: string, minLength: 1, maxLength: 120 }
+        client_name: { type: string, minLength: 1, maxLength: 120 }
+        client_industry: { type: string, minLength: 1, maxLength: 80 }
+        campaign_type: { type: string, minLength: 1, maxLength: 60 }
+        channels: { $ref: "#/components/schemas/StringList" }
+        goals: { $ref: "#/components/schemas/StringList" }
+        summary: { type: string, minLength: 1, maxLength: 600 }
+        problem_md: { type: string, minLength: 1, maxLength: 20000 }
+        solution_md: { type: string, minLength: 1, maxLength: 20000 }
+        year: { type: integer, minimum: 2000, maximum: 2100 }
+        timeline: { type: string, minLength: 1, maxLength: 40 }
+        cover_media_id: { type: [string, "null"], format: uuid }
+        cover_alt:
+          type: [string, "null"]
+          maxLength: 250
+          description: Required (non-blank) when cover_media_id is set
+        is_featured: { type: boolean }
+        is_published: { type: boolean }
+        is_sample: { type: boolean }
+    AdminCaseStudyListItem:
+      type: object
+      required: [id, slug, title, campaign_type, cover, is_featured, is_published, is_sample, position, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { $ref: "#/components/schemas/Slug" }
+        title: { type: string }
+        campaign_type: { type: string }
+        cover:
+          anyOf:
+            - { $ref: "#/components/schemas/ImageRef" }
+            - { type: "null" }
+        is_featured: { type: boolean }
+        is_published: { type: boolean }
+        is_sample: { type: boolean }
+        position: { type: integer }
+        updated_at: { type: string, format: date-time }
+    AdminCaseStudy:
+      allOf:
+        - $ref: "#/components/schemas/CaseStudyInput"
+        - $ref: "#/components/schemas/AdminMeta"
+        - type: object
+          required: [problem_html, solution_html, cover, results, images]
+          properties:
+            problem_html: { type: string }
+            solution_html: { type: string }
+            cover:
+              anyOf:
+                - { $ref: "#/components/schemas/ImageRef" }
+                - { type: "null" }
+            results:
+              type: array
+              items: { $ref: "#/components/schemas/AdminCaseStudyResult" }
+            images:
+              type: array
+              items: { $ref: "#/components/schemas/AdminCaseStudyImage" }
+    CaseStudyResultInput:
+      type: object
+      required: [metric_label, value, before_value, change_text, period, is_sample]
+      properties:
+        metric_label: { type: string, minLength: 1, maxLength: 80 }
+        value: { type: string, minLength: 1, maxLength: 30 }
+        before_value: { type: [string, "null"], maxLength: 30 }
+        change_text: { type: [string, "null"], maxLength: 30, description: "e.g. +120 % or +2.1 pts" }
+        period: { type: [string, "null"], maxLength: 40 }
+        is_sample: { type: boolean }
+    AdminCaseStudyResult:
+      allOf:
+        - $ref: "#/components/schemas/CaseStudyResultInput"
+        - $ref: "#/components/schemas/AdminMeta"
+    CaseStudyImageInput:
+      type: object
+      required: [media_id, alt, caption, layout]
+      properties:
+        media_id: { type: string, format: uuid }
+        alt: { type: string, minLength: 1, maxLength: 250, description: Non-blank alt text is mandatory }
+        caption: { type: [string, "null"], maxLength: 200 }
+        layout: { $ref: "#/components/schemas/ImageLayout" }
+    AdminCaseStudyImage:
+      allOf:
+        - $ref: "#/components/schemas/CaseStudyImageInput"
+        - $ref: "#/components/schemas/AdminMeta"
+        - type: object
+          required: [image]
+          properties:
+            image: { $ref: "#/components/schemas/ImageRef" }
+
+    # ---------------------------------------------------------------- admin writing samples
+    WritingSampleInput:
+      type: object
+      required: [slug, title, format, client_name, industry, excerpt, body_md, published_on, tags, thumbnail_media_id,
+                 thumbnail_alt, is_featured, is_published, is_sample]
+      properties:
+        slug: { $ref: "#/components/schemas/Slug" }
+        title: { type: string, minLength: 1, maxLength: 120 }
+        format: { $ref: "#/components/schemas/WritingFormat" }
+        client_name: { type: [string, "null"], maxLength: 120 }
+        industry: { type: [string, "null"], maxLength: 80 }
+        excerpt: { type: string, minLength: 1, maxLength: 600 }
+        body_md: { type: string, minLength: 1, maxLength: 100000 }
+        published_on: { type: string, format: date }
+        tags: { $ref: "#/components/schemas/StringList" }
+        thumbnail_media_id: { type: [string, "null"], format: uuid }
+        thumbnail_alt:
+          type: [string, "null"]
+          maxLength: 250
+          description: Required (non-blank) when thumbnail_media_id is set
+        is_featured: { type: boolean }
+        is_published: { type: boolean }
+        is_sample: { type: boolean }
+    AdminWritingSampleListItem:
+      type: object
+      required: [id, slug, title, format, is_published, is_sample, position, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { $ref: "#/components/schemas/Slug" }
+        title: { type: string }
+        format: { $ref: "#/components/schemas/WritingFormat" }
+        is_published: { type: boolean }
+        is_sample: { type: boolean }
+        position: { type: integer }
+        updated_at: { type: string, format: date-time }
+    AdminWritingSample:
+      allOf:
+        - $ref: "#/components/schemas/WritingSampleInput"
+        - $ref: "#/components/schemas/AdminMeta"
+        - type: object
+          required: [body_html, word_count, reading_time_min, thumbnail]
+          properties:
+            body_html: { type: string }
+            word_count: { type: integer, minimum: 0 }
+            reading_time_min: { type: integer, minimum: 1 }
+            thumbnail:
+              anyOf:
+                - { $ref: "#/components/schemas/ImageRef" }
+                - { type: "null" }
+
+    # ---------------------------------------------------------------- admin simple content types
+    ServiceInput:
+      type: object
+      required: [name, description, deliverables, is_published]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: string, minLength: 1, maxLength: 600 }
+        deliverables: { $ref: "#/components/schemas/StringList" }
+        is_published: { type: boolean }
+    AdminService:
+      allOf:
+        - $ref: "#/components/schemas/ServiceInput"
+        - $ref: "#/components/schemas/AdminMeta"
+    EngagementModelInput:
+      type: object
+      required: [name, description, features, cta_label, cta_target, is_published]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: string, minLength: 1, maxLength: 600 }
+        features: { $ref: "#/components/schemas/StringList" }
+        cta_label: { type: string, minLength: 1, maxLength: 40 }
+        cta_target: { $ref: "#/components/schemas/CtaTarget" }
+        is_published: { type: boolean }
+    AdminEngagementModel:
+      allOf:
+        - $ref: "#/components/schemas/EngagementModelInput"
+        - $ref: "#/components/schemas/AdminMeta"
+    TestimonialInput:
+      type: object
+      required: [quote, author_name, author_role, company, case_study_id, is_published]
+      properties:
+        quote: { type: string, minLength: 1, maxLength: 600 }
+        author_name: { type: string, minLength: 1, maxLength: 80 }
+        author_role: { type: string, minLength: 1, maxLength: 80 }
+        company: { type: string, minLength: 1, maxLength: 120 }
+        case_study_id: { type: [string, "null"], format: uuid }
+        is_published: { type: boolean }
+    AdminTestimonial:
+      allOf:
+        - $ref: "#/components/schemas/TestimonialInput"
+        - $ref: "#/components/schemas/AdminMeta"
+    FaqCategoryInput:
+      type: object
+      required: [name, is_published]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        is_published: { type: boolean }
+    AdminFaqCategory:
+      allOf:
+        - $ref: "#/components/schemas/FaqCategoryInput"
+        - $ref: "#/components/schemas/AdminMeta"
+        - type: object
+          required: [faq_count]
+          properties:
+            faq_count: { type: integer, minimum: 0 }
+    FaqInput:
+      type: object
+      required: [category_id, question, answer, show_in_preview, is_published]
+      properties:
+        category_id: { type: string, format: uuid }
+        question: { type: string, minLength: 1, maxLength: 200 }
+        answer: { type: string, minLength: 1, maxLength: 2000 }
+        show_in_preview: { type: boolean }
+        is_published: { type: boolean }
+    AdminFaq:
+      allOf:
+        - $ref: "#/components/schemas/FaqInput"
+        - $ref: "#/components/schemas/AdminMeta"
+    CoreValueInput:
+      type: object
+      required: [title, body, is_published]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 80 }
+        body: { type: string, minLength: 1, maxLength: 600 }
+        is_published: { type: boolean }
+    AdminCoreValue:
+      allOf:
+        - $ref: "#/components/schemas/CoreValueInput"
+        - $ref: "#/components/schemas/AdminMeta"
+    ProcessStepInput:
+      type: object
+      required: [title, body, is_published]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 80 }
+        body: { type: string, minLength: 1, maxLength: 600 }
+        is_published: { type: boolean }
+    AdminProcessStep:
+      allOf:
+        - $ref: "#/components/schemas/ProcessStepInput"
+        - $ref: "#/components/schemas/AdminMeta"
+
+    # ---------------------------------------------------------------- admin media and markdown
+    MediaUpload:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+          description: JPEG, PNG, WebP or SVG, at most 10 MB (type detected from content)
+        alt: { type: [string, "null"], maxLength: 250, description: Default alt suggestion }
+    MediaAsset:
+      type: object
+      required: [id, url, mime, width, height, bytes, variants, alt, original_filename, source, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        url: { type: string }
+        mime: { type: string, enum: [image/webp, image/svg+xml] }
+        width: { type: integer }
+        height: { type: integer }
+        bytes: { type: integer }
+        variants:
+          type: array
+          items: { $ref: "#/components/schemas/ImageSource" }
+        alt: { type: [string, "null"] }
+        original_filename: { type: [string, "null"] }
+        source: { type: string, enum: [upload, seed] }
+        created_at: { type: string, format: date-time }
+    MediaPage:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/MediaAsset" }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, minimum: 1, maximum: 100 }
+    MarkdownPreviewRequest:
+      type: object
+      required: [markdown]
+      additionalProperties: false
+      properties:
+        markdown: { type: string, maxLength: 100000 }
+    MarkdownPreview:
+      type: object
+      required: [html, word_count, reading_time_min]
+      properties:
+        html: { type: string, description: Sanitized HTML }
+        word_count: { type: integer, minimum: 0 }
+        reading_time_min: { type: integer, minimum: 1 }
+
+    # ---------------------------------------------------------------- admin profile and settings
+    ProfileInput:
+      type: object
+      required: [name, headline, bio, skills, tools, years_experience, origin_statement, vision_blocks, portrait_media_id, portrait_alt]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        headline: { type: string, minLength: 1, maxLength: 160 }
+        bio:
+          type: array
+          minItems: 1
+          maxItems: 6
+          items: { type: string, minLength: 1, maxLength: 1200 }
+        skills: { $ref: "#/components/schemas/StringList" }
+        tools: { $ref: "#/components/schemas/StringList" }
+        years_experience: { type: [integer, "null"], minimum: 0, maximum: 60 }
+        origin_statement: { type: string, minLength: 1, maxLength: 600 }
+        vision_blocks:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { $ref: "#/components/schemas/VisionBlock" }
+        portrait_media_id: { type: [string, "null"], format: uuid }
+        portrait_alt:
+          type: [string, "null"]
+          maxLength: 250
+          description: Required (non-blank) when portrait_media_id is set
+    AdminProfile:
+      allOf:
+        - $ref: "#/components/schemas/ProfileInput"
+        - type: object
+          required: [portrait, updated_at]
+          properties:
+            portrait:
+              anyOf:
+                - { $ref: "#/components/schemas/ImageRef" }
+                - { type: "null" }
+            updated_at: { type: string, format: date-time }
+    SettingsInput:
+      type: object
+      required: [contact_email, booking_url, social_links, footer_signoff, notification_email]
+      properties:
+        contact_email: { type: string, format: email, maxLength: 254 }
+        booking_url:
+          type: [string, "null"]
+          maxLength: 500
+          description: Absolute http(s) URL, "#" or null
+        social_links:
+          type: array
+          maxItems: 8
+          items: { $ref: "#/components/schemas/SocialLink" }
+        footer_signoff: { type: string, minLength: 1, maxLength: 120 }
+        notification_email:
+          type: [string, "null"]
+          format: email
+          maxLength: 254
+          description: Stored only; no email is sent (out of scope)
+    AdminSettings:
+      allOf:
+        - $ref: "#/components/schemas/SettingsInput"
+        - type: object
+          required: [content_changed_at, updated_at]
+          properties:
+            content_changed_at: { type: string, format: date-time, readOnly: true }
+            updated_at: { type: string, format: date-time }
