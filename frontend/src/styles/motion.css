@@ -1,0 +1,19 @@
+/*
+ * Motion system (UI-003, REQ-NFR-003). Every animation and transition lives inside
+ * `prefers-reduced-motion: no-preference` (UI-REV-009). The reduce block below is only a safety net.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,163 @@
+@import "../../../styles/media.css";
+
+/* Mobile: quote, then the arrows and indicators in one row below. Desktop: arrows at the edges. */
+.carousel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "viewport viewport viewport"
+    "prev indicators next";
+  align-items: center;
+  row-gap: var(--space-6);
+  column-gap: var(--space-4);
+}
+
+@media (--bp-desktop) {
+  .multiple {
+    grid-template-areas:
+      "prev viewport next"
+      ". indicators .";
+    column-gap: var(--space-7);
+  }
+}
+
+.viewport {
+  grid-area: viewport;
+  min-width: 0;
+  touch-action: pan-y;
+}
+
+.slide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  margin: 0;
+}
+
+.quote {
+  margin: 0;
+  color: var(--on-surface);
+  font-size: var(--text-statement);
+  font-weight: var(--text-statement-weight);
+  line-height: var(--text-statement-lh);
+}
+
+.quote p {
+  max-width: var(--measure);
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.author {
+  color: var(--accent-on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+}
+
+.role {
+  color: var(--on-surface-muted);
+  font-size: var(--text-small);
+}
+
+.caseLink {
+  color: var(--link-on-surface);
+  font-size: var(--text-small);
+  text-underline-offset: 0.2em;
+}
+
+/* Square 48 px arrow buttons (44 px minimum touch target). */
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-0);
+  background: transparent;
+  color: var(--on-surface);
+  font-size: var(--space-5);
+  cursor: pointer;
+}
+
+.arrow:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.prev {
+  grid-area: prev;
+}
+
+.next {
+  grid-area: next;
+}
+
+.indicators {
+  grid-area: indicators;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+/* 44 px hit area with a small visible dot. */
+.dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--space-7) - var(--space-1));
+  height: calc(var(--space-7) - var(--space-1));
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.dot::before {
+  content: "";
+  width: var(--space-3);
+  height: var(--space-3);
+  border: var(--hairline) solid var(--on-surface);
+  border-radius: var(--radius-full);
+}
+
+.dot[aria-current="true"]::before {
+  background-color: var(--accent-on-surface);
+  border-color: var(--accent-on-surface);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .slide:not([hidden]) {
+    animation: slide-in var(--dur-fade) var(--ease-out);
+  }
+
+  .arrow {
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+  }
+}

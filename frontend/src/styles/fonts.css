@@ -1,0 +1,43 @@
+/*
+ * Self-hosted fonts (DES-020, REQ-NFR-007): SIL OFL 1.1, files and licences in /public/fonts.
+ * Antonio 700 and Public Sans 400 are preloaded in index.html (above the fold).
+ */
+@font-face {
+  font-family: "Antonio";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/antonio-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Antonio";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/antonio-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/public-sans-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/public-sans-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/public-sans-latin-700-normal.woff2") format("woff2");
+}

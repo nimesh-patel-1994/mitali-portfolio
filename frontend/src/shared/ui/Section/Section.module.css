@@ -1,0 +1,12 @@
+.section {
+  position: relative;
+}
+
+.padded {
+  padding-block: var(--section-pad);
+}
+
+/* Leaves room for the fixed header above the first section of a page (UI-019). */
+.first {
+  padding-block-start: calc(var(--section-pad) + var(--header-h));
+}

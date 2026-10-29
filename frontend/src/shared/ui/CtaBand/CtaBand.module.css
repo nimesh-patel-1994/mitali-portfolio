@@ -1,0 +1,35 @@
+@import "../../../styles/media.css";
+
+.band {
+  overflow: hidden;
+}
+
+.statement {
+  color: var(--accent-on-surface);
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  line-height: var(--text-hero-lh);
+  letter-spacing: var(--text-h2-tracking);
+}
+
+@media (--bp-desktop) {
+  .statement {
+    font-size: var(--text-hero);
+    letter-spacing: var(--text-hero-tracking);
+  }
+}
+
+.line {
+  display: block;
+}
+
+.divider {
+  margin-block: var(--space-7);
+  border-block-start: var(--hairline) solid var(--divider);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}

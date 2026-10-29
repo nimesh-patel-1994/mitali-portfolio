@@ -1,0 +1,5 @@
+/* Global stylesheet entry (imported once by the client entry). */
+@import "./tokens.css";
+@import "./fonts.css";
+@import "./global.css";
+@import "./motion.css";

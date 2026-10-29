@@ -1,0 +1,23 @@
+/* Width/height attributes give the intrinsic ratio, so the box is reserved before the image loads. */
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-1);
+  background-color: var(--color-neutral-800);
+}
+
+/* Missing ref or load error: token-coloured block with the same ratio (no broken-image icon). */
+.fallback {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-1);
+  background-color: var(--color-neutral-700);
+}
+
+.spacer {
+  display: block;
+  width: 100%;
+  height: auto;
+}

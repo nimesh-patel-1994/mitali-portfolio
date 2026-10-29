@@ -2,6 +2,21 @@
 
 > Append-only. One entry per change set. Newest first. Times in the user's local timezone.
 
+## CHG-003 — 2026-10-29 20:09 — Build batch 1: backend and frontend foundations (branch feature/initial-build)
+- BE-001, BE-002, BE-003, BE-004, BE-005, BE-024, BE-025: NEW → IN-PROGRESS (be-builder, 2026-10-29 16:59).
+- UI-001..UI-018: NEW → IN-PROGRESS (fe-builder, 2026-10-29 16:58).
+- User ran `backend/scripts/setup_db.ps1`: role `mitali_app`, databases `mitali_portfolio` and `mitali_portfolio_test`
+  created on PostgreSQL 17 (port 5442); `backend/.env` written (git-ignored).
+- Fix: migration 0001 singleton insert bound `years_experience=None` as VARCHAR into a smallint column; `None` values
+  are now omitted. Migration verified online: upgrade, `alembic check` (no drift), downgrade base, upgrade.
+- Fix: test reset (`tests/conftest.py`) emptied the profile/settings singletons through `TRUNCATE ... CASCADE` and then
+  updated zero rows; it now upserts them. Database tests pass twice in a row and per file.
+- Checks: backend ruff, format, mypy --strict, 126 tests (91% line+branch coverage), pip-audit, bandit clean;
+  frontend lint + style check, tsc, 221 tests, client + SSR build, fixture pre-render, npm audit clean.
+- Toolkit lesson recorded (C:/Dev/multi-agent-setup, uncommitted): `stack-postgresql` (migrations verified online,
+  typed migration inserts, cascade-safe test reset, run DB tests twice), `stack-python-fastapi` review checklist,
+  `agents/be-builder.md` (report migrations as unverified when no DB is reachable).
+
 ## CHG-002 — 2026-10-29 16:54 — Gate G2 approved
 - User approved docs 2-6 and all defaults listed at G2 (no sample flag on testimonials; fixed hero/CTA copy in the
   frontend; SVG uploads with allow-list sanitiser; lock-out DoS accepted while local; accordions and contact form need

@@ -1,0 +1,91 @@
+@import "../../../styles/media.css";
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-block-end: var(--space-7);
+}
+
+@media (--bp-tablet) {
+  .wrapper {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  line-height: var(--text-label-lh);
+  text-transform: uppercase;
+  color: var(--accent-on-surface);
+}
+
+/* On cream the heading is dark over the green tape; on dark it is green over a translucent tape (DES-013). */
+.heading {
+  color: var(--heading-on-surface);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+.hero {
+  font-size: var(--text-hero);
+  font-weight: var(--text-hero-weight);
+  line-height: var(--text-hero-lh);
+  letter-spacing: var(--text-hero-tracking);
+}
+
+.h1 {
+  font-size: var(--text-h1);
+  font-weight: var(--text-h1-weight);
+  line-height: var(--text-h1-lh);
+  letter-spacing: var(--text-h1-tracking);
+}
+
+.h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  line-height: var(--text-h2-lh);
+  letter-spacing: var(--text-h2-tracking);
+}
+
+.h3 {
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+  letter-spacing: var(--text-h3-tracking);
+}
+
+.text {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Decorative tape: about 1.6em x 0.9em, rotated, behind the first letters. Pseudo-element = not announced. */
+.taped .text::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -0.05em;
+  inset-inline-start: -0.2em;
+  width: 1.6em;
+  height: 0.9em;
+  background-color: var(--tape-on-surface);
+  transform: rotate(var(--tape-rotate));
+  pointer-events: none;
+}
+
+.action {
+  flex: none;
+}

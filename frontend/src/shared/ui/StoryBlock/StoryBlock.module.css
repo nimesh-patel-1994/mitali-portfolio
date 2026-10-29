@@ -1,0 +1,57 @@
+@import "../../../styles/media.css";
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7);
+}
+
+@media (--bp-tablet) {
+  .layout {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: start;
+    gap: var(--space-8);
+  }
+}
+
+.portrait {
+  position: relative;
+}
+
+.photo {
+  filter: grayscale(1);
+}
+
+/* Decorative green tape over the top-right corner of the portrait. */
+.tape {
+  position: absolute;
+  inset-block-start: calc(-1 * var(--space-4));
+  inset-inline-end: calc(-1 * var(--space-3));
+  width: 40%;
+  height: var(--space-7);
+  background-color: var(--color-primary);
+  transform: rotate(calc(-2 * var(--tape-rotate)));
+  pointer-events: none;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+}
+
+.bio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-size: var(--text-lead);
+  line-height: var(--text-lead-lh);
+}
+
+.signoff {
+  margin-block-start: var(--space-6);
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  text-transform: uppercase;
+}

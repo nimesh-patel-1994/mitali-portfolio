@@ -1,0 +1,27 @@
+.wordmark {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header,
+.admin {
+  font-size: var(--text-h3);
+}
+
+.footer {
+  font-size: var(--text-footer-mark);
+  line-height: var(--text-footer-mark-lh);
+}
+
+.onDark {
+  color: var(--color-primary);
+}
+
+.onLight {
+  color: var(--color-dark);
+}

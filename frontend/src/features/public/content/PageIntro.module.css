@@ -1,0 +1,24 @@
+/* Shared page-level text styles for inner pages (intro paragraph and empty states). */
+.intro {
+  margin-block: calc(-1 * var(--space-4)) var(--space-8);
+  color: var(--on-surface-muted);
+  font-size: var(--text-lead);
+  line-height: var(--text-lead-lh);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding-block: var(--space-7);
+  border-block-start: var(--hairline) solid var(--divider);
+}
+
+.emptyHeading {
+  color: var(--heading-on-surface);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-lh);
+}

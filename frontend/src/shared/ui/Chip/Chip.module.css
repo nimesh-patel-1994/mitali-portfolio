@@ -1,0 +1,68 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--space-6);
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-1);
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  line-height: var(--text-label-lh);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Filter chips are links: 44 px minimum touch target. */
+.filter {
+  min-height: calc(var(--space-7) - var(--space-1));
+  padding-inline: var(--space-4);
+  text-decoration: none;
+}
+
+.filter:hover {
+  border-color: var(--on-surface);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.active,
+.active:hover {
+  background-color: var(--selected-bg);
+  border-color: var(--selected-bg);
+  color: var(--on-selected);
+  text-decoration: none;
+}
+
+/* Admin status chips (light surfaces): text + border in the status colour. */
+.status {
+  min-height: var(--space-5);
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.success {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.warning {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+.danger {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.neutral {
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-700);
+}

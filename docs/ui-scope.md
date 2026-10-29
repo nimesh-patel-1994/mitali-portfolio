@@ -18,7 +18,7 @@
 
 ### 1.1 Foundation (App: shared)
 
-- UI-001 [NEW 2026-10-29 16:06] Design tokens, fonts, global styles and section-surface aliases
+- UI-001 [IN-PROGRESS 2026-10-29 16:58] Design tokens, fonts, global styles and section-surface aliases
   - App: shared
   - Implements: REQ-NFR-001, REQ-NFR-002, REQ-NFR-007, TS-001, TS-006, DES-010, DES-011, DES-012, DES-013, DES-020,
     DES-021, DES-040, DES-042
@@ -51,7 +51,7 @@
     family, or spacing value (UI-REV-001 check passes); the style check script (UI-T-002) passes; fonts load from
     `/fonts/` with no external request.
 
-- UI-002 [NEW 2026-10-29 16:06] Public route tree, root layout, hydration and content source
+- UI-002 [IN-PROGRESS 2026-10-29 16:58] Public route tree, root layout, hydration and content source
   - App: public
   - Implements: REQ-001, REQ-022, REQ-NFR-004, TS-005, TS-006, DES-040
   - Uses API (build time / `npm run dev` only, via the *api* content source): `getPublicSite`,
@@ -77,7 +77,7 @@
   - Done when: server render and hydration produce no mismatch warnings for every public route (UI-T-007); public build
     contains no admin modules (UI-REV-015).
 
-- UI-003 [NEW 2026-10-29 16:06] Motion system and reduced motion
+- UI-003 [IN-PROGRESS 2026-10-29 16:58] Motion system and reduced motion
   - App: public (admin uses only the 150-200 ms state transitions)
   - Implements: REQ-NFR-003, REQ-010, TS-006, DES-040
   - Uses API: none
@@ -96,7 +96,7 @@
   - States: motion allowed, reduced motion.
   - Done when: UI-T-014, UI-T-015 and E2E UI-T-112 pass.
 
-- UI-004 [NEW 2026-10-29 16:06] SEO head tags and pre-render integration
+- UI-004 [IN-PROGRESS 2026-10-29 16:58] SEO head tags and pre-render integration
   - App: public (+ admin shell)
   - Implements: REQ-001, REQ-022, REQ-050, REQ-051, REQ-052, REQ-NFR-004, TS-005, DES-001
   - Uses API (build time): `getPublicSite` (first, for `generated_at` = content snapshot), `listPublicCaseStudies`,
@@ -122,7 +122,7 @@
 
 ### 1.2 Shared public components (App: public unless stated)
 
-- UI-005 [NEW 2026-10-29 16:06] `Wordmark`
+- UI-005 [IN-PROGRESS 2026-10-29 16:58] `Wordmark`
   - App: shared (header, footer, admin sidebar, login)
   - Implements: REQ-005, REQ-002, REQ-004, TS-006, DES-002, DES-020
   - Uses API: none
@@ -133,7 +133,7 @@
   - States: n/a.
   - Done when: UI-T-016 passes; no other component renders brand text or a logo.
 
-- UI-006 [NEW 2026-10-29 16:06] `Button`, `ButtonLink` and `BookCallLink`
+- UI-006 [IN-PROGRESS 2026-10-29 16:58] `Button`, `ButtonLink` and `BookCallLink`
   - App: shared
   - Implements: REQ-002, REQ-010, REQ-013, TS-006, DES-013, DES-020, DES-021, DES-040
   - Uses API: none (`settings.booking_url` from site data)
@@ -146,7 +146,7 @@
   - States: default, hover, focus-visible, active, disabled, loading.
   - Done when: UI-T-017, UI-T-018 pass.
 
-- UI-007 [NEW 2026-10-29 16:06] `SectionHeading` with tape
+- UI-007 [IN-PROGRESS 2026-10-29 16:58] `SectionHeading` with tape
   - Implements: REQ-001, TS-006, DES-020, DES-021, DES-040
   - Uses API: none
   - Behaviour: props `level` (h1-h3), `size` (`h1`, `h2`), optional `eyebrow` label and `action` slot (e.g. "View all work"
@@ -156,7 +156,7 @@
   - States: n/a.
   - Done when: UI-T-019 passes; heading levels follow page outline (one `h1` per page).
 
-- UI-008 [NEW 2026-10-29 16:06] `TapeDivider` (seam tapes)
+- UI-008 [IN-PROGRESS 2026-10-29 16:58] `TapeDivider` (seam tapes)
   - Implements: TS-006, DES-040
   - Uses API: none
   - Behaviour: larger rotated green blocks overlapping the seam between a dark and a cream section, `side="left|right"`
@@ -165,7 +165,7 @@
   - States: n/a.
   - Done when: UI-T-020 passes; no horizontal scroll at 360 px (UI-T-103).
 
-- UI-009 [NEW 2026-10-29 16:06] `Chip` and `FilterChip`
+- UI-009 [IN-PROGRESS 2026-10-29 16:58] `Chip` and `FilterChip`
   - App: shared (admin uses `StatusChip` variant)
   - Implements: REQ-020, REQ-030, REQ-066, TS-006, TS-016, DES-013, DES-040
   - Uses API: none
@@ -177,7 +177,7 @@
   - States: default, hover, focus-visible, active/current.
   - Done when: UI-T-021 passes.
 
-- UI-010 [NEW 2026-10-29 16:06] `CaseStudyCard`, `WritingSampleCard` and `CardGrid`
+- UI-010 [IN-PROGRESS 2026-10-29 16:58] `CaseStudyCard`, `WritingSampleCard` and `CardGrid`
   - Implements: REQ-011, REQ-020, REQ-021, REQ-023, REQ-030, TS-006, DES-040
   - Uses API: data shapes `CaseStudySummary`, `WritingSampleSummary`
   - Behaviour: 16:9 `ResponsiveImage` (`--radius-1`), uppercase `h3` title left, outlined chip right (campaign type /
@@ -188,7 +188,7 @@
   - States: with image, image missing (token-coloured fallback block, UI-013).
   - Done when: UI-T-022 passes.
 
-- UI-011 [NEW 2026-10-29 16:06] `Accordion`
+- UI-011 [IN-PROGRESS 2026-10-29 16:58] `Accordion`
   - App: public (services, FAQ preview, FAQs page)
   - Implements: REQ-006, REQ-012, REQ-041, REQ-NFR-002, REQ-NFR-003, TS-006, DES-040
   - Uses API: none
@@ -201,7 +201,7 @@
   - States: collapsed, expanded, focus-visible.
   - Done when: UI-T-023, UI-T-024 pass; keyboard-only E2E UI-T-109 passes.
 
-- UI-012 [NEW 2026-10-29 16:06] `Carousel` (testimonials)
+- UI-012 [IN-PROGRESS 2026-10-29 16:58] `Carousel` (testimonials)
   - Implements: REQ-015, REQ-NFR-002, REQ-NFR-003, TS-006, DES-021, DES-040
   - Uses API: data shape from `listPublicTestimonials`
   - Behaviour: `<section aria-roledescription="carousel" aria-label="Client testimonials">`; slides are
@@ -215,7 +215,7 @@
   - States: empty (hidden), single, multiple, focus-visible.
   - Done when: UI-T-025 to UI-T-028 pass.
 
-- UI-013 [NEW 2026-10-29 16:06] `ResponsiveImage`
+- UI-013 [IN-PROGRESS 2026-10-29 16:58] `ResponsiveImage`
   - App: shared
   - Implements: REQ-NFR-004, REQ-014, REQ-020, REQ-021, TS-006, DES-040
   - Uses API: `ImageRef` (`url`, `alt`, `width`, `height`, `mime`, `srcset[]`)
@@ -228,7 +228,7 @@
   - States: loading (reserved box), loaded, missing/error fallback.
   - Done when: UI-T-029 passes.
 
-- UI-014 [NEW 2026-10-29 16:06] `SanitizedHtml`
+- UI-014 [IN-PROGRESS 2026-10-29 16:58] `SanitizedHtml`
   - App: shared (public detail pages, admin Markdown preview)
   - Implements: REQ-031, REQ-021, TS-006, TS-012, DES-021
   - Uses API: `body_html`, `problem_html`, `solution_html` from public data; `previewAdminMarkdown` response in admin
@@ -239,7 +239,7 @@
   - States: n/a.
   - Done when: UI-T-030 passes; a lint/grep check finds `dangerouslySetInnerHTML` in this file only.
 
-- UI-015 [NEW 2026-10-29 16:06] `SampleDataNote`
+- UI-015 [IN-PROGRESS 2026-10-29 16:58] `SampleDataNote`
   - Implements: REQ-023, REQ-067, TS-006, DES-013
   - Uses API: `is_sample` flags on case study, results, writing sample
   - Behaviour: small inline note with an info icon (`aria-hidden`) and text "Sample data" (results row) or "Sample case
@@ -248,7 +248,7 @@
   - States: shown, hidden.
   - Done when: UI-T-031 passes.
 
-- UI-016 [NEW 2026-10-29 16:06] `CtaBand`
+- UI-016 [IN-PROGRESS 2026-10-29 16:58] `CtaBand`
   - Implements: REQ-040, REQ-041, TS-006, DES-020, DES-021, DES-040
   - Uses API: none (`settings.booking_url`)
   - Behaviour: dark-olive band, two-line huge uppercase statement (`--text-h2` up to `--text-hero` on desktop) in
@@ -257,7 +257,7 @@
   - States: n/a.
   - Done when: UI-T-032 passes.
 
-- UI-017 [NEW 2026-10-29 16:06] `FaqPreview`
+- UI-017 [IN-PROGRESS 2026-10-29 16:58] `FaqPreview`
   - Implements: REQ-006, TS-004, TS-006, DES-040
   - Uses API: `listPublicFaqPreview` (via page aggregates `home`, `work`, `about`, `contact`)
   - Behaviour: cream section with `SectionHeading` ("Questions" style heading from `copy.ts`) and an `Accordion` of the
@@ -267,7 +267,7 @@
   - States: empty (hidden), success.
   - Done when: UI-T-033 passes.
 
-- UI-018 [NEW 2026-10-29 16:06] `StoryBlock` (personal story)
+- UI-018 [IN-PROGRESS 2026-10-29 16:58] `StoryBlock` (personal story)
   - Implements: REQ-014, REQ-040, TS-006, TS-013, DES-013, DES-040
   - Uses API: `getPublicSite` (`profile.portrait`, `profile.bio`, `profile.name`)
   - Behaviour: cream section; portrait (`ResponsiveImage`, monochrome via a CSS `grayscale` filter, decorative green
@@ -278,7 +278,7 @@
 
 ### 1.3 Public layout (App: public)
 
-- UI-019 [NEW 2026-10-29 16:06] `Header` (fixed, compact on scroll)
+- UI-019 [IN-PROGRESS 2026-10-29 20:11] `Header` (fixed, compact on scroll)
   - Implements: REQ-002, REQ-003, REQ-001, REQ-NFR-002, TS-006, DES-002, DES-040
   - Uses API: none (`settings.booking_url` from `site`)
   - Behaviour (our design, DES-040): `<header>` fixed to the top, `--header-h` tall and transparent over the dark hero;
@@ -291,7 +291,7 @@
   - States: transparent, compact, focus-visible.
   - Done when: UI-T-035, UI-T-036 and E2E UI-T-107 pass.
 
-- UI-020 [NEW 2026-10-29 16:06] Mobile menu (full-screen overlay)
+- UI-020 [IN-PROGRESS 2026-10-29 20:11] Mobile menu (full-screen overlay)
   - Implements: REQ-003, REQ-NFR-002, REQ-NFR-003, TS-006, DES-040
   - Uses API: none
   - Behaviour (our design): below 810 px the header shows a "Menu" button (`aria-expanded`, `aria-controls`). It opens a
@@ -304,7 +304,7 @@
   - States: closed, open.
   - Done when: UI-T-037, UI-T-038 and E2E UI-T-106 pass.
 
-- UI-021 [NEW 2026-10-29 16:06] `Footer`
+- UI-021 [IN-PROGRESS 2026-10-29 20:11] `Footer`
   - Implements: REQ-004, REQ-005, REQ-001, TS-005, TS-006, DES-002, DES-021, DES-040
   - Uses API: `getPublicSite` (`settings.social_links`, `settings.contact_email`, `settings.footer_signoff`,
     `generated_at`)
@@ -333,7 +333,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
 | Contact | Heading + form (dark) > FAQ preview (cream) > Footer |
 | 404 | Message (deepest) > Footer |
 
-- UI-022 [NEW 2026-10-29 16:06] Home page and hero
+- UI-022 [IN-PROGRESS 2026-10-29 20:11] Home page and hero
   - Implements: REQ-001, REQ-010, REQ-006, REQ-014, TS-006, DES-003, DES-020, DES-021, DES-040
   - Uses API: page aggregate `home` (`listPublicCaseStudies?featured=true`, `listPublicServices`,
     `listPublicEngagementModels`, `listPublicTestimonials`, `listPublicFaqPreview`) + `site`
@@ -346,14 +346,14 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: success; each data section hides itself when empty.
   - Done when: UI-T-041 and E2E UI-T-103 pass.
 
-- UI-023 [NEW 2026-10-29 16:06] Home: featured work
+- UI-023 [IN-PROGRESS 2026-10-29 20:11] Home: featured work
   - Implements: REQ-011, TS-004, TS-005, TS-006, DES-040
   - Uses API: `listPublicCaseStudies` (`featured=true`), aggregate takes the first 4 by position
   - Behaviour: `SectionHeading` with "View all work" action link to `/work`; `CardGrid` of up to 4 `CaseStudyCard`s.
   - States: empty (section hidden), success.
   - Done when: UI-T-042 passes.
 
-- UI-024 [NEW 2026-10-29 16:06] Home: services list
+- UI-024 [IN-PROGRESS 2026-10-29 20:11] Home: services list
   - Implements: REQ-012, TS-006, DES-040
   - Uses API: `listPublicServices`
   - Behaviour: dark-olive section; `Accordion` whose rows show the service name (`--text-h3`, green on dark) and plus icon;
@@ -362,7 +362,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: empty (section hidden), success, expanded.
   - Done when: UI-T-043 passes.
 
-- UI-025 [NEW 2026-10-29 16:06] Home: engagement models
+- UI-025 [IN-PROGRESS 2026-10-29 20:11] Home: engagement models
   - Implements: REQ-013, TS-006, DES-013, DES-040
   - Uses API: `listPublicEngagementModels`
   - Behaviour: cream section with dark-olive cards (3 columns desktop, 1 column below 810 px, 2 + 1 on tablet). Each card:
@@ -371,7 +371,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: empty (section hidden), success.
   - Done when: UI-T-044 passes.
 
-- UI-026 [NEW 2026-10-29 16:06] Home: testimonials section
+- UI-026 [IN-PROGRESS 2026-10-29 20:11] Home: testimonials section
   - Implements: REQ-015, TS-004, TS-006, DES-040
   - Uses API: `listPublicTestimonials`
   - Behaviour: dark-olive section with visually hidden `h2` "What clients say" (or a visible heading from `copy.ts`) and
@@ -379,14 +379,14 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: empty (hidden), single, multiple.
   - Done when: UI-T-045 passes.
 
-- UI-027 [NEW 2026-10-29 16:06] Work page
+- UI-027 [IN-PROGRESS 2026-10-29 20:11] Work page
   - Implements: REQ-020, REQ-001, REQ-006, TS-006, DES-040
   - Uses API: aggregate `work` (`listPublicCaseStudies`, `listPublicFaqPreview`)
   - Behaviour: `h1` with tape, short intro, `CardGrid` of every published case study in display order, `FaqPreview`.
   - States: empty ("New case studies are on the way" message + link to Contact), success.
   - Done when: UI-T-046 passes.
 
-- UI-028 [NEW 2026-10-29 16:06] Case-study page `/work/:slug`
+- UI-028 [IN-PROGRESS 2026-10-29 20:11] Case-study page `/work/:slug`
   - Implements: REQ-021, REQ-022, REQ-023, REQ-050, TS-004, TS-006, DES-021, DES-040
   - Uses API: `getPublicCaseStudy` (key `work/<slug>`; includes results, images, `more_work`)
   - Behaviour:
@@ -406,7 +406,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: success, not found, sections hidden when empty.
   - Done when: UI-T-047 to UI-T-049 pass.
 
-- UI-029 [NEW 2026-10-29 16:06] Writing page with URL filter `/writing?format=`
+- UI-029 [IN-PROGRESS 2026-10-29 20:11] Writing page with URL filter `/writing?format=`
   - Implements: REQ-030, REQ-023, REQ-NFR-002, TS-005, TS-006, DES-040
   - Uses API: aggregate `writing` (`listPublicWritingSamples`, unfiltered)
   - Behaviour: `h1` with tape; filter bar `<nav aria-label="Filter by format">` with `FilterChip` links: All (`/writing`),
@@ -421,7 +421,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: success (all), filtered, empty filter result, empty list ("Writing samples coming soon").
   - Done when: UI-T-050 to UI-T-054 and E2E UI-T-108 pass.
 
-- UI-030 [NEW 2026-10-29 16:06] Writing-sample page `/writing/:slug`
+- UI-030 [IN-PROGRESS 2026-10-29 20:11] Writing-sample page `/writing/:slug`
   - Implements: REQ-031, REQ-022, REQ-023, REQ-050, TS-006, TS-012, DES-021, DES-040
   - Uses API: `getPublicWritingSample` (key `writing/<slug>`)
   - Behaviour: dark header block: format chip, `h1` title, meta list (client when present, date formatted
@@ -431,7 +431,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: success, not found.
   - Done when: UI-T-055 passes.
 
-- UI-031 [NEW 2026-10-29 16:06] About page with staircase process
+- UI-031 [IN-PROGRESS 2026-10-29 20:11] About page with staircase process
   - Implements: REQ-040, REQ-014, REQ-006, REQ-NFR-002, TS-006, DES-020, DES-021, DES-040
   - Uses API: aggregate `about` (`listPublicValues`, `listPublicProcessSteps`, `listPublicFaqPreview`) + `site`
     (`profile.origin_statement`, `profile.vision_blocks`)
@@ -444,7 +444,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: success; values/steps sections hidden when empty.
   - Done when: UI-T-056, UI-T-057 pass.
 
-- UI-032 [NEW 2026-10-29 16:06] FAQs page
+- UI-032 [IN-PROGRESS 2026-10-29 20:11] FAQs page
   - Implements: REQ-041, REQ-001, TS-006, DES-040
   - Uses API: aggregate `faqs` (`listPublicFaqGroups`)
   - Behaviour: `h1` with tape; one group per category in category order: `h2` category name + `Accordion` (items `h3`)
@@ -452,7 +452,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
   - States: empty ("No questions published yet" + CTA band), success.
   - Done when: UI-T-058, UI-T-059 pass.
 
-- UI-033 [NEW 2026-10-29 16:06] Contact page and enquiry form
+- UI-033 [IN-PROGRESS 2026-10-29 20:11] Contact page and enquiry form
   - Implements: REQ-042, REQ-043, REQ-006, REQ-NFR-002, REQ-NFR-005, TS-007, DES-013, DES-040
   - Uses API: `createEnquiry` (runtime, the only public runtime call); aggregate `contact` (`listPublicFaqPreview`) +
     `site` (`settings.contact_email`)
@@ -483,7 +483,7 @@ Section surfaces per page (alternation per DES-012; tapes from UI-008 at dark/cr
     - server/network error (5xx or fetch failure → banner with the contact email as fallback, input kept, resubmit allowed).
   - Done when: UI-T-060 to UI-T-068 and E2E UI-T-110, UI-T-111 pass.
 
-- UI-034 [NEW 2026-10-29 16:06] Not-found page (404) and route error page
+- UI-034 [IN-PROGRESS 2026-10-29 20:11] Not-found page (404) and route error page
   - Implements: REQ-001, REQ-022, TS-005, TS-006, DES-003, DES-040
   - Uses API: none
   - Behaviour: rendered for `*` and for loader 404s; dark section with `h1` (original copy, e.g. "This page took a day

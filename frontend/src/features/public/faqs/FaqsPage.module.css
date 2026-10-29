@@ -1,0 +1,21 @@
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-9);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.groupHeading {
+  color: var(--heading-on-surface);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h2-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-lh);
+  padding-block-end: var(--space-3);
+  border-block-end: var(--hairline) solid var(--on-surface);
+}

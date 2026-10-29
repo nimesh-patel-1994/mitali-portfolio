@@ -1,0 +1,182 @@
+/*
+ * Global styles and section-surface aliases (UI-001, DES-012, DES-013).
+ * Components read the aliases (--surface, --on-surface, ...) so they work on dark and cream sections.
+ * Rule DES-013: green (--color-primary) is never text or an icon colour on cream or white.
+ */
+@import "./media.css";
+
+/* ---- Layout aliases ---- */
+:root {
+  --gutter: var(--space-5);
+}
+
+/* ---- Surface aliases ---- */
+:root,
+[data-surface="deepest"],
+[data-surface="dark"] {
+  --surface: var(--color-bg-deepest);
+  --on-surface: var(--color-cream);
+  --on-surface-muted: var(--color-text-muted-on-dark);
+  --accent-on-surface: var(--color-primary);
+  --heading-on-surface: var(--color-primary);
+  --tape-on-surface: var(--color-primary-tint);
+  --link-on-surface: var(--color-primary);
+  --selected-bg: var(--color-primary);
+  --on-selected: var(--color-on-primary);
+  --border: var(--color-border-on-dark);
+  --divider: var(--color-hairline-on-dark);
+  --focus-color: var(--color-primary);
+  --danger-on-surface: var(--color-danger-on-dark);
+  --warning-on-surface: var(--color-warning-on-dark);
+}
+
+[data-surface="dark"] {
+  --surface: var(--color-dark);
+}
+
+[data-surface="cream"],
+[data-surface="white"] {
+  --surface: var(--color-cream);
+  --on-surface: var(--color-dark);
+  --on-surface-muted: var(--color-text-muted);
+  --accent-on-surface: var(--color-primary-text-on-light);
+  --heading-on-surface: var(--color-dark);
+  --tape-on-surface: var(--color-primary);
+  --link-on-surface: var(--color-dark);
+  --selected-bg: var(--color-dark);
+  --on-selected: var(--color-cream);
+  --border: var(--color-border-on-light);
+  --divider: var(--color-hairline-on-light);
+  --focus-color: var(--color-dark);
+  --danger-on-surface: var(--color-danger);
+  --warning-on-surface: var(--color-warning);
+}
+
+[data-surface="white"] {
+  --surface: var(--color-white);
+}
+
+[data-surface] {
+  background-color: var(--surface);
+  color: var(--on-surface);
+}
+
+@media (--bp-tablet) {
+  :root {
+    --gutter: var(--space-7);
+  }
+}
+
+/* ---- Base ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-padding-top: var(--header-h);
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  overflow-x: clip;
+  background-color: var(--color-bg-deepest);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--text-body-weight);
+  line-height: var(--text-body-lh);
+  letter-spacing: var(--text-body-tracking);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+p {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---- Utilities ---- */
+/* Component display rules must never reveal `hidden` content (accordion panels, inactive slides). */
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: var(--hairline);
+  height: var(--hairline);
+  margin: calc(-1 * var(--hairline));
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.container,
+.container-wide {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.container {
+  max-width: calc(var(--container-max) + 2 * var(--gutter));
+}
+
+.container-wide {
+  max-width: calc(var(--container-wide) + 2 * var(--gutter));
+}
+
+.measure {
+  max-width: var(--measure);
+}
+
+/* Page scroll lock while the mobile menu dialog is open (UI-020); set by script as an attribute, not a style. */
+html[data-scroll-locked] body {
+  overflow: hidden;
+}

@@ -1,0 +1,102 @@
+@import "../../../styles/media.css";
+
+.intro {
+  margin-block: calc(-1 * var(--space-4)) var(--space-7);
+  color: var(--on-surface-muted);
+  font-size: var(--text-lead);
+  line-height: var(--text-lead-lh);
+}
+
+.listLabel {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+}
+
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-5);
+}
+
+/* Engagement models: 1 column mobile, 2 + 1 tablet, 3 desktop. */
+.models {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  list-style: none;
+}
+
+@media (--bp-tablet) {
+  .models {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (--bp-desktop) {
+  .models {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.modelItem {
+  display: flex;
+  min-width: 0;
+}
+
+.model {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-1);
+}
+
+.modelName {
+  color: var(--heading-on-surface);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-lh);
+}
+
+.modelText {
+  color: var(--on-surface-muted);
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.check {
+  flex: none;
+  margin-block-start: var(--space-1);
+  color: var(--accent-on-surface);
+}
+
+/* The action sits at the bottom of every card regardless of content length. */
+.modelAction {
+  margin-block-start: auto;
+  padding-block-start: var(--space-3);
+}
+
+/* Hairline divider between the engagement models and the story (both cream). */
+.rule {
+  margin: 0;
+  border: 0;
+  border-block-start: var(--hairline) solid var(--divider);
+}

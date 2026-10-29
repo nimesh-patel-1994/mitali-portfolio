@@ -1,0 +1,107 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--space-7);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-5);
+  border: var(--hairline) solid transparent;
+  border-radius: var(--radius-0);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  line-height: var(--text-label-lh);
+  letter-spacing: var(--text-label-tracking);
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.label {
+  display: inline-block;
+}
+
+/* Primary: green fill, dark text (13.48:1); hover inverts to cream. */
+.primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.primary:hover {
+  background-color: var(--color-cream);
+  color: var(--color-dark);
+}
+
+.primary:active {
+  background-color: var(--color-primary-pressed);
+  color: var(--color-on-primary);
+}
+
+/* Secondary: cream fill, dark text; hover inverts to green. */
+.secondary {
+  background-color: var(--color-cream);
+  color: var(--color-dark);
+}
+
+.secondary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.secondary:active {
+  background-color: var(--color-primary-pressed);
+  color: var(--color-on-primary);
+}
+
+/* Ghost: transparent with a border in the surface's border colour. */
+.ghost {
+  background-color: transparent;
+  border-color: var(--border);
+  color: var(--on-surface);
+}
+
+.ghost:hover {
+  background-color: var(--on-surface);
+  color: var(--surface);
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  background-color: var(--color-neutral-200);
+  border-color: transparent;
+  color: var(--color-neutral-700);
+  cursor: not-allowed;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.spinner {
+  width: 1em;
+  height: 1em;
+  border: var(--focus-width) solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .button {
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+
+  .spinner {
+    animation: spin 800ms linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

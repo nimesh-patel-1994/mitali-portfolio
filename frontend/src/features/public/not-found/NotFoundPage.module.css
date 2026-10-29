@@ -1,0 +1,54 @@
+.page {
+  display: flex;
+  align-items: center;
+  min-height: min(100svh, calc(var(--space-11) * 5));
+  padding-block-start: calc(var(--section-pad) + var(--header-h));
+}
+
+.heading {
+  max-width: 12ch;
+  color: var(--heading-on-surface);
+  font-size: var(--text-hero);
+  font-weight: var(--text-hero-weight);
+  line-height: var(--text-hero-lh);
+  letter-spacing: var(--text-hero-tracking);
+}
+
+/* Decorative tape under the statement. */
+.tape {
+  display: block;
+  width: var(--space-10);
+  height: var(--space-4);
+  margin-block-start: var(--space-6);
+  background-color: var(--color-primary);
+  transform: rotate(var(--tape-rotate));
+}
+
+.body {
+  margin-block: var(--space-5) var(--space-7);
+  color: var(--on-surface-muted);
+  font-size: var(--text-lead);
+  line-height: var(--text-lead-lh);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.reload {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-7);
+  padding-inline: var(--space-5);
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  text-decoration: none;
+  text-transform: uppercase;
+}

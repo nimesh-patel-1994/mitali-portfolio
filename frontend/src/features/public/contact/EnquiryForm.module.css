@@ -1,0 +1,152 @@
+@import "../../../styles/media.css";
+
+.form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+@media (--bp-tablet) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  line-height: var(--text-label-lh);
+  text-transform: uppercase;
+}
+
+.asterisk {
+  color: var(--accent-on-surface);
+}
+
+.optional {
+  color: var(--on-surface-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+}
+
+/* Inputs on dark: input background plus a visible border (3:1 UI contrast, design-brief section 2). */
+.input {
+  width: 100%;
+  min-height: var(--space-7);
+  padding: var(--space-3) var(--space-4);
+  border: var(--hairline) solid var(--color-border-on-dark);
+  border-radius: var(--radius-0);
+  background-color: var(--color-input-bg-dark);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--danger-on-surface);
+  border-width: var(--focus-width);
+}
+
+/* Read-only while sending: keep full contrast, signal the wait with the cursor. */
+.input[readonly],
+.input:disabled {
+  cursor: progress;
+}
+
+.select {
+  cursor: pointer;
+}
+
+.textarea {
+  min-height: calc(var(--space-11) + var(--space-5));
+  resize: vertical;
+}
+
+.counter {
+  color: var(--on-surface-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
+  text-align: end;
+  max-width: none;
+}
+
+.counterOver {
+  color: var(--danger-on-surface);
+  font-weight: var(--weight-semibold);
+}
+
+.error {
+  color: var(--danger-on-surface);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  line-height: var(--text-small-lh);
+}
+
+.banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: var(--focus-width) solid var(--danger-on-surface);
+  color: var(--on-surface);
+}
+
+.banner a {
+  color: var(--link-on-surface);
+  overflow-wrap: anywhere;
+}
+
+/* Honeypot: moved off-screen (not display:none only), so bots still see it and people never do. */
+.honeypot {
+  position: absolute;
+  inset-inline-start: -200vw;
+  inset-block-start: 0;
+  width: var(--hairline);
+  height: var(--hairline);
+  overflow: hidden;
+}
+
+.note {
+  color: var(--on-surface-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
+}
+
+.note a {
+  color: var(--link-on-surface);
+}
+
+.success {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: var(--hairline) solid var(--border);
+}
+
+.successHeading {
+  color: var(--heading-on-surface);
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  letter-spacing: var(--text-h2-tracking);
+  line-height: var(--text-h2-lh);
+}

@@ -1,0 +1,214 @@
+@import "../../../styles/media.css";
+
+/* ---- Statement hero ---- */
+.hero {
+  padding-block-start: calc(var(--section-pad) + var(--header-h));
+}
+
+.hero > :global(.container) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+@media (--bp-desktop) {
+  .hero > :global(.container) {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    column-gap: var(--space-8);
+  }
+}
+
+.statement {
+  color: var(--heading-on-surface);
+  font-size: var(--text-hero);
+  font-weight: var(--text-hero-weight);
+  line-height: var(--text-hero-lh);
+  letter-spacing: var(--text-hero-tracking);
+}
+
+@media (--bp-desktop) {
+  .statement {
+    grid-column: 1 / -1;
+  }
+}
+
+.line {
+  display: block;
+}
+
+.heroAside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+@media (--bp-desktop) {
+  .heroAside {
+    grid-column: 2;
+  }
+}
+
+.heroIntro {
+  font-size: var(--text-lead);
+  line-height: var(--text-lead-lh);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+/* ---- Label-left layouts (origin, values) ---- */
+.labelled {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+@media (--bp-tablet) {
+  .labelled {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+/* Small label with a tape block behind it (decorative pseudo-element). */
+.tapeLabel {
+  position: relative;
+  isolation: isolate;
+  justify-self: start;
+  color: var(--on-surface);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  line-height: var(--text-label-lh);
+  padding: var(--space-2) var(--space-3);
+}
+
+.tapeLabel::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-color: var(--tape-on-surface);
+  transform: rotate(var(--tape-rotate));
+}
+
+.origin {
+  font-size: var(--text-statement);
+  font-weight: var(--text-statement-weight);
+  line-height: var(--text-statement-lh);
+}
+
+.muted {
+  color: var(--on-surface-muted);
+}
+
+/* ---- Vision ---- */
+.vision {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7);
+}
+
+@media (--bp-tablet) {
+  .vision {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.visionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.visionHeading,
+.stepTitle {
+  color: var(--heading-on-surface);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-lh);
+}
+
+/* ---- Values ---- */
+.values {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  list-style: none;
+}
+
+.value {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.valueTitle {
+  color: var(--heading-on-surface);
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  letter-spacing: var(--text-h2-tracking);
+  line-height: var(--text-h2-lh);
+}
+
+/* ---- Process staircase: stacked (mobile), 2 x 2 (tablet), descending diagonal (desktop). ---- */
+.staircase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7);
+  list-style: none;
+}
+
+@media (--bp-tablet) {
+  .staircase {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-7) var(--space-6);
+  }
+}
+
+@media (--bp-desktop) {
+  .staircase {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .step:nth-child(4n + 1) {
+    grid-column: 1;
+  }
+
+  .step:nth-child(4n + 2) {
+    grid-column: 2;
+    margin-block-start: var(--space-9);
+  }
+
+  .step:nth-child(4n + 3) {
+    grid-column: 3;
+    margin-block-start: calc(var(--space-9) * 2);
+  }
+
+  .step:nth-child(4n + 4) {
+    grid-column: 4;
+    margin-block-start: calc(var(--space-9) * 3);
+  }
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block-start: var(--space-4);
+  border-block-start: var(--hairline) solid var(--divider);
+}
+
+.stepNumber {
+  color: var(--on-surface-muted);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+}

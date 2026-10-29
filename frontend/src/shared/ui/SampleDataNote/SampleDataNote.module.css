@@ -1,0 +1,13 @@
+.note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--warning-on-surface);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  line-height: var(--text-small-lh);
+}
+
+.icon {
+  font-size: var(--text-body);
+}

@@ -1,0 +1,57 @@
+/* Skip link: visually hidden until focused, then shown above the fixed header. */
+.skipLink {
+  position: absolute;
+  z-index: 100;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  transform: translateY(calc(-1 * var(--space-11)));
+}
+
+.skipLink:focus-visible,
+.skipLink:focus {
+  transform: none;
+  outline-color: var(--color-cream);
+}
+
+/* Thin navigation progress bar in --color-primary, shown after 150 ms of loading. */
+.progress {
+  position: fixed;
+  z-index: 90;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: var(--space-1);
+  background-color: var(--color-primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.progress[data-visible="true"] {
+  transform: scaleX(0.7);
+  opacity: 1;
+}
+
+.main {
+  display: block;
+  outline: none;
+}
+
+.main:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .progress[data-visible="true"] {
+    transition:
+      transform 2s var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out);
+  }
+}

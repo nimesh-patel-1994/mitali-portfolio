@@ -1,0 +1,125 @@
+@import "../../../styles/media.css";
+
+/* Sentinel at the header's height: when it leaves the viewport the header turns compact (UI-019). */
+.sentinel {
+  position: absolute;
+  inset-block-start: var(--header-h);
+  inset-inline-start: 0;
+  width: var(--hairline);
+  height: var(--hairline);
+  pointer-events: none;
+}
+
+.header {
+  position: fixed;
+  z-index: 50;
+  inset-block-start: 0;
+  inset-inline: 0;
+  border-block-end: var(--hairline) solid transparent;
+}
+
+/* Transparent over a dark hero (specificity above the [data-surface] background rule). */
+.header:not([data-compact]) {
+  background-color: transparent;
+}
+
+.header[data-compact] {
+  background-color: var(--color-bg-deepest);
+  border-block-end-color: var(--divider);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  height: var(--header-h);
+}
+
+.header[data-compact] .inner {
+  height: var(--header-h-compact);
+}
+
+/* Mobile: only the wordmark and the Menu button. */
+.nav,
+.cta {
+  display: none;
+}
+
+.menu {
+  display: inline-flex;
+}
+
+@media (--bp-tablet) {
+  .nav {
+    display: block;
+    margin-inline-start: auto;
+  }
+
+  .cta {
+    display: block;
+    flex: none;
+  }
+
+  .menu {
+    display: none;
+  }
+}
+
+.list {
+  display: flex;
+  gap: var(--space-5);
+  list-style: none;
+}
+
+@media (--bp-desktop) {
+  .list {
+    gap: var(--space-6);
+  }
+}
+
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: calc(var(--space-7) - var(--space-1));
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  line-height: var(--text-label-lh);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+/* Current page: green text plus a green marker bar (not colour alone: the marker is a shape). */
+.link[aria-current="page"] {
+  color: var(--accent-on-surface);
+}
+
+.link[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--space-2);
+  height: var(--focus-width);
+  background-color: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .header {
+    transition:
+      background-color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+
+  .inner {
+    transition: height var(--dur-base) var(--ease-out);
+  }
+}

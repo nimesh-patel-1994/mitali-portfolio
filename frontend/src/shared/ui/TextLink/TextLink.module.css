@@ -1,0 +1,19 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--space-7) - var(--space-1));
+  color: var(--link-on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  line-height: var(--text-label-lh);
+  text-decoration: underline;
+  text-transform: uppercase;
+  text-underline-offset: 0.25em;
+}
+
+.link:hover {
+  text-decoration-thickness: var(--focus-width);
+}

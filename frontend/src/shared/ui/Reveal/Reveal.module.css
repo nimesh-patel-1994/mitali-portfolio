@@ -1,0 +1,15 @@
+/* The hidden start state exists only when motion is allowed; under reduced motion content is always visible. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal[data-reveal="hidden"] {
+    opacity: 0;
+    transform: translateY(var(--space-4));
+  }
+
+  .reveal[data-reveal="shown"] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--dur-reveal) var(--ease-out),
+      transform var(--dur-reveal) var(--ease-out);
+  }
+}

@@ -1,0 +1,70 @@
+@import "../../../styles/media.css";
+
+.contact {
+  padding-block-start: calc(var(--section-pad) + var(--header-h));
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+}
+
+@media (--bp-desktop) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.heading {
+  color: var(--heading-on-surface);
+  font-size: var(--text-hero);
+  font-weight: var(--text-hero-weight);
+  letter-spacing: var(--text-hero-tracking);
+  line-height: var(--text-hero-lh);
+}
+
+.line {
+  display: block;
+}
+
+.promise {
+  font-size: var(--text-lead);
+  line-height: var(--text-lead-lh);
+}
+
+.emailBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.emailLabel {
+  color: var(--on-surface-muted);
+  font-size: var(--text-small);
+}
+
+.email {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: calc(var(--space-7) - var(--space-1));
+  color: var(--link-on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  overflow-wrap: anywhere;
+  text-underline-offset: 0.2em;
+}
+
+.mailIcon {
+  flex: none;
+}

@@ -1,0 +1,95 @@
+.prose {
+  max-width: var(--measure);
+  color: var(--on-surface);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
+}
+
+.prose > * + * {
+  margin-block-start: var(--space-4);
+}
+
+.prose :where(h2, h3, h4) {
+  margin-block-start: var(--space-7);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  color: var(--heading-on-surface);
+}
+
+.prose h2 {
+  font-size: var(--text-h2);
+  font-weight: var(--text-h2-weight);
+  line-height: var(--text-h2-lh);
+  letter-spacing: var(--text-h2-tracking);
+}
+
+.prose h3 {
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+  letter-spacing: var(--text-h3-tracking);
+}
+
+.prose h4 {
+  font-size: var(--text-lead);
+  font-weight: var(--weight-bold);
+}
+
+.prose :where(ul, ol) {
+  padding-inline-start: var(--space-5);
+}
+
+.prose li + li {
+  margin-block-start: var(--space-2);
+}
+
+/* Links: green on dark, dark with underline on cream (DES-013). */
+.prose a {
+  color: var(--link-on-surface);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.prose blockquote {
+  margin-inline: 0;
+  padding-inline-start: var(--space-4);
+  border-inline-start: var(--focus-width) solid var(--accent-on-surface);
+  font-size: var(--text-statement);
+  font-weight: var(--text-statement-weight);
+  line-height: var(--text-statement-lh);
+}
+
+.prose :where(code, pre) {
+  font-size: var(--text-small);
+}
+
+.prose pre {
+  overflow-x: auto;
+  padding: var(--space-4);
+  border: var(--hairline) solid var(--divider);
+  border-radius: var(--radius-1);
+}
+
+/* Tables scroll inside their own box so the page never scrolls sideways. */
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose :where(th, td) {
+  padding: var(--space-2) var(--space-3);
+  border-block-end: var(--hairline) solid var(--divider);
+  text-align: start;
+}
+
+.prose img {
+  height: auto;
+  border-radius: var(--radius-1);
+}
+
+.prose hr {
+  border: 0;
+  border-block-start: var(--hairline) solid var(--divider);
+}

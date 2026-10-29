@@ -1,0 +1,84 @@
+@import "../../../styles/media.css";
+
+/* Height capped so both actions stay visible without scrolling at 390x844 and 1440x900 (UI-022). */
+.hero {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  min-height: min(100svh, calc(var(--space-11) * 6));
+  padding-block: calc(var(--header-h) + var(--space-6)) var(--space-8);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-7);
+}
+
+@media (--bp-desktop) {
+  .content {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: auto 1fr;
+    column-gap: var(--space-8);
+    row-gap: var(--space-7);
+  }
+}
+
+.statement {
+  color: var(--heading-on-surface);
+  font-size: var(--text-hero);
+  font-weight: var(--text-hero-weight);
+  line-height: var(--text-hero-lh);
+  letter-spacing: var(--text-hero-tracking);
+}
+
+@media (--bp-desktop) {
+  .statement {
+    grid-column: 1 / -1;
+  }
+}
+
+.line {
+  display: block;
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+@media (--bp-desktop) {
+  .aside {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+  }
+}
+
+.intro {
+  color: var(--on-surface);
+  font-size: var(--text-lead);
+  line-height: var(--text-lead-lh);
+}
+
+/* Highlighted line: green on the dark hero only (DES-013). */
+.tagline {
+  color: var(--accent-on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  letter-spacing: var(--text-h3-tracking);
+  line-height: var(--text-h3-lh);
+  text-transform: uppercase;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}

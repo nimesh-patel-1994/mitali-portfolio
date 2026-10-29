@@ -1,0 +1,7 @@
+/*
+ * Breakpoints (DES-040, UI-001). Mobile-first: mobile (< 810px) is the default, no query.
+ * Used only through these custom media (UI-REV-017); compiled by postcss-custom-media.
+ * Import this file at the top of any stylesheet that uses them.
+ */
+@custom-media --bp-tablet (min-width: 810px);
+@custom-media --bp-desktop (min-width: 1200px);

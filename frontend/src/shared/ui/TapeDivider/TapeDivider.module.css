@@ -1,0 +1,36 @@
+@import "../../../styles/media.css";
+
+/* Zero-height anchor at the seam; the block extends into both sections but stays within their padding. */
+.tape {
+  position: relative;
+  z-index: 1;
+  height: 0;
+  pointer-events: none;
+}
+
+.tape::before {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(-1 * var(--space-5));
+  width: 45%;
+  height: var(--space-7);
+  background-color: var(--color-primary);
+  transform: rotate(var(--tape-rotate));
+}
+
+.left::before {
+  inset-inline-start: calc(-1 * var(--space-6));
+}
+
+.right::before {
+  inset-inline-end: calc(-1 * var(--space-6));
+  transform: rotate(calc(-1 * var(--tape-rotate)));
+}
+
+@media (--bp-tablet) {
+  .tape::before {
+    inset-block-start: calc(-1 * var(--space-6));
+    width: 32%;
+    height: var(--space-8);
+  }
+}

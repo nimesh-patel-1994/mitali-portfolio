@@ -1,0 +1,103 @@
+@import "../../../styles/media.css";
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7) var(--space-5);
+  list-style: none;
+}
+
+@media (--bp-tablet) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-8) var(--space-6);
+  }
+}
+
+.item {
+  display: flex;
+  min-width: 0;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.media {
+  overflow: hidden;
+  border-radius: var(--radius-1);
+}
+
+.image {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.title {
+  color: var(--heading-on-surface);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+  letter-spacing: var(--text-h3-tracking);
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Stretched hit area: the whole card is one link without nesting interactive elements. */
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.card:hover .link,
+.link:focus-visible {
+  text-decoration: underline;
+  text-decoration-thickness: var(--focus-width);
+  text-underline-offset: 0.12em;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.sampleChip {
+  border-color: var(--warning-on-surface);
+  color: var(--warning-on-surface);
+}
+
+.summary {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--on-surface-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .image {
+    transition: transform var(--dur-reveal) var(--ease-out);
+  }
+
+  .card:hover .image {
+    transform: scale(1.03);
+  }
+}

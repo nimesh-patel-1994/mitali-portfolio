@@ -1,0 +1,8 @@
+Self-hosted fonts (REQ-NFR-007, DES-020). Both are licensed under the SIL Open Font License 1.1;
+the licence texts are in OFL-Antonio.txt and OFL-PublicSans.txt next to the font files.
+
+Antonio 500/700 (latin subset), Copyright 2013 The Antonio Project Authors (https://github.com/googlefonts/antonioFont)
+Public Sans 400/600/700 (latin subset), Copyright 2015 The Public Sans Project Authors (https://github.com/uswds/public-sans)
+
+Obtained unmodified from the official open source npm packages @fontsource/antonio@5.3.0 and
+@fontsource/public-sans@5.3.0 (Google Fonts builds), file names kept. Not obtained from any reference site.

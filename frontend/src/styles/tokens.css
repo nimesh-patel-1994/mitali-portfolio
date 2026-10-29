@@ -1,0 +1,156 @@
+/*
+ * Design tokens (UI-001). Single source of truth: docs/design-brief.md sections 2, 3, 5 and 6.
+ * Every token is defined exactly once here. Components never use literal colours, fonts or spacing;
+ * they read these tokens or the section-surface aliases set in global.css.
+ */
+:root {
+  /* ---- Colour: brand (DES-010, DES-011, DES-013) ---- */
+  --color-primary: #70ff00;
+  --color-primary-tint: rgba(112, 255, 0, 0.2);
+  --color-primary-hover: #a9ff66;
+  --color-primary-pressed: #5acc00;
+  --color-primary-text-on-light: #367a00;
+  --color-on-primary: #0f1c00;
+
+  /* Primary palette scale (palette.py "#70FF00"; primary-800 = text-on-light) */
+  --color-primary-50: #f4ffeb;
+  --color-primary-100: #e5ffd1;
+  --color-primary-200: #ccffa3;
+  --color-primary-300: #a9ff66;
+  --color-primary-400: #87ff29;
+  --color-primary-500: #6cf500;
+  --color-primary-600: #5acc00;
+  --color-primary-700: #48a300;
+  --color-primary-800: #367a00;
+  --color-primary-900: #245200;
+
+  /* ---- Colour: surfaces and text ---- */
+  --color-bg-deepest: #030500;
+  --color-dark: #0f1c00;
+  --color-cream: #fffde9;
+  --color-white: #ffffff;
+  --color-text-muted: #63635a;
+  --color-text-muted-on-dark: #a3a396;
+  --color-input-bg-dark: #2a3220;
+
+  /* Borders: inputs use the solid value (3:1 UI contrast); hairline dividers use the translucent value. */
+  --color-border-on-dark: #a3a396;
+  --color-border-on-light: #8a8a7e;
+  --color-hairline-on-dark: rgba(255, 253, 233, 0.2);
+  --color-hairline-on-light: rgba(15, 28, 0, 0.15);
+
+  /* Neutral palette scale (admin surfaces, tables, disabled states) */
+  --color-neutral-50: #f5f5f4;
+  --color-neutral-100: #e8e9e7;
+  --color-neutral-200: #d1d4ce;
+  --color-neutral-300: #b2b7ae;
+  --color-neutral-400: #939a8e;
+  --color-neutral-500: #7a8273;
+  --color-neutral-600: #666c60;
+  --color-neutral-700: #51564d;
+  --color-neutral-800: #3d413a;
+  --color-neutral-900: #292b26;
+
+  /* ---- Colour: status ---- */
+  --color-success: #1e6b2e;
+  --color-warning: #8c5a00;
+  --color-warning-on-dark: #ffb74d;
+  --color-danger: #b3261e;
+  --color-danger-on-dark: #ff8a80;
+
+  /* ---- Typography (DES-020, DES-021) ---- */
+  --font-display: "Antonio", "Oswald", "Arial Narrow", sans-serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --text-hero: clamp(56px, 9.5vw, 136px);
+  --text-hero-lh: 0.9;
+  --text-hero-weight: 700;
+  --text-hero-tracking: normal;
+
+  --text-h1: clamp(36px, 4vw, 48px);
+  --text-h1-lh: 0.9;
+  --text-h1-weight: 700;
+  --text-h1-tracking: 0.02em;
+
+  --text-h2: clamp(32px, 4vw, 48px);
+  --text-h2-lh: 0.9;
+  --text-h2-weight: 700;
+  --text-h2-tracking: 0.02em;
+
+  --text-h3: clamp(24px, 2.6vw, 36px);
+  --text-h3-lh: 0.95;
+  --text-h3-weight: 500;
+  --text-h3-tracking: 0.02em;
+
+  --text-statement: clamp(20px, 2vw, 26px);
+  --text-statement-lh: 1.3;
+  --text-statement-weight: 700;
+
+  --text-lead: 18px;
+  --text-lead-lh: 1.5;
+  --text-lead-weight: 400;
+
+  --text-body: 16px;
+  --text-body-lh: 1.5;
+  --text-body-weight: 400;
+  --text-body-tracking: -0.01em;
+
+  --text-small: 14px;
+  --text-small-lh: 1.4;
+  --text-small-weight: 400;
+
+  --text-label: clamp(14px, 13px + 0.2vw, 16px);
+  --text-label-lh: 1;
+  --text-label-weight: 500;
+  --text-label-tracking: 0.04em;
+
+  --text-footer-mark: clamp(96px, 18vw, 300px);
+  --text-footer-mark-lh: 0.85;
+  --text-footer-mark-weight: 700;
+
+  --measure: 68ch;
+
+  /* ---- Spacing (DES-040, 4 px base) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+  --space-11: 160px;
+  --section-pad: clamp(64px, 10vw, 160px);
+
+  /* ---- Layout ---- */
+  --container-max: 1100px;
+  --container-wide: 1320px;
+
+  /* ---- Radii and shapes ---- */
+  --radius-0: 0;
+  --radius-1: 6px;
+  --radius-full: 9999px;
+  --tape-rotate: -4deg;
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ---- Derived component tokens (DES-040; listed in ui-scope UI-001) ---- */
+  --header-h: 80px;
+  --header-h-compact: 64px;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --hairline: 1px;
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-fade: 250ms;
+  --dur-reveal: 300ms;
+  --glow-loop: 20s;
+}
