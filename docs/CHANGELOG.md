@@ -2,6 +2,35 @@
 
 > Append-only. One entry per change set. Newest first. Times in the user's local timezone.
 
+## CHG-011 — 2026-10-31 02:21 — Toolkit upgrade 0.5.0 → 1.2.0 (/upgrade-project, branch chore/upgrade-toolkit-1.2)
+- Launchers: the original hand-made launcher is kept as `start-classic.cmd` → `run/classic/start-classic.ps1` (project root
+  resolved two folders up; new `-DryRun` switch that prints root, folders, ports, target database host:port/name and browser;
+  behaviour otherwise unchanged). The original `start.cmd` text is saved as `run/classic/start.cmd.original`. Dry runs passed from
+  the project root and from another working folder (double-click path): root resolved correctly, database
+  `localhost:5442/mitali_portfolio` (dev), Brave → `/` and `/admin`.
+- 0.9: `docs/phases.md` (PH-1 DELIVERED with all 44 REQs; `ui_first: no`, `design_freeze: n/a`); `.dev-pipeline/models.json`
+  (balanced). `budget.json` is not created here (it is computed by `/budget` from the developer's inputs).
+- 0.11 + 1.0 run kit: `make-run-kit.ps1 -Phase PH-1` wrote `start.cmd` (replaced the original; copy kept), `stop.cmd`,
+  `build-apk.cmd`, `smoke.cmd`, `testdata.cmd`, `run/*.ps1`, `run/secret-scan.ps1`, `.githooks/pre-commit`, 5 `.gitignore` lines.
+  `run/run.json`: service PostgreSQL 17 (5442); apps `api` (backend, 127.0.0.1:8000, health /api/health, install `uv sync`,
+  prepare `alembic upgrade head` once) and `web` (frontend, localhost:5173, `npm run dev`, opens `/`). `-CheckOnly`: ok, 0 warnings.
+  Dry run ok (Chrome, one address; first real run creates `frontend/.env` from `.env.example` — kit behaviour, documented).
+  No smoke journey or testdata section yet (`/smoke`, `/testdata` later). The secret-scan hook is installed but NOT enabled.
+- 0.12: SystemDesign `preferences:` header and section 2a (SD-100..SD-110): developer = PostgreSQL, FastAPI, React (G1);
+  suggested = Vite, pre-render script, SQLAlchemy/Alembic, TanStack Query, React Hook Form + Zod, openapi-fetch, session auth, tooling.
+- 0.13: design-brief section 7 "Design notes (from references)" (frontend/: none via /inspire, see DES-030; placeholder for
+  "Variant: frontend-2"); "Open questions" renumbered to 8.
+- 1.0: `priority: Must (baseline default, all built; not a client priority)` on all 44 REQs; `docs/demo/`, `docs/reports/`,
+  `docs/test-results/`; CLAUDE.md rules 13-19 (phases/models, handoff, UI-first, fast path, secret scan, client guide, launchers)
+  and the updated pipeline line.
+- 1.1: `.dev-pipeline/restore.json` (names and addresses only) validated; `.dev-pipeline/restore.ps1`; generated note
+  `NEW-MACHINE-SETUP.new.md` (hand-written `NEW-MACHINE-SETUP.md` kept unchanged). Launcher section added to the new note.
+- 1.2: REQ-DOC-001 [NEW] (client feature guide, Must); `docs/feature-guide.json` + `docs/FEATURE.html` (30 features, 5 sections,
+  paginated, **marked DRAFT** until the developer checks it against the built app). Not in the guide on purpose (internal):
+  REQ-001, REQ-005, REQ-022, REQ-070..072, REQ-NFR-*.
+- README and `start.md`: which launcher is which; `start.cmd` now opens Chrome first and only `/`.
+- `toolkit_version` 0.5.0 → 1.2.0. No change to `frontend/`, `backend/` or any `.env`.
+
 ## CHG-010 — 2026-10-31 00:12 — Performance closed; all items IMPLEMENTED; launcher added
 - /faqs investigation: no code change needed. On an idle machine /faqs scores Performance 99 (TBT 94 ms); the earlier
   83-84 came from a loaded CPU (Lighthouse benchmarkIndex 376-560 vs 1040-1460 idle).

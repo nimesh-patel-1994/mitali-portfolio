@@ -3,6 +3,17 @@
 > Newest entry on top. Records state only; `docs/` stays the source of truth for scope. Resume with `/resume`
 > (or open the project with its launcher and say "continue batch 3").
 
+## 2026-10-31 02:29: toolkit upgrade applied on chore/upgrade-toolkit-1.2 (uncommitted); waiting for the user to push and merge
+- CHG-011: upgrade 0.5.0 → 1.2.0 applied and checked (run kit, machine setup, feature guide validators ok; staged secret scan clean).
+- The user commits, pushes and merges the branch. Then: create `feature/frontend-2` from the updated `main` and start the frontend-2
+  feature at G2 (documents). Decisions already agreed for frontend-2 (2026-10-31): Origin rewrite in the Vite dev proxy only for
+  /api/admin; Inter Tight 300 + Public Sans + Antonio (self-hosted, Latin, OFL, preload display); cream #FFFDE9 single surface
+  with white alternate bands (white comparison at the P1 review); header hides on scroll down / shows on scroll up with focus
+  rules; improvements #1-#7 (skip #8), reveals as progressive enhancement, view transitions may be dropped at P1; review type at
+  375/768/1024/1440; tell the user which database before any build or test (dev for builds, test for E2E; never production).
+- Inspiration capture and notes: scratchpad `inspire-atlyx/` (copy to `.dev-pipeline/reference/inspiration/`, screenshots git-ignored,
+  during the frontend-2 documents step).
+
 ## 2026-10-31 00:12: build complete — all requirements IMPLEMENTED
 - All 44 REQs and 84 BE/UI items IMPLEMENTED (CHG-010). Launcher `start.cmd` added and tested.
 - Committed on `feature/initial-build`, fast-forwarded into `main` and pushed to `origin/main` at the user's request

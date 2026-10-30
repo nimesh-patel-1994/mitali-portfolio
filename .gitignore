@@ -50,3 +50,10 @@ dist-ssr/
 .coverage
 .coverage.*
 htmlcov/
+
+# Run kit: local state and built phone apps (never commit)
+mobile-publish/
+run/.first-run-done
+run/pids.json
+run/smoke-report.md
+key.properties

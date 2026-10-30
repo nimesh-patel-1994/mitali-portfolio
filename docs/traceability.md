@@ -52,3 +52,4 @@
 | REQ-NFR-006 | TS-001, TS-018, TS-019 | BE-001, BE-005, BE-024, BE-025, BE-026 | SEC-001, SEC-004, SEC-UI-012 | backend/app, frontend/src (see scope items) | BE-T-001..003, 017, 105..109 | IMPLEMENTED 2026-10-30 18:36 |
 | REQ-NFR-007 | TS-001, TS-006 | UI-001 | SEC-006 | backend/app, frontend/src (see scope items) | UI-T-001..003 | IMPLEMENTED 2026-10-30 18:36 |
 | REQ-NFR-008 | TS-001 | BE-001 | SEC-005 | backend/app, frontend/src (see scope items) | BE-T-001 | IMPLEMENTED 2026-10-30 18:36 |
+| REQ-DOC-001 | — | — (orchestrator, `make-feature-guide.ps1`) | n/a | docs/feature-guide.json, docs/FEATURE.html | `make-feature-guide.ps1 -CheckOnly` (ok, 1 warning: internal REQs deliberately not in the guide) | NEW 2026-10-31 02:21 |

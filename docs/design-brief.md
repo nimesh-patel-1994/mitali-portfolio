@@ -160,7 +160,18 @@ Builders use these tokens and never hard-code colours, fonts or spacing in compo
   read the alias and work on both dark and cream sections.
 - Flutter / React Native: not applicable.
 
-## 7. Open questions
+## 7. Design notes (from references)
+> Added by `/upgrade-project` (toolkit 1.2.0, 2026-10-31 02:18). Only for references used as **UI inspiration** (`/inspire`). Visual and
+> interaction design only; nothing about a reference's domain, features, pages, data or business rules is recorded or used.
+
+**frontend/ (the current front end):** None as `/inspire` notes. Its reference (studiobrag.com) was captured with `/replicate`
+before `/inspire` existed and is recorded in DES-030 (section 4) with the observations in `.dev-pipeline/reference/reference-notes.md`;
+the resulting decisions are DES-001..DES-042 above.
+
+**Variant: frontend-2:** to be added by the frontend-2 feature (own clearly labelled sub-section; DES ids from DES-050; does not change
+the tokens or notes of `frontend/`).
+
+## 8. Open questions
 | # | Question | Owner | Resolved? |
 |---|----------|-------|-----------|
 | 1 | Logo file (SVG, light and dark variants) to replace the "MITALI" wordmark. | User | No |

@@ -1,0 +1,37 @@
+{
+  "project": "mitali-portfolio",
+  "kind": "new",
+  "generated": "2026-10-31 02:19",
+  "toolkit": {
+    "marketplace": "nimesh-patel-1994/multi-agent-setup",
+    "plugin": "dev-pipeline@multi-agent-setup",
+    "clone_url": "https://github.com/nimesh-patel-1994/multi-agent-setup.git"
+  },
+  "workspace": { "remote": "", "branch": "" },
+  "repos": [
+    { "role": "project", "name": "mitali-portfolio", "remote": "https://github.com/nimesh-patel-1994/mitali-portfolio.git", "branch": "main", "clone_to": "{DEV_ROOT}/projects/mitali-portfolio" }
+  ],
+  "tools": [
+    { "name": "Git", "winget": "Git.Git", "check": "git --version" },
+    { "name": "Node.js LTS", "winget": "OpenJS.NodeJS.LTS", "check": "node --version" },
+    { "name": "Python 3.12", "winget": "Python.Python.3.12", "check": "python --version" },
+    { "name": "uv", "winget": "astral-sh.uv", "check": "uv --version" },
+    { "name": "PostgreSQL 17", "winget": "PostgreSQL.PostgreSQL.17", "check": "psql --version" }
+  ],
+  "env_files": [
+    { "file": "backend/.env", "from": "backend/.env.example", "note": "written by backend/scripts/setup_db.ps1 (database URLs and a random hash key); never committed" },
+    { "file": "frontend/.env", "from": "frontend/.env.example", "note": "optional; public values only (VITE_SITE_URL)" }
+  ],
+  "databases": [
+    { "name": "mitali_portfolio", "engine": "PostgreSQL 17 (port 5442)", "recreate": "backend/scripts/setup_db.ps1, then 'python -m uv run alembic upgrade head' and 'python -m uv run python -m app.cli seed' in backend (README, Backend)" },
+    { "name": "mitali_portfolio_test", "engine": "PostgreSQL 17 (port 5442)", "recreate": "created by backend/scripts/setup_db.ps1; migrated by the test suite" }
+  ],
+  "manual_steps": [
+    "PostgreSQL 17 must listen on port 5442 (the installer default is 5432; set the port during installation). psql is not on PATH by default (it is in the PostgreSQL 17 bin folder under Program Files).",
+    "Run backend/scripts/setup_db.ps1 yourself (it asks for the PostgreSQL superuser password and a new app-role password).",
+    "Create the admin account: in backend run 'python -m uv run python -m app.cli create-admin --email <your email>'.",
+    "Playwright browsers for the E2E tests: in frontend run 'npx playwright install chromium'.",
+    "Optional: enable the secret-scan git hook once with 'git config core.hooksPath .githooks'."
+  ],
+  "open_with": "open-claude.ps1"
+}
