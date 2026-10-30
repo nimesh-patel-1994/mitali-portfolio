@@ -45,6 +45,9 @@ export default defineConfig({
       modules: { classNameStrategy: "non-scoped" },
     },
     restoreMocks: true,
+    // Slowest test is ~2.5 s locally (admin tests use no retry delay and paste for fields not under test);
+    // 10 s leaves headroom for parallel coverage runs on a loaded machine.
+    testTimeout: 10_000,
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],

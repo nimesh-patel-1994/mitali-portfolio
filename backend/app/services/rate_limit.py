@@ -6,6 +6,7 @@ run inside the caller's transaction.
 
 from __future__ import annotations
 
+import hashlib
 import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -71,6 +72,23 @@ async def hit_fixed_window(
     return WindowResult(count=state.count, allowed=state.count <= limit, retry_after_seconds=retry_after)
 
 
+def _lock_id(bucket: str, key_hash: str) -> int:
+    """Signed 64-bit advisory lock id derived from the bucket and its (already keyed) hash."""
+    digest = hashlib.sha256(f"rate_limit:{bucket}:{key_hash}".encode()).digest()
+    return int.from_bytes(digest[:8], "big", signed=True)
+
+
+async def lock_login_keys(session: AsyncSession, keys: LoginKeys) -> None:
+    """Serialise logins per IP key and per account key until the caller's transaction ends (review m3).
+
+    Check → verify → count then runs atomically per key, so concurrent attempts cannot all pass the block check
+    before the first failure is counted. Locks are taken in ascending id order, so two logins sharing one key
+    cannot deadlock.
+    """
+    for lock_id in sorted({_lock_id(bucket, key) for bucket, key in keys.pairs()}):
+        await repository.advisory_xact_lock(session, lock_id)
+
+
 async def check_login_block(session: AsyncSession, keys: LoginKeys) -> int | None:
     """Seconds until the block ends when either login bucket is blocked, else None."""
     blocked_until, now = await repository.latest_block(session, keys.pairs())
@@ -79,12 +97,24 @@ async def check_login_block(session: AsyncSession, keys: LoginKeys) -> int | Non
     return _seconds_until(blocked_until, now)
 
 
-async def register_login_failure(session: AsyncSession, keys: LoginKeys) -> None:
-    """Count a failure in both buckets; the 5th failure in a window blocks that bucket for 15 minutes."""
+async def reserve_login_attempt(session: AsyncSession, keys: LoginKeys) -> int | None:
+    """Count one login attempt in both buckets before verifying; seconds to wait when refused, else None.
+
+    Call under ``lock_login_keys``. Refused (nothing counted) while either bucket is blocked. The attempt that brings a
+    bucket to ``LOGIN_FAILURE_LIMIT`` within the window sets the 15-minute block and is still verified; a success
+    resets both buckets, so the 5 counted attempts are exactly the 5 allowed verifications per window.
+    """
+    retry_after = await check_login_block(session, keys)
+    if retry_after is not None:
+        return retry_after
+    refused: int | None = None
     for bucket, key in keys.pairs():
-        await repository.hit(
+        state = await repository.hit(
             session, bucket, key, window=LOGIN_WINDOW, block_at=LOGIN_FAILURE_LIMIT, block_for=LOGIN_BLOCK
         )
+        if state.count > LOGIN_FAILURE_LIMIT and state.blocked_until is not None:  # defensive: never verify a 6th
+            refused = max(refused or 0, _seconds_until(state.blocked_until, state.now))
+    return refused
 
 
 async def reset_login_buckets(session: AsyncSession, keys: LoginKeys) -> None:

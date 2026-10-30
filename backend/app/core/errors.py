@@ -45,6 +45,7 @@ ERROR_CODES: Final[tuple[str, ...]] = get_args(ErrorCode)
 
 INTERNAL_ERROR_MESSAGE: Final = "Something went wrong on our side. Please try again."
 CHECK_VIOLATION_SQLSTATE: Final = "23514"
+INVALID_JSON_MESSAGE: Final = "The request body is not valid JSON."
 
 
 class AppError(Exception):
@@ -240,7 +241,10 @@ def _clean_message(message: str) -> str:
 _STATUS_CODES: Final[dict[int, ErrorCode]] = {
     400: "validation_error",
     401: "unauthenticated",
-    403: "csrf_failed",
+    # The contract has no generic "forbidden" code. Our own 403s are raised as AppErrors (csrf_failed from the CSRF
+    # dependency, origin_rejected from the Origin check); a framework 403 is neither, so it must not claim to be a
+    # CSRF failure (the admin client would refetch the session and retry). It is answered as a refused request.
+    403: "validation_error",
     404: "not_found",
     # 405 has no dedicated contract code; "not_found" (no such operation on this path) is the closest one.
     405: "not_found",
@@ -283,7 +287,11 @@ async def app_error_handler(_request: Request, exc: Exception) -> JSONResponse:
 async def request_validation_handler(_request: Request, exc: Exception) -> JSONResponse:
     if not isinstance(exc, RequestValidationError):  # registered for RequestValidationError only
         raise exc
-    return error_response(422, "validation_error", "Some fields are not valid.", fields=validation_fields(exc.errors()))
+    errors = exc.errors()
+    if any(error.get("type") == "json_invalid" for error in errors):
+        # The location of a JSON syntax error is a character offset, not a field: no ``fields`` map.
+        return error_response(422, "validation_error", INVALID_JSON_MESSAGE)
+    return error_response(422, "validation_error", "Some fields are not valid.", fields=validation_fields(errors))
 
 
 async def http_exception_handler(_request: Request, exc: Exception) -> JSONResponse:

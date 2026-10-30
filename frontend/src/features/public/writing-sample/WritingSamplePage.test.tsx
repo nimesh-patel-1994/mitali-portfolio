@@ -1,9 +1,11 @@
 import { screen, within } from "@testing-library/react";
+import postcss from "postcss";
 import { describe, expect, it } from "vitest";
 import type { WritingSampleDetailRaw } from "@/api/types";
 import { mapWritingSampleDetail } from "@/app/content-mappers";
 import * as fx from "@/test/fixtures";
 import { createFixtureSource } from "@/test/fixture-source";
+import { readRepoFile } from "@/test/paths";
 import { renderRoute } from "@/test/render";
 import { formatPublishedDate } from "./WritingSamplePage";
 
@@ -62,5 +64,42 @@ describe("UI-T-055 writing-sample page", () => {
   it("unknown slug → not found", async () => {
     await renderRoute("/writing/missing-sample");
     expect(screen.getByRole("heading", { level: 1, name: "This page took a day off" })).toBeInTheDocument();
+  });
+});
+
+describe("UI-030 article-body headings (CHG-005, DES-021 note)", () => {
+  function rule(selector: string): Record<string, string> {
+    const css = readRepoFile("frontend", "src", "features", "public", "writing-sample", "WritingSamplePage.module.css");
+    const out: Record<string, string> = {};
+    postcss.parse(css).walkRules((r) => {
+      if (r.selector === selector) r.walkDecls((d) => void (out[d.prop] = d.value));
+    });
+    return out;
+  }
+
+  it("h2 = --text-h3 display uppercase; h3 = --text-statement body bold; h4 = --text-label display uppercase", () => {
+    expect(rule("article .body h2")).toMatchObject({
+      "font-family": "var(--font-display)",
+      "font-size": "var(--text-h3)",
+      "text-transform": "uppercase",
+    });
+    expect(rule("article .body h3")).toMatchObject({
+      "font-family": "var(--font-body)",
+      "font-size": "var(--text-statement)",
+      "font-weight": "var(--text-statement-weight)",
+      "text-transform": "none",
+    });
+    expect(rule("article .body h4")).toMatchObject({
+      "font-family": "var(--font-display)",
+      "font-size": "var(--text-label)",
+      "text-transform": "uppercase",
+    });
+  });
+
+  it("body headings are rendered inside the article body (one h1 on the page)", async () => {
+    await renderSample();
+    const main = screen.getByRole("main");
+    expect(main.querySelector("article")).not.toBeNull();
+    expect(within(main).getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 });

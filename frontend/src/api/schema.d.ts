@@ -28,7 +28,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Site bundle (public settings + profile + server time used as the build snapshot) */
+        /**
+         * Site bundle (public settings + profile + server time used as the build snapshot)
+         * @description CHG-005: settings now include contact_promise and footer_rights_line (additive response fields).
+         */
         get: operations["getPublicSite"];
         put?: never;
         post?: never;
@@ -959,7 +962,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description CHG-005: response includes contact_promise and footer_rights_line. */
         get: operations["getAdminSettings"];
+        /**
+         * @description CHG-005: request requires contact_promise and footer_rights_line (1..200 chars, not blank after trimming);
+         *     invalid values return 422 with fields.contact_promise / fields.footer_rights_line.
+         */
         put: operations["updateAdminSettings"];
         post?: never;
         delete?: never;
@@ -1072,6 +1080,10 @@ export interface components {
             booking_url: string | null;
             social_links: components["schemas"]["SocialLink"][];
             footer_signoff: string;
+            /** @description Promise line under the Contact page heading; plain text (CHG-005) */
+            contact_promise: string;
+            /** @description Rights line in the footer bottom bar; plain text (CHG-005) */
+            footer_rights_line: string;
         };
         VisionBlock: {
             heading: string;
@@ -1534,6 +1546,16 @@ export interface components {
             booking_url: string | null;
             social_links: components["schemas"]["SocialLink"][];
             footer_signoff: string;
+            /**
+             * @description Promise line under the Contact page heading; plain text, trimmed, must not be blank (CHG-005).
+             *     Initial value: "Tell me what you're working on. I reply to every enquiry within two working days."
+             */
+            contact_promise: string;
+            /**
+             * @description Rights line in the footer bottom bar; plain text, trimmed, must not be blank (CHG-005).
+             *     Initial value: "All rights reserved. Words, as always, are my own."
+             */
+            footer_rights_line: string;
             /**
              * Format: email
              * @description Stored only; no email is sent (out of scope)

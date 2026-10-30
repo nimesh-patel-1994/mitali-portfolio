@@ -240,10 +240,12 @@ export function EnquiryForm({ contactEmail, submit = submitEnquiry }: EnquiryFor
           <select
             {...register("enquiry_type")}
             disabled={submitting}
+            required
             aria-required="true"
             aria-describedby={describedBy("enquiry_type")}
             className={cx(styles.input, styles.select)}
           >
+            <option value="">{enquiryForm.enquiryTypePlaceholder}</option>
             {enquiryTypes.map((value) => (
               <option key={value} value={value}>
                 {enquiryTypeLabels[value]}

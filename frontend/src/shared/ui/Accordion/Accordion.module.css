@@ -83,7 +83,7 @@
 }
 
 .icon {
-  font-size: var(--space-5);
+  font-size: var(--text-statement); /* icon size (1em) from a type token, ~24 px */
   color: var(--accent-on-surface);
 }
 

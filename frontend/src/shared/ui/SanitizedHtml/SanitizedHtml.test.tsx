@@ -44,6 +44,7 @@ describe("UI-T-030 SanitizedHtml (SEC-UI-001)", () => {
     const users = sourceFiles(SRC_DIR)
       .filter((file) => /^import\s[^;]*\btrustApiSanitizedHtml\b/m.test(readFileSync(file, "utf8")))
       .map((file) => relative(SRC_DIR, file).split(sep).join("/"));
-    expect(users).toEqual(["app/content-mappers.ts"]);
+    // SEC-UI-001: the public content mappers and the admin `previewAdminMarkdown` mapper only.
+    expect(users.sort()).toEqual(["app/content-mappers.ts", "features/admin/markdown/preview-mapper.ts"]);
   });
 });

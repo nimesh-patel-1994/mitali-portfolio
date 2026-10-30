@@ -1,17 +1,18 @@
 /**
  * Mobile menu (UI-020, REQ-003; our design per DES-040). Shown below 810 px (CSS hides the trigger from tablet up).
- * - "Menu" button with `aria-expanded` / `aria-controls` opens a full-screen dark dialog
+ * - "Menu" button with `aria-expanded` (and `aria-controls` while the dialog exists) opens a full-screen dark dialog
  *   (`role="dialog" aria-modal="true" aria-label="Menu"`) rendered in a portal on <body>.
  * - Focus moves to the first link; Tab and Shift+Tab are trapped; Escape or the close button closes it and returns
  *   focus to the Menu button. Selecting a link closes it and navigates; any route change closes it; growing past
  *   810 px closes it.
  * - While open, every other child of <body> is `inert` and page scrolling is locked (`data-scroll-locked` on <html>,
  *   styled in global.css; no inline styles).
+ * - Links are NavLinks, so the current section is marked like in the header (Work is current on /work/<slug>).
  * Nothing is rendered in the dialog on the server (it starts closed), so hydration is unaffected.
  */
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
-import { Link, useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import { nav } from "@/features/public/content/copy";
 import { BookCallLink } from "@/shared/ui/Button/BookCallLink";
 import { CloseIcon, MenuIcon } from "@/shared/ui/Icon/Icon";
@@ -150,7 +151,7 @@ export function MobileMenu({ bookingUrl, className }: MobileMenuProps) {
         type="button"
         className={cx(styles.trigger, className)}
         aria-expanded={open}
-        aria-controls={dialogId}
+        aria-controls={open ? dialogId : undefined}
         onClick={toggle}
       >
         <MenuIcon className={styles.triggerIcon} />
@@ -180,14 +181,9 @@ export function MobileMenu({ bookingUrl, className }: MobileMenuProps) {
               <ul className={styles.list}>
                 {MENU_LINKS.map((link) => (
                   <li key={link.to}>
-                    <Link
-                      to={link.to}
-                      className={styles.link}
-                      aria-current={pathname === link.to ? "page" : undefined}
-                      onClick={() => close(false)}
-                    >
+                    <NavLink to={link.to} className={styles.link} onClick={() => close(false)}>
                       {link.label}
-                    </Link>
+                    </NavLink>
                   </li>
                 ))}
               </ul>

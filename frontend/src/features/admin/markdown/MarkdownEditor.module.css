@@ -1,0 +1,63 @@
+@import "../../../styles/media.css";
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.panes {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Below 1200 px only the selected tab's pane is shown. */
+@media not all and (--bp-desktop) {
+  .pane:not([data-active]) {
+    display: none;
+  }
+}
+
+.textarea {
+  min-height: calc(10 * var(--space-6));
+}
+
+.preview {
+  padding: var(--space-4);
+  border: var(--hairline) solid var(--divider);
+  background-color: var(--color-white);
+  overflow-x: auto;
+}
+
+.previewLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+}
+
+.prose {
+  max-width: none;
+}
+
+/* Desktop: editor and preview side by side, no tabs. */
+@media (--bp-desktop) {
+  .tabs {
+    display: none;
+  }
+
+  .panes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

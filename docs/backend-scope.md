@@ -18,7 +18,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
 
 ### Foundation
 
-- BE-001 [IN-PROGRESS 2026-10-29 16:59] Project skeleton, dependencies and configuration
+- BE-001 [IMPLEMENTED 2026-10-30 18:36] Project skeleton, dependencies and configuration
   - Implements: REQ-072, REQ-NFR-006, REQ-NFR-008, TS-001
   - Files/modules expected: `pyproject.toml`, `uv.lock` (Python 3.12; dependencies of SD-001, SD-011 and TS-001:
     fastapi, pydantic v2, pydantic-settings, sqlalchemy[asyncio] 2.0, asyncpg, alembic, argon2-cffi, Pillow, defusedxml,
@@ -33,7 +33,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     with credentials); `.env.example` holds every `Settings` key with placeholder values only; no `os.environ` access
     outside `core/config.py`; all dependencies are open source (REQ-NFR-008).
 
-- BE-002 [IN-PROGRESS 2026-10-29 16:59] Data model and initial migration
+- BE-002 [IMPLEMENTED 2026-10-30 18:36] Data model and initial migration
   - Implements: REQ-002, REQ-004, REQ-006, REQ-011, REQ-012, REQ-013, REQ-014, REQ-015, REQ-020, REQ-021, REQ-023,
     REQ-030, REQ-031, REQ-040, REQ-041, REQ-042, REQ-043, REQ-052, REQ-060, REQ-061, REQ-063, REQ-064, REQ-065, REQ-066,
     REQ-067, REQ-NFR-005, TS-002
@@ -46,7 +46,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `alembic upgrade head` works on an empty database and `alembic downgrade base` removes everything; the offline SQL
     (`alembic upgrade head --sql`) has been reviewed; `alembic check` reports no drift between models and migration.
 
-- BE-003 [IN-PROGRESS 2026-10-29 16:59] Error envelope, exception handlers, pagination and request-size limits
+- BE-003 [IMPLEMENTED 2026-10-30 18:36] Error envelope, exception handlers, pagination and request-size limits
   - Implements: REQ-042, REQ-065, REQ-066, REQ-NFR-005, TS-003
   - Files/modules expected: `app/core/errors.py` (`AppError(status, code, message, fields=None)` plus named subclasses or
     factories for every code in the contract's `Error.code` enum; handlers for `AppError`, `RequestValidationError`,
@@ -56,7 +56,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `{ "error": { "code", "message", "fields"? } }`; validation `fields` keys are dotted paths without the `body.` /
     `query.` prefix; 500 responses carry a generic message and the request id only; pagination follows TS-003 point 3.
 
-- BE-004 [IN-PROGRESS 2026-10-29 16:59] Middleware: request id, structured logging, Origin check, security headers
+- BE-004 [IMPLEMENTED 2026-10-30 18:36] Middleware: request id, structured logging, Origin check, security headers
   - Implements: REQ-060, REQ-NFR-005, TS-003
   - Files/modules expected: `app/core/logging.py` (JSON formatter, `request_id` contextvar), `app/core/middleware.py`
     (request id + access log, Origin/Referer check for non-GET `/api/admin/*`), `app/core/headers.py` (CSP and the header
@@ -66,7 +66,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `Origin` (or `Referer` origin) is missing or not in `ALLOWED_ORIGINS` get 403 `origin_rejected`; no CORS middleware is
     installed; the final header values are aligned with `security.md` once it exists.
 
-- BE-005 [IN-PROGRESS 2026-10-29 16:59] Health endpoint and `/media` static serving
+- BE-005 [IMPLEMENTED 2026-10-30 18:36] Health endpoint and `/media` static serving
   - Implements: REQ-071, REQ-NFR-004, REQ-NFR-006, TS-001, TS-003
   - Files/modules expected: `app/api/routers/public/health.py` (`getHealth`), `app/core/static.py` (`MediaFiles`, a
     `StaticFiles` subclass adding headers per TS-003 point 7).
@@ -77,9 +77,11 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
 
 ### Public API
 
-- BE-006 [IN-PROGRESS 2026-10-29 20:10] Public read-only content API
+- BE-006 [IMPLEMENTED 2026-10-30 18:36] (definition updated 2026-10-30 05:08, CHG-005) Public read-only content API
   - Implements: REQ-002, REQ-004, REQ-006, REQ-011, REQ-012, REQ-013, REQ-014, REQ-015, REQ-020, REQ-021, REQ-022,
-    REQ-023, REQ-030, REQ-031, REQ-040, REQ-041, REQ-050, TS-004
+    REQ-023, REQ-030, REQ-031, REQ-040, REQ-041, REQ-042, REQ-050, REQ-065, TS-004, TS-013
+  - CHG-005: `getPublicSite` (`CHANGED` in the contract) also returns `settings.contact_promise` and
+    `settings.footer_rights_line` (additive; built in batch 3 together with BE-019).
   - Operations: `getPublicSite`, `listPublicCaseStudies`, `getPublicCaseStudy`, `listPublicWritingSamples`,
     `getPublicWritingSample`, `listPublicServices`, `listPublicEngagementModels`, `listPublicTestimonials`,
     `listPublicFaqGroups`, `listPublicFaqPreview`, `listPublicValues`, `listPublicProcessSteps`.
@@ -93,7 +95,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `notification_email`; `is_sample` flags are passed through; unknown/unpublished slug → 404 `not_found`; unknown
     `format` → 422; list endpoints run a fixed number of queries regardless of row count.
 
-- BE-007 [IN-PROGRESS 2026-10-29 20:10] Contact enquiry endpoint and DB-backed rate limiter
+- BE-007 [IMPLEMENTED 2026-10-30 18:36] Contact enquiry endpoint and DB-backed rate limiter
   - Implements: REQ-042, REQ-043, REQ-NFR-005, TS-007
   - Operation: `createEnquiry`.
   - Files/modules expected: `app/api/routers/public/enquiries.py`, `app/schemas/enquiry.py` (`EnquiryCreate` with trimmed
@@ -107,7 +109,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
 
 ### Admin authentication
 
-- BE-008 [IN-PROGRESS 2026-10-29 20:10] Admin login, logout, me and server-side sessions
+- BE-008 [IMPLEMENTED 2026-10-30 18:36] Admin login, logout, me and server-side sessions
   - Implements: REQ-060, REQ-NFR-005, TS-008
   - Operations: `adminLogin`, `adminLogout`, `getAdminMe`.
   - Files/modules expected: `app/api/routers/admin/auth.py`, `app/services/auth.py`, `app/core/security.py`
@@ -120,7 +122,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `mp_csrf` (`SameSite=Strict; Path=/`, not HttpOnly) are set; only hashes of the tokens are stored; me returns
     `AdminSession` including `csrf_token`; logout deletes the session row, expires both cookies and returns 204.
 
-- BE-009 [IN-PROGRESS 2026-10-29 20:10] Session and CSRF dependencies applied to every admin route
+- BE-009 [IMPLEMENTED 2026-10-30 18:36] Session and CSRF dependencies applied to every admin route
   - Implements: REQ-060, REQ-NFR-005, TS-008
   - Files/modules expected: `app/api/deps.py` (`get_current_admin`, `require_csrf`), `app/api/routers/admin/__init__.py`
     (one `APIRouter(prefix="/api/admin", dependencies=[Depends(get_current_admin)])` that all admin routers except auth
@@ -131,7 +133,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `csrf_token_hash`, constant-time) with 403 `csrf_failed`; protection is deny-by-default (a new admin route is
     protected without per-route code).
 
-- BE-010 [IN-PROGRESS 2026-10-29 20:10] Login throttle
+- BE-010 [IMPLEMENTED 2026-10-30 18:36] Login throttle
   - Implements: REQ-061, TS-008, SD-010
   - Files/modules expected: `app/services/rate_limit.py` (functions `check_login_block`, `register_login_failure`,
     `reset_login_buckets`, `cleanup_old_counters`), used by `services/auth.py`.
@@ -140,7 +142,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     gets 429 `too_many_attempts` "Too many attempts. Try again in 15 minutes." with `Retry-After`; success resets both
     buckets; rows older than 1 day are deleted opportunistically on login.
 
-- BE-011 [IN-PROGRESS 2026-10-29 20:10] Admin CLI: `create-admin` and `reset-password`
+- BE-011 [IMPLEMENTED 2026-10-30 18:36] Admin CLI: `create-admin` and `reset-password`
   - Implements: REQ-062, TS-009
   - Files/modules expected: `app/cli.py` (`argparse` subcommands `create-admin`, `reset-password`, `seed`; `getpass`
     prompts twice; `--password-stdin` for tests), `app/services/auth.py` (`create_admin`, `reset_password`,
@@ -153,7 +155,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
 
 ### Admin content
 
-- BE-012 [IN-PROGRESS 2026-10-29 20:10] Shared content services: ordering, publishing marker, slugs, sample flag
+- BE-012 [IMPLEMENTED 2026-10-30 18:36] Shared content services: ordering, publishing marker, slugs, sample flag
   - Implements: REQ-052, REQ-063, REQ-064, REQ-067, TS-010
   - Files/modules expected: `app/services/ordering.py` (`next_position(scope)`, `reorder(scope, ids)` with
     `SELECT … FOR UPDATE` on the scope and exact-set check → 422 `order_mismatch`), `app/services/publishing.py`
@@ -167,7 +169,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     changes and media uploads do not; `updated_at` is set by the service on update; `order` routes are registered before
     `/{id}` routes.
 
-- BE-013 [NEW 2026-10-29 16:06] Admin CRUD: case studies with nested results and gallery images
+- BE-013 [IMPLEMENTED 2026-10-30 18:36] Admin CRUD: case studies with nested results and gallery images
   - Implements: REQ-063, REQ-067, REQ-023, TS-010, TS-012
   - Operations: `listAdminCaseStudies`, `createAdminCaseStudy`, `reorderAdminCaseStudies`, `getAdminCaseStudy`,
     `updateAdminCaseStudy`, `deleteAdminCaseStudy`, `createAdminCaseStudyResult`, `reorderAdminCaseStudyResults`,
@@ -182,7 +184,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     results and images, sets linked testimonials' `case_study_id` to null, keeps media rows; results carry their own
     `is_sample`.
 
-- BE-014 [NEW 2026-10-29 16:06] Admin CRUD: writing samples
+- BE-014 [IMPLEMENTED 2026-10-30 18:36] Admin CRUD: writing samples
   - Implements: REQ-064, REQ-067, REQ-031, REQ-030, TS-010, TS-012
   - Operations: `listAdminWritingSamples`, `createAdminWritingSample`, `reorderAdminWritingSamples`,
     `getAdminWritingSample`, `updateAdminWritingSample`, `deleteAdminWritingSample`.
@@ -191,7 +193,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
   - Done when: `body_html`, `word_count` and `reading_time_min` are computed from `body_md` on every save (read-only in
     the API); `format` limited to the six values; thumbnail alt required when a thumbnail is set; slug rules as BE-013.
 
-- BE-015 [NEW 2026-10-29 16:06] Admin CRUD: services, engagement models, testimonials, values, process steps
+- BE-015 [IMPLEMENTED 2026-10-30 18:36] Admin CRUD: services, engagement models, testimonials, values, process steps
   - Implements: REQ-064, REQ-012, REQ-013, REQ-015, REQ-040, TS-010
   - Operations: `list/create/reorder/get/update/delete` `AdminService(s)`, `AdminEngagementModel(s)`,
     `AdminTestimonial(s)`, `AdminValue(s)`, `AdminProcessStep(s)` (30 operations, see contract tag `admin-content`).
@@ -202,7 +204,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `cta_target` in `booking|contact`; testimonial `case_study_id` must reference an existing case study (422
     `fields.case_study_id`) or be null; values are stored in `core_values` while the path stays `/values`.
 
-- BE-016 [NEW 2026-10-29 16:06] Admin CRUD: FAQ categories and FAQs
+- BE-016 [IMPLEMENTED 2026-10-30 18:36] Admin CRUD: FAQ categories and FAQs
   - Implements: REQ-064, REQ-006, REQ-041, TS-010
   - Operations: `listAdminFaqCategories`, `createAdminFaqCategory`, `reorderAdminFaqCategories`, `getAdminFaqCategory`,
     `updateAdminFaqCategory`, `deleteAdminFaqCategory`, `listAdminFaqs`, `createAdminFaq`, `reorderAdminFaqs`,
@@ -214,7 +216,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     category appends it at the end of the target; `listAdminFaqs` orders by category position then FAQ position; unknown
     `category_id` → 422 `fields.category_id`; duplicate category name handled as stated in open question BQ-1.
 
-- BE-017 [NEW 2026-10-29 16:06] Media upload pipeline
+- BE-017 [IMPLEMENTED 2026-10-30 18:36] Media upload pipeline
   - Implements: REQ-063, REQ-064, REQ-065, REQ-NFR-004, TS-011, SD-008
   - Operations: `uploadAdminMedia`, `listAdminMedia`, `deleteAdminMedia`.
   - Files/modules expected: `app/api/routers/admin/media.py`, `app/services/media/{upload.py,sniff.py,raster.py,svg.py,
@@ -227,7 +229,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     files removed in `finally`; written files removed when the DB insert fails; list paginated newest first; delete
     refused with 409 `media_in_use` while referenced, otherwise row and files removed.
 
-- BE-018 [IN-PROGRESS 2026-10-29 20:10] Markdown rendering, sanitization and preview endpoint
+- BE-018 [IMPLEMENTED 2026-10-30 18:36] Markdown rendering, sanitization and preview endpoint
   - Implements: REQ-031, REQ-064, REQ-063, TS-012, SD-009
   - Operation: `previewAdminMarkdown`.
   - Files/modules expected: `app/services/markdown.py` (`render_markdown(md) -> RenderedMarkdown(html, word_count,
@@ -240,17 +242,25 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
 
 ### Admin site, enquiries, dashboard
 
-- BE-019 [IN-PROGRESS 2026-10-29 20:10] Profile and site settings
-  - Implements: REQ-065, REQ-002, REQ-004, REQ-014, REQ-040, TS-013
-  - Operations: `getAdminProfile`, `updateAdminProfile`, `getAdminSettings`, `updateAdminSettings`.
+- BE-019 [IMPLEMENTED 2026-10-30 18:36] (definition updated 2026-10-30 05:08, CHG-005) Profile and site settings
+  - Implements: REQ-065, REQ-002, REQ-004, REQ-014, REQ-040, REQ-042, TS-002, TS-013
+  - Operations: `getAdminProfile`, `updateAdminProfile`, `getAdminSettings`, `updateAdminSettings` (the last two
+    `CHANGED` in the contract); the public `settings` shape of `getPublicSite` changes with it (BE-006).
   - Files/modules expected: `app/api/routers/admin/{profile,settings}.py`, `app/services/site.py`,
-    `app/repositories/site.py`, `app/schemas/site.py`.
+    `app/repositories/site.py`, `app/schemas/site.py`, `app/models/singletons.py` (two new columns),
+    `migrations/versions/0002_settings_copy_fields.py` (TS-002; never edit `0001`).
   - Done when: GET never 404s (migration rows); input validation per TS-013 (bio 1..6 paragraphs, list limits, exactly
-    2 vision blocks, `booking_url` empty/null/`#`/absolute http(s), social links http(s) only, emails valid,
-    portrait alt required with a portrait); invalid input → 422 with field errors and nothing saved (REQ-065);
-    `content_changed_at` is read-only; both updates call `publishing.touch()`.
+    2 vision blocks, `booking_url` empty/null/`#`/absolute http(s) ≤ 500, social links http(s) only, emails valid,
+    portrait alt required with a portrait, `contact_promise` and `footer_rights_line` required, trimmed, 1..200 chars
+    and not blank); invalid input → 422 with field errors and nothing saved (REQ-065);
+    `content_changed_at` is read-only; both updates call `publishing.touch()`. Migration `0002` adds
+    `site_settings.contact_promise` and `site_settings.footer_rights_line` as `NOT NULL` with server defaults equal to
+    the initial copy in tech-spec section 3.2 plus the length CHECKs; the existing singleton row gets those values;
+    verified online on the dev and test databases (upgrade, `alembic check` with no drift, downgrade to `0001`,
+    upgrade); `getAdminSettings` and `getPublicSite` return both fields; `getPublicSite` still never returns
+    `notification_email`.
 
-- BE-020 [NEW 2026-10-29 16:06] Enquiry management
+- BE-020 [IMPLEMENTED 2026-10-30 18:36] Enquiry management
   - Implements: REQ-066, REQ-NFR-005, TS-014
   - Operations: `listAdminEnquiries`, `getAdminEnquiry`, `updateAdminEnquiryStatus`, `deleteAdminEnquiry`.
   - Files/modules expected: `app/api/routers/admin/enquiries.py`, `app/services/enquiries.py` (admin part),
@@ -259,7 +269,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     `(status, created_at DESC)` index; status PATCH accepts any of the three values and sets `status_changed_at`;
     delete is a hard delete (204); no `touch()`; enquiry fields never appear in logs.
 
-- BE-021 [NEW 2026-10-29 16:06] Admin dashboard and rebuild information
+- BE-021 [IMPLEMENTED 2026-10-30 18:36] Admin dashboard and rebuild information
   - Implements: REQ-052, REQ-066, TS-015
   - Operation: `getAdminDashboard`.
   - Files/modules expected: `app/api/routers/admin/dashboard.py`, `app/services/dashboard.py`,
@@ -271,7 +281,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
 
 ### Serving, seed, setup, quality
 
-- BE-022 [NEW 2026-10-29 16:06] Production-like serving of the pre-rendered frontend
+- BE-022 [IMPLEMENTED 2026-10-30 18:36] Production-like serving of the pre-rendered frontend
   - Implements: REQ-001, REQ-022, REQ-050, REQ-051, REQ-NFR-004, TS-003
   - Files/modules expected: `app/core/frontend.py` (catch-all GET handler registered last, only when
     `SERVE_FRONTEND=true`).
@@ -281,7 +291,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     (404); HTML `Cache-Control: no-cache`, `/assets/*` immutable; API and `/media` routes take precedence; with
     `SERVE_FRONTEND=false` unknown non-API paths return the JSON 404 envelope.
 
-- BE-023 [NEW 2026-10-29 16:06] Seed command with generated SVG placeholders
+- BE-023 [IMPLEMENTED 2026-10-30 18:36] Seed command with generated SVG placeholders
   - Implements: REQ-070, REQ-071, REQ-023, TS-017
   - Files/modules expected: `app/seed/data.py` (original dummy content, fictional clients, `example.com` addresses,
     stable `seed_key`s), `app/seed/images.py` (standard library only, deterministic SVG templates, text escaped with
@@ -294,7 +304,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     registered in `media_assets` (`source = 'seed'`, upsert by path) with no external references (no `http`, no
     `xlink:href` to outside, no web fonts); one transaction ending with `publishing.touch()`; markdown via BE-018.
 
-- BE-024 [IN-PROGRESS 2026-10-29 16:59] Database setup script (run by the user)
+- BE-024 [IMPLEMENTED 2026-10-30 18:36] Database setup script (run by the user)
   - Implements: REQ-072, REQ-NFR-006, TS-018, SD-005
   - Files/modules expected: `scripts/setup_db.ps1`, `scripts/setup_db.sql`, `.env.example` (from BE-001).
   - Done when: the script matches TS-018 steps 1-6: psql called by full path
@@ -306,7 +316,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     optional `.env` writing never overwrites without confirmation. **Agents never run this script, never ask for and
     never store the superuser password**; it is executed by the user (verification via BE-T-105/BE-T-106 afterwards).
 
-- BE-025 [IN-PROGRESS 2026-10-29 16:59] Test harness and contract check
+- BE-025 [IMPLEMENTED 2026-10-30 18:36] Test harness and contract check
   - Implements: REQ-NFR-006, TS-019, SD-006
   - Files/modules expected: `tests/conftest.py` (session fixture: refuses to run unless the database name in
     `TEST_DATABASE_URL` ends in `_test`; `alembic upgrade head`; truncates all tables except the migration singletons and
@@ -321,7 +331,7 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     names and required lists match `docs/api-contract.yaml`); coverage target of section 5 met; `pip-audit` and
     `bandit -r app` free of high findings.
 
-- BE-026 [NEW 2026-10-29 16:06] README backend sections
+- BE-026 [IMPLEMENTED 2026-10-30 18:36] README backend sections
   - Implements: REQ-072, REQ-NFR-006, TS-001
   - Files/modules expected: root `README.md` (backend part only; the frontend builder adds its own part).
   - Done when: it documents, in order: prerequisites (Python 3.12, uv, PostgreSQL 17 on port 5442, no Docker), running
@@ -599,6 +609,9 @@ the same services with their own session and transaction.
 | BE-T-107 | I | test harness safety | `TEST_DATABASE_URL` pointing at `mitali_portfolio` | Session fixture aborts before any migration or truncation | BE-025 |
 | BE-T-108 | U | `check_contract.py` | Current app; app with a route's status code changed (fixture app) | Exit 0; non-zero with a readable diff | BE-025, BE-002 |
 | BE-T-109 | U | README | Required commands present (`setup_db.ps1`, `alembic upgrade head`, `create-admin`, `seed`, `pg_dump -p 5442`) and no credential-like strings | Pass | BE-026 |
+| BE-T-110 | I | migration `0002` (CHG-005, added 2026-10-30 05:08) | Test DB at `0001` with the singleton `site_settings` row (custom `contact_email`); `upgrade head`; `alembic check`; `downgrade 0001`; `upgrade head` | After upgrade both columns exist, `NOT NULL`, the row holds exactly the initial texts of tech-spec section 3.2 (apostrophe intact) and its other values are unchanged; no drift; downgrade removes both columns and CHECKs only; second upgrade succeeds | BE-019, BE-002 |
+| BE-T-111 | I | `updateAdminSettings` (CHG-005, added 2026-10-30 05:08) | `contact_promise` / `footer_rights_line` each: missing; `""`; `"   "`; 201 chars; exactly 200 chars; `"  Text  "` | Missing, empty, blank and 201 chars → 422 with `fields.contact_promise` / `fields.footer_rights_line` and nothing saved; 200 chars → 200 and stored; padded text stored trimmed; `content_changed_at` advanced on success | BE-019 |
+| BE-T-112 | I | `getAdminSettings` / `getPublicSite` (CHG-005, added 2026-10-30 05:08) | Fresh migrated DB; then update both fields via `updateAdminSettings` | Both responses contain `contact_promise` and `footer_rights_line` with the initial texts, then with the updated texts; `getPublicSite` has no `notification_email` | BE-019, BE-006 |
 
 Coverage target: **≥ 90 % line and branch coverage** on `app/services/` and `app/core/` (auth, rate limiting, media,
 markdown, errors and frontend serving carry the risk), **≥ 85 % lines** on `app/` overall, measured with

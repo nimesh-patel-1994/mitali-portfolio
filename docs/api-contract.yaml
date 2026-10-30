@@ -54,8 +54,10 @@ paths:
       operationId: getPublicSite
       tags: [public]
       summary: Site bundle (public settings + profile + server time used as the build snapshot)
-      x-status: NEW 2026-10-29 16:06
-      x-implements: [REQ-002, REQ-004, REQ-014, REQ-040, REQ-050, REQ-052]
+      description: |
+        CHG-005: settings now include contact_promise and footer_rights_line (additive response fields).
+      x-status: CHANGED 2026-10-30 05:08
+      x-implements: [REQ-002, REQ-004, REQ-014, REQ-040, REQ-042, REQ-050, REQ-052, REQ-065]
       responses:
         "200":
           description: Site bundle
@@ -1746,8 +1748,10 @@ paths:
     get:
       operationId: getAdminSettings
       tags: [admin-site]
-      x-status: NEW 2026-10-29 16:06
-      x-implements: [REQ-065, REQ-002, REQ-004]
+      description: |
+        CHG-005: response includes contact_promise and footer_rights_line.
+      x-status: CHANGED 2026-10-30 05:08
+      x-implements: [REQ-065, REQ-002, REQ-004, REQ-042]
       security:
         - sessionCookie: []
       responses:
@@ -1760,8 +1764,11 @@ paths:
     put:
       operationId: updateAdminSettings
       tags: [admin-site]
-      x-status: NEW 2026-10-29 16:06
-      x-implements: [REQ-065, REQ-002, REQ-004]
+      description: |
+        CHG-005: request requires contact_promise and footer_rights_line (1..200 chars, not blank after trimming);
+        invalid values return 422 with fields.contact_promise / fields.footer_rights_line.
+      x-status: CHANGED 2026-10-30 05:08
+      x-implements: [REQ-065, REQ-002, REQ-004, REQ-042]
       security:
         - sessionCookie: []
           csrfHeader: []
@@ -2049,7 +2056,7 @@ components:
         url: { type: string, format: uri, maxLength: 500 }
     PublicSettings:
       type: object
-      required: [contact_email, booking_url, social_links, footer_signoff]
+      required: [contact_email, booking_url, social_links, footer_signoff, contact_promise, footer_rights_line]
       properties:
         contact_email: { type: string, format: email }
         booking_url:
@@ -2059,6 +2066,16 @@ components:
           type: array
           items: { $ref: "#/components/schemas/SocialLink" }
         footer_signoff: { type: string }
+        contact_promise:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Promise line under the Contact page heading; plain text (CHG-005)
+        footer_rights_line:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Rights line in the footer bottom bar; plain text (CHG-005)
     VisionBlock:
       type: object
       required: [heading, body]
@@ -2268,7 +2285,7 @@ components:
     BudgetRange:
       type: string
       description: Currency and labels to be confirmed (tech-spec open question 2)
-      enum: [under_1000, 1000_3000, 3000_7500, 7500_15000, over_15000, not_sure]
+      enum: ["under_1000", "1000_3000", "3000_7500", "7500_15000", "over_15000", "not_sure"]
     EnquiryStatus:
       type: string
       enum: [new, replied, archived]
@@ -2707,7 +2724,8 @@ components:
             updated_at: { type: string, format: date-time }
     SettingsInput:
       type: object
-      required: [contact_email, booking_url, social_links, footer_signoff, notification_email]
+      required: [contact_email, booking_url, social_links, footer_signoff, contact_promise, footer_rights_line,
+        notification_email]
       properties:
         contact_email: { type: string, format: email, maxLength: 254 }
         booking_url:
@@ -2719,6 +2737,20 @@ components:
           maxItems: 8
           items: { $ref: "#/components/schemas/SocialLink" }
         footer_signoff: { type: string, minLength: 1, maxLength: 120 }
+        contact_promise:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: |
+            Promise line under the Contact page heading; plain text, trimmed, must not be blank (CHG-005).
+            Initial value: "Tell me what you're working on. I reply to every enquiry within two working days."
+        footer_rights_line:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: |
+            Rights line in the footer bottom bar; plain text, trimmed, must not be blank (CHG-005).
+            Initial value: "All rights reserved. Words, as always, are my own."
         notification_email:
           type: [string, "null"]
           format: email

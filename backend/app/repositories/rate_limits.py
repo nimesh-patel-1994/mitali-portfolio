@@ -8,10 +8,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Any
 
-from sqlalchemy import Table, and_, case, delete, func, literal, or_, select, tuple_
+from sqlalchemy import Table, and_, case, delete, func, literal, literal_column, or_, select, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.elements import ColumnClause
 
 from app.models import RateLimitCounter
 
@@ -70,6 +72,11 @@ async def hit(
     return CounterState(count=int(row[0]), window_start=row.window_start, blocked_until=row.blocked_until, now=row.now)
 
 
+async def advisory_xact_lock(session: AsyncSession, lock_id: int) -> None:
+    """Transaction-level advisory lock (released at commit/rollback); waits while another transaction holds it."""
+    await session.execute(select(func.pg_advisory_xact_lock(lock_id)))
+
+
 async def latest_block(session: AsyncSession, keys: list[tuple[str, str]]) -> tuple[datetime | None, datetime]:
     """Latest ``blocked_until`` still in the future among ``(bucket, key_hash)`` pairs, and the DB time."""
     now = func.now()
@@ -87,5 +94,17 @@ async def delete_keys(session: AsyncSession, keys: list[tuple[str, str]]) -> Non
 
 
 async def delete_older_than(session: AsyncSession, age: timedelta) -> int:
-    result = await session.execute(delete(_table).where(_table.c.updated_at < func.now() - literal(age)))
+    """Delete stale counters, skipping rows another transaction has locked (a login or contact upsert in flight).
+
+    ``FOR UPDATE SKIP LOCKED`` on the selected row ids means the cleanup never waits on (or deadlocks with) a
+    concurrent upsert; skipped rows are removed by a later cleanup.
+    """
+    ctid: ColumnClause[Any] = literal_column("ctid")
+    stale = (
+        select(ctid)
+        .select_from(_table)
+        .where(_table.c.updated_at < func.now() - literal(age))
+        .with_for_update(skip_locked=True)
+    )
+    result = await session.execute(delete(_table).where(ctid.in_(stale)))
     return int(getattr(result, "rowcount", 0) or 0)

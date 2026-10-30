@@ -211,7 +211,14 @@ async def test_public_site_bundle_has_generated_at_and_no_notification_email(
     body = response.json()
     assert set(body) == {"generated_at", "settings", "profile"}
     assert datetime.fromisoformat(body["generated_at"]) >= before - timedelta(seconds=1)
-    assert set(body["settings"]) == {"contact_email", "booking_url", "social_links", "footer_signoff"}
+    assert set(body["settings"]) == {
+        "contact_email",
+        "booking_url",
+        "social_links",
+        "footer_signoff",
+        "contact_promise",
+        "footer_rights_line",
+    }
     assert "notification_email" not in response.text
     assert "owner@example.com" not in response.text
     assert body["settings"]["social_links"] == [{"label": "In", "url": "https://example.com/in"}]

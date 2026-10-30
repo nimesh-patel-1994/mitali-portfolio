@@ -13,6 +13,7 @@ import { createApiContentSource } from "@/app/content-source.api";
 import { createRecordingSource, type ContentSource } from "@/app/content-source";
 import { serializeErrors, serializeHydrationScript, type HydrationPayload } from "@/app/hydration";
 import { createRoutes, ROUTE_IDS } from "@/app/routes";
+export { LAZY_ROUTE_MODULES } from "@/app/routes";
 import { buildHead } from "@/features/public/seo/head";
 import { notFoundMeta, resolveMeta, type PageMeta } from "@/features/public/seo/meta";
 
@@ -34,6 +35,8 @@ export interface RenderResult {
   meta: PageMeta;
   hydrationScript: string;
   hydration: HydrationPayload;
+  /** Ids of the matched routes (outermost first); the pre-render adds asset links for lazy ones. */
+  routeIds: string[];
 }
 
 /** Origin only used to build the Request for the static handler; never appears in output. */
@@ -83,5 +86,6 @@ export async function render(url: string, options: RenderOptions): Promise<Rende
     meta,
     hydrationScript: serializeHydrationScript(hydration),
     hydration,
+    routeIds: context.matches.map((m) => m.route.id),
   };
 }

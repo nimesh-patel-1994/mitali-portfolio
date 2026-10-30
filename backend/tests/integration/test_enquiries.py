@@ -121,6 +121,19 @@ async def test_create_enquiry_honeypot_returns_201_stores_nothing_counts(
     assert "Riley" not in caplog.text
 
 
+@pytest.mark.be_t("BE-T-032")
+@pytest.mark.parametrize("website", ["x" * 5000, "spam" + chr(0) + "bot" + chr(7), "line one" + chr(10) + "two"])
+async def test_honeypot_of_any_length_or_content_still_gets_the_decoy(
+    db_app: FastAPI, db_session: AsyncSession, website: str
+) -> None:
+    """Review n5: an over-long or control-character honeypot value is a bot too: decoy 201, nothing stored."""
+    async with api_client(db_app, ip="198.51.100.14") as client:
+        response = await client.post(PATH, json=_valid(website=website))
+    assert response.status_code == 201, response.text
+    assert response.json() == {"received": True}
+    assert await _count(db_session, Enquiry) == 0
+
+
 @pytest.mark.be_t("BE-T-033")
 async def test_contact_rate_limit_per_ip_and_window(
     db_app: FastAPI,

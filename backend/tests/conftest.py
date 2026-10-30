@@ -36,7 +36,12 @@ from app.core.config import Settings, load_settings
 from app.db import create_engine
 from app.main import create_app
 from app.models import Base
-from app.models.singletons import PROFILE_PLACEHOLDER, SETTINGS_PLACEHOLDER
+from app.models.singletons import (
+    CONTACT_PROMISE_DEFAULT,
+    FOOTER_RIGHTS_LINE_DEFAULT,
+    PROFILE_PLACEHOLDER,
+    SETTINGS_PLACEHOLDER,
+)
 from tests import factories
 from tests.fixtures.images import write_samples
 from tests.harness import (
@@ -142,6 +147,8 @@ async def reset_database(connection: AsyncConnection) -> None:
     }
     settings_values = {
         **SETTINGS_PLACEHOLDER,
+        "contact_promise": CONTACT_PROMISE_DEFAULT,  # migration 0002 defaults
+        "footer_rights_line": FOOTER_RIGHTS_LINE_DEFAULT,
         "seed_key": None,
         "content_changed_at": text("now()"),
         "updated_at": text("now()"),

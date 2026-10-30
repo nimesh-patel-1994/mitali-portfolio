@@ -55,12 +55,25 @@ export default tseslint.config(
               message: "Only the typed response mappers may create SanitizedHtmlString (UI-014).",
             },
           ],
+          // SEC-010: Zod only through the wrappers that set `jitless: true` before any schema exists.
+          patterns: [
+            {
+              regex: "^zod(?:/.*)?$",
+              message: "Import z from @/shared/zod/classic or @/shared/zod/mini (jitless, CSP; SEC-010).",
+            },
+          ],
         },
       ],
     },
   },
   {
-    files: ["src/app/content-mappers.ts", "src/**/*.test.{ts,tsx}", "src/test/**"],
+    // The jitless Zod wrappers are the only modules allowed to import Zod itself (SEC-010).
+    files: ["src/shared/zod/classic.ts", "src/shared/zod/mini.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
+  {
+    // Typed response mappers allowed to brand backend-sanitized HTML (UI-014, SEC-UI-001).
+    files: ["src/app/content-mappers.ts", "src/features/admin/markdown/preview-mapper.ts", "src/**/*.test.{ts,tsx}", "src/test/**"],
     rules: { "no-restricted-imports": "off" },
   },
   {

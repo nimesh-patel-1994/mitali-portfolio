@@ -46,3 +46,7 @@ dist-ssr/
 # Raw reference capture contains third-party text (CLAUDE.md rule 11); only our reference-notes.md is committed
 .dev-pipeline/reference/analysis.json
 .dev-pipeline/reference/summary.md
+# Coverage data
+.coverage
+.coverage.*
+htmlcov/

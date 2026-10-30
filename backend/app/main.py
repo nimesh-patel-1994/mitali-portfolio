@@ -19,6 +19,7 @@ from app.api.routers.admin import login_router, protected_router
 from app.api.routers.public import PUBLIC_ROUTERS
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
+from app.core.frontend import install_frontend
 from app.core.headers import SecurityHeadersMiddleware
 from app.core.limits import BodySizeLimitMiddleware
 from app.core.logging import configure_logging
@@ -70,7 +71,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     register_exception_handlers(app)
 
-    # Routers (public, then admin; the frontend catch-all of BE-022 must stay last).
+    # Routers (public, then admin); the frontend catch-all of BE-022 is added after the /media mount.
     for router in PUBLIC_ROUTERS:
         app.include_router(router)
     app.include_router(login_router)
@@ -79,6 +80,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     media_root = settings.media_root_path
     media_root.mkdir(parents=True, exist_ok=True)
     app.mount("/media", MediaFiles(directory=str(media_root)), name="media")
+
+    # Production-like preview only (BE-022): registered last so API routes and /media always take precedence.
+    if settings.serve_frontend:
+        install_frontend(app, settings.frontend_dist_path)
 
     # Middleware, innermost first (Starlette wraps each new one around the previous ones):
     # request context -> security headers -> host check -> body size -> origin check -> catch-all -> routes.

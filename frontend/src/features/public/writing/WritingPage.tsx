@@ -98,8 +98,9 @@ export function WritingPage() {
             </div>
           ) : (
             <CardGrid>
-              {samples.map((sample) => (
-                <WritingSampleCard key={sample.slug} sample={sample} headingLevel={2} />
+              {samples.map((sample, index) => (
+                // The first card's image is the page's LCP element (REQ-NFR-004).
+                <WritingSampleCard key={sample.slug} sample={sample} headingLevel={2} priority={index === 0} />
               ))}
             </CardGrid>
           )}

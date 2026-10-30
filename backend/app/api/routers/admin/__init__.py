@@ -11,7 +11,24 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from app.api.deps import get_current_admin, require_csrf
-from app.api.routers.admin import auth, markdown, profile, settings
+from app.api.routers.admin import (
+    auth,
+    case_studies,
+    dashboard,
+    engagement_models,
+    enquiries,
+    faq_categories,
+    faqs,
+    markdown,
+    media,
+    process_steps,
+    profile,
+    services,
+    settings,
+    testimonials,
+    values,
+    writing_samples,
+)
 from app.api.routers.admin.auth import login_router
 
 ADMIN_PREFIX = "/api/admin"
@@ -20,7 +37,24 @@ protected_router = APIRouter(
     prefix=ADMIN_PREFIX,
     dependencies=[Depends(get_current_admin), Depends(require_csrf)],
 )
-for _router in (auth.router, markdown.router, profile.router, settings.router):
+for _router in (
+    auth.router,
+    dashboard.router,
+    case_studies.router,
+    writing_samples.router,
+    services.router,
+    engagement_models.router,
+    testimonials.router,
+    faq_categories.router,
+    faqs.router,
+    values.router,
+    process_steps.router,
+    media.router,
+    markdown.router,
+    profile.router,
+    settings.router,
+    enquiries.router,
+):
     protected_router.include_router(_router)
 
 __all__ = ["ADMIN_PREFIX", "login_router", "protected_router"]

@@ -1,0 +1,174 @@
+/* Admin skin (DES-042): dark-olive sidebar, light content area, Public Sans throughout, Antonio headings. */
+@import "../../../styles/media.css";
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100svh;
+  background-color: var(--color-neutral-50);
+  font-family: var(--font-body);
+}
+
+@media (--bp-tablet) {
+  .shell {
+    grid-template-columns: calc(3 * var(--space-9)) minmax(0, 1fr);
+  }
+}
+
+.checking {
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: var(--space-5);
+}
+
+.skip {
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  inset-block-start: calc(-1 * var(--space-9));
+  z-index: 60;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.skip:focus {
+  inset-block-start: var(--space-4);
+}
+
+/* Desktop-first visibility toggles: the sidebar hides below 810 px, the top bar from 810 px. */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  position: sticky;
+  inset-block-start: 0;
+  height: 100svh;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-4);
+  background-color: var(--color-dark);
+  --surface: var(--color-dark);
+}
+
+@media not all and (--bp-tablet) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-dark);
+}
+
+@media (--bp-tablet) {
+  .topbar {
+    display: none;
+  }
+}
+
+.menuButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: var(--hairline) solid var(--border);
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: calc(-1 * var(--space-3));
+  padding: var(--space-4);
+}
+
+.nav {
+  flex: 1;
+}
+
+.navList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-3);
+  border-inline-start: var(--space-1) solid transparent;
+  color: var(--color-cream);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  background-color: var(--color-primary-tint);
+}
+
+/* Active link: aria-current plus a green marker (fill on dark, DES-042). */
+.navLink[aria-current="page"] {
+  border-inline-start-color: var(--color-primary);
+  background-color: var(--color-primary-tint);
+  font-weight: var(--weight-semibold);
+}
+
+.badge {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.navFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-block-start: var(--space-4);
+  border-block-start: var(--hairline) solid var(--divider);
+}
+
+.logout {
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: var(--hairline) solid var(--border);
+  color: var(--color-cream);
+  text-align: start;
+  cursor: pointer;
+}
+
+.main {
+  min-width: 0;
+  padding: var(--space-5) var(--space-4) var(--space-9);
+  background-color: var(--color-neutral-50);
+}
+
+@media (--bp-tablet) {
+  .main {
+    padding: var(--space-6) var(--space-7) var(--space-9);
+  }
+}
+
+.main:focus {
+  outline: none;
+}

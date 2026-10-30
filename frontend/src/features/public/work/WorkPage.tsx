@@ -35,8 +35,9 @@ export function WorkPage() {
           </div>
         ) : (
           <CardGrid>
-            {data.case_studies.map((cs) => (
-              <CaseStudyCard key={cs.slug} caseStudy={cs} headingLevel={2} />
+            {data.case_studies.map((cs, index) => (
+              // The first card's image is the page's LCP element (REQ-NFR-004).
+              <CaseStudyCard key={cs.slug} caseStudy={cs} headingLevel={2} priority={index === 0} />
             ))}
           </CardGrid>
         )}

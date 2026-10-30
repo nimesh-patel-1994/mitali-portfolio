@@ -1,0 +1,48 @@
+# Start mitali-portfolio
+
+Double-click **`start.cmd`** in this folder. A Markdown file cannot run anything when clicked, so `start.cmd` is the
+launcher and this page explains it. It runs `start.ps1`, which:
+
+1. Checks that `backend\.env` exists and PostgreSQL 17 answers on port 5442.
+2. Installs dependencies on the first run (`python -m uv sync`, `npm ci`) and applies database migrations.
+3. Starts each app in its own window (an app already running on its port is reused, not started twice):
+
+   | App | Address | Window title |
+   |-----|---------|--------------|
+   | Backend API | http://127.0.0.1:8000 (`/api/health`) | `mitali-portfolio backend :8000` |
+   | Frontend (dev server) | http://localhost:5173 | `mitali-portfolio frontend :5173` |
+
+4. Waits until both answer, then opens these pages in **Brave**; if Brave is not installed, in **Chrome**; otherwise in
+   your default browser:
+   - Public site: http://localhost:5173/
+   - Admin: http://localhost:5173/admin
+
+**Stop:** close the two app windows.
+
+## Preview mode (production-like)
+
+```powershell
+.\start.cmd -Preview
+```
+
+Rebuilds the pre-rendered public site from the dev database (`npm run build:site`) and serves it from the backend the
+way it will run when hosted, then opens http://localhost:8000/ and http://localhost:8000/admin. Port 8000 must be free
+(close the dev backend window first). Use it to check SEO output, compression and the "site needs rebuilding" notice;
+run it again after editing content in the admin to see the changes on the public pages.
+
+## Options
+
+| Option | Effect |
+|--------|--------|
+| `-Preview` | Production-like mode (above) |
+| `-NoBrowser` | Start everything but do not open a browser |
+| `-TimeoutSeconds 180` | Wait longer for the apps to start (default 120) |
+
+## First-time setup (once)
+
+1. Database: `powershell -ExecutionPolicy Bypass -File backend\scripts\setup_db.ps1` (asks for passwords; writes
+   `backend\.env`).
+2. Admin account: `cd backend` then `python -m uv run python -m app.cli create-admin --email <your email>`.
+3. Sample content (optional): `python -m uv run python -m app.cli seed`.
+
+See `README.md` for details.

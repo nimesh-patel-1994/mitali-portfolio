@@ -1,24 +1,30 @@
 /**
- * Playwright E2E scaffold (TS-019, ui-scope 6.1). Not run in batch 1: the journeys need the backend serving the
- * pre-rendered `dist` (SERVE_FRONTEND=true) on the seeded test database. Start that first, then `npm run e2e`.
+ * Playwright E2E (TS-019 step 4, ui-scope 6.1). Global setup migrates + seeds the TEST database, creates a throwaway
+ * admin, starts the production-like preview (FastAPI with SERVE_FRONTEND=true on 127.0.0.1:8000, MEDIA_ROOT in a temp
+ * folder) and runs `npm run build:site` against it; teardown stops the server and removes the temp folder.
+ * Tests share one database, so they run serially in one worker. Viewports are set per test (360/390/810/1440).
  */
 import { defineConfig, devices } from "@playwright/test";
+import { BASE_URL, adminPassword } from "./e2e/support/harness";
 
-const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:8000";
+adminPassword();
 
 export default defineConfig({
   testDir: "./e2e",
+  testMatch: /.*\.e2e\.ts$/,
   fullyParallel: false,
+  workers: 1,
   retries: 0,
-  reporter: [["list"]],
+  timeout: 120_000,
+  expect: { timeout: 10_000 },
+  outputDir: `${process.env.E2E_OUT ?? "test-results"}/artifacts`,
+  reporter: [["list"], ["json", { outputFile: `${process.env.E2E_OUT ?? "test-results"}/e2e-results.json` }]],
+  globalSetup: "./e2e/support/global-setup.ts",
+  globalTeardown: "./e2e/support/global-teardown.ts",
   use: {
-    baseURL,
+    baseURL: BASE_URL,
     trace: "retain-on-failure",
+    screenshot: "only-on-failure",
   },
-  projects: [
-    { name: "mobile-360", use: { ...devices["Desktop Chrome"], viewport: { width: 360, height: 780 } } },
-    { name: "mobile-390", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 } } },
-    { name: "tablet-810", use: { ...devices["Desktop Chrome"], viewport: { width: 810, height: 1080 } } },
-    { name: "desktop-1440", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } }],
 });

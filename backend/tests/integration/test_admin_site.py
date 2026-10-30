@@ -1,4 +1,5 @@
-"""BE-018 preview endpoint (BE-T-088) and BE-019 profile/settings (BE-T-089..BE-T-091, SEC-BE-014 via the API)."""
+"""BE-018 preview endpoint (BE-T-088) and BE-019 profile/settings (BE-T-089..BE-T-091, BE-T-111, BE-T-112,
+SEC-BE-014 via the API)."""
 
 from __future__ import annotations
 
@@ -13,7 +14,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Profile, SiteSettings
-from app.models.singletons import PROFILE_PLACEHOLDER, SETTINGS_PLACEHOLDER
+from app.models.singletons import (
+    CONTACT_PROMISE_DEFAULT,
+    FOOTER_RIGHTS_LINE_DEFAULT,
+    PROFILE_PLACEHOLDER,
+    SETTINGS_PLACEHOLDER,
+)
 from app.services.markdown import render_markdown
 from tests import factories
 from tests.conftest import ALLOWED_ORIGIN, api_client
@@ -74,6 +80,8 @@ def _settings(**overrides: Any) -> dict[str, Any]:
         "booking_url": "https://booking.example.com/mitali",
         "social_links": [{"label": "LinkedIn", "url": "https://www.example.com/in/mitali"}],
         "footer_signoff": "Write soon",
+        "contact_promise": "I answer every message within two working days.",
+        "footer_rights_line": "All words fictional, all rights reserved.",
         "notification_email": "alerts@example.com",
     }
     body.update(overrides)
@@ -217,3 +225,72 @@ async def test_profile_unknown_portrait_media_is_422_field(
     assert response.status_code == 422
     assert set(response.json()["error"]["fields"]) == {"portrait_media_id"}
     assert await _changed_at(db_session) == before
+
+
+# ---------------------------------------------------------------------------------------------- CHG-005
+
+
+async def _copy_fields(session: AsyncSession) -> tuple[str, str, datetime]:
+    row = await _settings_row(session)
+    return row.contact_promise, row.footer_rights_line, row.content_changed_at
+
+
+@pytest.mark.be_t("BE-T-111")
+@pytest.mark.parametrize("field", ["contact_promise", "footer_rights_line"])
+@pytest.mark.parametrize("value", [None, "", "   ", "x" * 201, "two\nlines"])
+async def test_settings_copy_fields_invalid_values_are_422_and_nothing_saved(
+    admin_client: httpx.AsyncClient, db_session: AsyncSession, field: str, value: str | None
+) -> None:
+    body = _settings()
+    if value is None:
+        del body[field]
+    else:
+        body[field] = value
+    before = await _copy_fields(db_session)
+    response = await admin_client.put("/api/admin/settings", json=body)
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "validation_error"
+    assert set(response.json()["error"]["fields"]) == {field}
+    assert await _copy_fields(db_session) == before
+
+
+@pytest.mark.be_t("BE-T-111")
+@pytest.mark.parametrize("field", ["contact_promise", "footer_rights_line"])
+async def test_settings_copy_fields_accept_200_chars_and_store_trimmed(
+    admin_client: httpx.AsyncClient, db_session: AsyncSession, field: str
+) -> None:
+    before = await _changed_at(db_session)
+    exactly = "y" * 200
+    response = await admin_client.put("/api/admin/settings", json=_settings(**{field: exactly}))
+    assert response.status_code == 200, response.text
+    assert response.json()[field] == exactly
+    assert getattr(await _settings_row(db_session), field) == exactly
+    assert await _changed_at(db_session) > before
+
+    padded = await admin_client.put("/api/admin/settings", json=_settings(**{field: "  Text  "}))
+    assert padded.status_code == 200
+    assert padded.json()[field] == "Text"
+    assert getattr(await _settings_row(db_session), field) == "Text"
+
+
+@pytest.mark.be_t("BE-T-112")
+async def test_settings_copy_fields_in_admin_and_public_responses(admin_client: httpx.AsyncClient) -> None:
+    admin = (await admin_client.get("/api/admin/settings")).json()
+    public = (await admin_client.get("/api/public/site")).json()["settings"]
+    for body in (admin, public):
+        assert body["contact_promise"] == CONTACT_PROMISE_DEFAULT
+        assert body["footer_rights_line"] == FOOTER_RIGHTS_LINE_DEFAULT
+    assert "you're" in CONTACT_PROMISE_DEFAULT  # apostrophe intact end to end
+
+    saved = await admin_client.put(
+        "/api/admin/settings",
+        json=_settings(contact_promise="Replies within one day.", footer_rights_line="Rights line, updated."),
+    )
+    assert saved.status_code == 200, saved.text
+    admin = (await admin_client.get("/api/admin/settings")).json()
+    public = (await admin_client.get("/api/public/site")).json()["settings"]
+    for body in (admin, public):
+        assert body["contact_promise"] == "Replies within one day."
+        assert body["footer_rights_line"] == "Rights line, updated."
+    assert "notification_email" not in public
+    assert admin["notification_email"] == "alerts@example.com"

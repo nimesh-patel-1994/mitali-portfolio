@@ -63,10 +63,21 @@ describe("UI-T-039 Footer", () => {
     expect(within(footer()).getByRole("link", { name: /LinkedIn/ })).toBeInTheDocument();
   });
 
-  it("no site data (root error): quick links and rights line only", () => {
+  it("no site data (root error): quick links only", () => {
     renderWithRouter(<Footer site={undefined} />);
     expect(within(footer()).getAllByRole("link")).toHaveLength(5);
     expect(within(footer()).queryByText(/©/)).toBeNull();
+  });
+});
+
+describe("UI-T-123 Footer rights line from settings (CHG-005)", () => {
+  it("renders settings.footer_rights_line as literal text in the bottom bar; no static rights string", () => {
+    renderWithRouter(<Footer site={withSettings({ footer_rights_line: "Fixture rights line <b>x</b>" })} />);
+    const line = within(footer()).getByText("Fixture rights line <b>x</b>");
+    expect(line.tagName).toBe("P");
+    expect(footer().querySelector("b")).toBeNull();
+    expect(within(footer()).queryByText("All rights reserved. Words, as always, are my own.")).toBeNull();
+    expect(line.parentElement).toBe(within(footer()).getByText("© 2026 Mitali").parentElement);
   });
 });
 

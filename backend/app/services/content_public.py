@@ -73,6 +73,8 @@ def _public_settings(row: SiteSettings) -> schemas.PublicSettings:
         booking_url=row.booking_url,
         social_links=[schemas.SocialLink(label=str(link["label"]), url=str(link["url"])) for link in row.social_links],
         footer_signoff=row.footer_signoff,
+        contact_promise=row.contact_promise,
+        footer_rights_line=row.footer_rights_line,
     )
 
 

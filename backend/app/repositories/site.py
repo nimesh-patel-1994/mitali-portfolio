@@ -1,6 +1,7 @@
 """``profile`` and ``site_settings`` singleton rows (BE-019, BE-012 ``publishing.touch``).
 
-Both rows are created by migration ``0001`` (``id = 1``), so reads never miss. Updates are explicit column lists
+Both rows are created by migration ``0001`` (``id = 1``; ``0002`` adds the settings copy fields), so reads never
+miss. Updates are explicit column lists
 (no mass assignment); reads after an update use ``populate_existing`` so the returned row is current.
 """
 
@@ -32,7 +33,16 @@ PROFILE_COLUMNS = frozenset(
     }
 )
 SETTINGS_COLUMNS = frozenset(
-    {"contact_email", "booking_url", "social_links", "footer_signoff", "notification_email", "updated_at"}
+    {
+        "contact_email",
+        "booking_url",
+        "social_links",
+        "footer_signoff",
+        "contact_promise",
+        "footer_rights_line",
+        "notification_email",
+        "updated_at",
+    }
 )
 
 

@@ -14,6 +14,7 @@ import { RouterProvider } from "react-router/dom";
 import type { ContentSource } from "./app/content-source";
 import { createStaticContentSource } from "./app/content-source.static";
 import { readHydrationPayload, toHydrationState } from "./app/hydration";
+import { resolveLazyMatches } from "./app/lazy-routes";
 import { createRoutes } from "./app/routes";
 
 async function createContentSource(): Promise<ContentSource> {
@@ -30,6 +31,8 @@ async function start(): Promise<void> {
 
   const routes = createRoutes(await createContentSource());
   const payload = readHydrationPayload(document);
+  // Lazy page routes (Contact) must be loaded before the first render so hydration sees the full tree.
+  await resolveLazyMatches(routes, window.location.pathname);
 
   if (payload?.notFound) {
     // 404.html is served for any unknown URL; its markup was rendered for a probe path, so URL-dependent markup

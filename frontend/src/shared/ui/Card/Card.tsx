@@ -23,14 +23,22 @@ interface BaseCardProps {
   chips: ReactNode;
   summary: string;
   headingLevel: 2 | 3;
+  /** Above-the-fold LCP card (first card of a listing page): eager image with fetchpriority="high". */
+  priority?: boolean;
 }
 
-function BaseCard({ href, title, image, chips, summary, headingLevel }: BaseCardProps) {
+function BaseCard({ href, title, image, chips, summary, headingLevel, priority = false }: BaseCardProps) {
   const Heading = `h${headingLevel}` as const;
   return (
     <article className={styles.card}>
       <div className={styles.media}>
-        <ResponsiveImage image={image} sizes={CARD_IMAGE_SIZES} fallbackRatio={CARD_RATIO} className={styles.image} />
+        <ResponsiveImage
+          image={image}
+          sizes={CARD_IMAGE_SIZES}
+          fallbackRatio={CARD_RATIO}
+          priority={priority}
+          className={styles.image}
+        />
       </div>
       <div className={styles.header}>
         <Heading className={styles.title}>
@@ -48,9 +56,10 @@ function BaseCard({ href, title, image, chips, summary, headingLevel }: BaseCard
 export interface CaseStudyCardProps {
   caseStudy: CaseStudySummary;
   headingLevel?: 2 | 3;
+  priority?: boolean;
 }
 
-export function CaseStudyCard({ caseStudy, headingLevel = 3 }: CaseStudyCardProps) {
+export function CaseStudyCard({ caseStudy, headingLevel = 3, priority }: CaseStudyCardProps) {
   return (
     <BaseCard
       href={`/work/${caseStudy.slug}`}
@@ -59,6 +68,7 @@ export function CaseStudyCard({ caseStudy, headingLevel = 3 }: CaseStudyCardProp
       chips={<Chip>{caseStudy.campaign_type}</Chip>}
       summary={caseStudy.summary}
       headingLevel={headingLevel}
+      priority={priority}
     />
   );
 }
@@ -66,9 +76,10 @@ export function CaseStudyCard({ caseStudy, headingLevel = 3 }: CaseStudyCardProp
 export interface WritingSampleCardProps {
   sample: WritingSampleSummary;
   headingLevel?: 2 | 3;
+  priority?: boolean;
 }
 
-export function WritingSampleCard({ sample, headingLevel = 3 }: WritingSampleCardProps) {
+export function WritingSampleCard({ sample, headingLevel = 3, priority }: WritingSampleCardProps) {
   return (
     <BaseCard
       href={`/writing/${sample.slug}`}
@@ -82,6 +93,7 @@ export function WritingSampleCard({ sample, headingLevel = 3 }: WritingSampleCar
       }
       summary={sample.excerpt}
       headingLevel={headingLevel}
+      priority={priority}
     />
   );
 }

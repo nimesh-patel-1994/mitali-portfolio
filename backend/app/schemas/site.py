@@ -5,16 +5,25 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Annotated, Final
+from typing import Annotated
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
-from app.schemas.base import BookingUrl, Email, HttpUrlText, InputModel, MultiLine, SingleLine, StringList
+from app.schemas.base import (
+    BookingUrl,
+    Email,
+    HttpUrlText,
+    InputModel,
+    MultiLine,
+    SingleLine,
+    StringList,
+    alt_for_media,
+)
 from app.schemas.images import ImageRef
 
-ALT_REQUIRED_MESSAGE: Final = "Describe the image (alt text is required when an image is set)."
-
 BioParagraph = Annotated[MultiLine, Field(min_length=1, max_length=1200)]
+# CHG-005: plain text, trimmed (InputModel), 1..200 characters, so blank input fails ``min_length`` after stripping.
+CopyLine = Annotated[SingleLine, Field(min_length=1, max_length=200)]
 
 
 class VisionBlockInput(InputModel):
@@ -37,9 +46,7 @@ class ProfileInput(InputModel):
     @field_validator("portrait_alt")
     @classmethod
     def _alt_required_with_portrait(cls, value: str | None, info: ValidationInfo) -> str | None:
-        if info.data.get("portrait_media_id") is not None and not value:
-            raise ValueError(ALT_REQUIRED_MESSAGE)
-        return value or None
+        return alt_for_media(info.data.get("portrait_media_id"), value)
 
 
 class SocialLinkInput(InputModel):
@@ -52,6 +59,8 @@ class SettingsInput(InputModel):
     booking_url: BookingUrl = Field(description='Absolute http(s) URL, "#" or null')
     social_links: Annotated[list[SocialLinkInput], Field(max_length=8)]
     footer_signoff: Annotated[SingleLine, Field(min_length=1, max_length=120)]
+    contact_promise: CopyLine = Field(description="Promise line under the Contact page heading (CHG-005)")
+    footer_rights_line: CopyLine = Field(description="Rights line in the footer bottom bar (CHG-005)")
     notification_email: Email | None = Field(description="Stored only; no email is sent (out of scope)")
 
 
@@ -88,6 +97,8 @@ class AdminSettings(BaseModel):
     booking_url: str | None
     social_links: list[AdminSocialLink]
     footer_signoff: str
+    contact_promise: str
+    footer_rights_line: str
     notification_email: str | None
     content_changed_at: datetime = Field(json_schema_extra={"readOnly": True})
     updated_at: datetime

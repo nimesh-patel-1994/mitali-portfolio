@@ -1,0 +1,12 @@
+.category {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.categoryName {
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+  letter-spacing: var(--text-h3-tracking);
+}

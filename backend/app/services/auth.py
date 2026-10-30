@@ -1,8 +1,9 @@
 """Admin authentication, sessions, CSRF and the CLI account functions (BE-008..BE-011, TS-008, TS-009).
 
-Login (TS-008 step 1): normalise email → throttle check (before any Argon2 work) → verify in the threadpool (dummy
-hash for unknown emails) → on failure count both buckets, 401 → on success reset buckets, rehash when needed, delete
-the admin's expired sessions, create a new session (only SHA-256 hashes stored), set ``last_login_at``.
+Login (TS-008 step 1): normalise email → short locked transaction: throttle check and reserve (count) the attempt in
+both buckets, before any Argon2 work → verify in the threadpool with no connection held (dummy hash for unknown
+emails); a failure is already counted, 401 → on success reset buckets, rehash when needed, delete the admin's
+expired sessions, create a new session (only SHA-256 hashes stored), set ``last_login_at``.
 
 Passwords, tokens and emails are never logged; audit events carry the event name only (SEC-008).
 """
@@ -76,50 +77,69 @@ async def login(
 
     async with session.begin():
         await rate_limit.cleanup_old_counters(session)
-        retry_after = await rate_limit.check_login_block(session, keys)
+
+    # 1. Reserve the attempt (short transaction under the per-key advisory locks): refuse while blocked, otherwise
+    #    count it in both buckets before any Argon2 work. Concurrent attempts are counted one after another, so at
+    #    most LOGIN_FAILURE_LIMIT of them per window get past this point (review m3/B-1, SEC-BE-006).
+    async with session.begin():
+        await rate_limit.lock_login_keys(session, keys)
+        retry_after = await rate_limit.reserve_login_attempt(session, keys)
+        admin = None if retry_after is not None else await admin_users.get_by_email(session, normalised)
+        admin_id = admin.id if admin is not None else None
+        stored_hash = admin.password_hash if admin is not None else None
     if retry_after is not None:
         audit("auth.login_blocked")
         raise TooManyAttemptsError(retry_after)
 
-    async with session.begin():
-        admin = await admin_users.get_by_email(session, normalised)
-        admin_id = admin.id if admin is not None else None
-        admin_email = admin.email if admin is not None else ""
-        stored_hash = admin.password_hash if admin is not None else None
-
-    password_ok = await run_in_threadpool(security.verify_password, stored_hash or security.dummy_hash(), password)
+    # 2. Verify with no transaction and no pooled connection held; the dummy hash is created and verified in the
+    #    same threadpool call for unknown emails, so both failure paths do equal work (review m2). A failure is
+    #    already counted by the reservation.
+    password_ok = await run_in_threadpool(security.verify_login_password, stored_hash, password)
     if admin_id is None or stored_hash is None or not password_ok:
-        async with session.begin():
-            await rate_limit.register_login_failure(session, keys)
         audit("auth.login_failed")
         raise InvalidCredentialsError()
 
-    new_hash: str | None = None
-    if security.needs_rehash(stored_hash):
-        new_hash = await run_in_threadpool(security.hash_password, password)
+    # 3. Success (short transaction): reset both buckets, rehash when needed, create the session.
+    new_hash = await run_in_threadpool(security.hash_password, password) if security.needs_rehash(stored_hash) else None
+    async with session.begin():
+        result = await _start_session(session, keys, admin_id, stored_hash, new_hash)
+    audit("auth.login_succeeded")
+    return result
 
+
+async def _start_session(
+    session: AsyncSession,
+    keys: rate_limit.LoginKeys,
+    admin_id: uuid.UUID,
+    verified_hash: str,
+    new_hash: str | None,
+) -> LoginResult:
+    now = utcnow()
+    # Locked re-read: a password reset that committed after verification changes the hash (and ends all sessions),
+    # so the password checked against the old hash must not start a session or overwrite the new hash.
+    admin = await admin_users.get_by_id_for_update(session, admin_id)
+    if admin is None or admin.password_hash != verified_hash:  # deleted or reset between verification and now
+        audit("auth.login_failed")
+        raise InvalidCredentialsError()
+    if new_hash is not None:
+        await admin_users.set_password_hash(session, admin_id, new_hash, now=now, changed=False)
     session_token = security.generate_token()
     csrf_token = security.generate_token()
-    now = utcnow()
     absolute_expires_at = now + ABSOLUTE_LIFETIME
-    async with session.begin():
-        await rate_limit.reset_login_buckets(session, keys)
-        if new_hash is not None:
-            await admin_users.set_password_hash(session, admin_id, new_hash, now=now, changed=False)
-        await sessions.delete_expired_for_admin(session, admin_id, now=now, idle_timeout=IDLE_TIMEOUT)
-        await sessions.insert(
-            session,
-            admin_user_id=admin_id,
-            token_hash=security.token_hash(session_token),
-            csrf_token_hash=security.token_hash(csrf_token),
-            now=now,
-            absolute_expires_at=absolute_expires_at,
-        )
-        await admin_users.set_last_login(session, admin_id, now)
-    audit("auth.login_succeeded")
+    await rate_limit.reset_login_buckets(session, keys)
+    await sessions.delete_expired_for_admin(session, admin_id, now=now, idle_timeout=IDLE_TIMEOUT)
+    await sessions.insert(
+        session,
+        admin_user_id=admin_id,
+        token_hash=security.token_hash(session_token),
+        csrf_token_hash=security.token_hash(csrf_token),
+        now=now,
+        absolute_expires_at=absolute_expires_at,
+    )
+    await admin_users.set_last_login(session, admin_id, now)
     return LoginResult(
         admin_session=AdminSession(
-            email=admin_email,
+            email=admin.email,
             csrf_token=csrf_token,
             idle_expires_at=now + IDLE_TIMEOUT,
             absolute_expires_at=absolute_expires_at,

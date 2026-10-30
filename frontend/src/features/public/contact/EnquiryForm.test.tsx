@@ -45,7 +45,7 @@ afterAll(() => server.close());
 async function openContact() {
   await renderRoute("/contact");
   const form = screen.getByRole("form", { name: "Enquiry form" });
-  return { form, user: userEvent.setup() };
+  return { form, user: userEvent.setup({ delay: null }) };
 }
 
 function field(name: RegExp | string): HTMLElement {
@@ -62,17 +62,23 @@ async function fillValid(user: ReturnType<typeof userEvent.setup>) {
   await user.type(emailField(), " asha@example.com ");
   await user.selectOptions(field(/^Enquiry type/), "seo_content");
   await user.selectOptions(field(/^Budget range/), "3000_7500");
-  await user.type(field(/^Company/), "Harbour Tea Co.");
-  await user.type(messageField(), "We need a content plan for a spring launch.");
+  // Not under test here: filled with one paste event each to keep the suite fast.
+  await user.click(field(/^Company/));
+  await user.paste("Harbour Tea Co.");
+  await user.click(messageField());
+  await user.paste("We need a content plan for a spring launch.");
 }
 
 describe("UI-T-060 contact form: submit empty", () => {
-  it("errors on Name, Email and Message; focus on Name; nothing sent", async () => {
+  it("errors on Name, Email, Enquiry type (left on the placeholder) and Message; focus on Name; nothing sent", async () => {
     const { user } = await openContact();
+    expect(field(/^Enquiry type/)).toHaveValue("");
     await user.click(submitButton());
     expect(nameField()).toHaveAttribute("aria-invalid", "true");
     expect(nameField()).toHaveAccessibleDescription("Enter your name.");
     expect(emailField()).toHaveAccessibleDescription("Enter your email address.");
+    expect(field(/^Enquiry type/)).toHaveAttribute("aria-invalid", "true");
+    expect(field(/^Enquiry type/)).toHaveAccessibleDescription("Choose what your enquiry is about.");
     expect(messageField()).toHaveAccessibleDescription(/Write a short message about your project\./);
     expect(document.activeElement).toBe(nameField());
     expect(requests).toHaveLength(0);
@@ -128,10 +134,21 @@ describe("UI-T-062 contact form: success", () => {
     const { user } = await openContact();
     await user.type(nameField(), "Asha");
     await user.type(emailField(), "asha@example.com");
+    await user.selectOptions(field(/^Enquiry type/), "content_strategy");
     await user.type(messageField(), "Hello");
     await user.click(submitButton());
     await screen.findByRole("heading", { name: "Message received" });
     expect(requests[0]).toMatchObject({ enquiry_type: "content_strategy", budget_range: null, company: null });
+  });
+
+  it("CHG-005: the placeholder is never sent; choosing it again after a valid choice is an error", async () => {
+    const { user } = await openContact();
+    await fillValid(user);
+    await user.selectOptions(field(/^Enquiry type/), "");
+    await user.click(submitButton());
+    expect(field(/^Enquiry type/)).toHaveAccessibleDescription("Choose what your enquiry is about.");
+    expect(document.activeElement).toBe(field(/^Enquiry type/));
+    expect(requests).toHaveLength(0);
   });
 });
 
@@ -266,10 +283,16 @@ describe("UI-T-067 contact form: server render and honeypot", () => {
 });
 
 describe("UI-T-068 contact form: selects and labels", () => {
-  it("6 enquiry types; optional budget with 6 ranges and no currency symbol; labels linked to fields", async () => {
+  it("7 enquiry-type options (placeholder first, selected, required); optional budget with 6 ranges; labels linked", async () => {
     await openContact();
     const type = field(/^Enquiry type/) as HTMLSelectElement;
+    expect(type.options).toHaveLength(7);
+    expect(type.options[0]).toHaveValue("");
+    expect(type.options[0]!.selected).toBe(true);
+    expect(type).toBeRequired();
+    expect(type).toHaveAccessibleName("Enquiry type (required)");
     expect(Array.from(type.options).map((o) => o.textContent)).toEqual([
+      "Choose one…",
       "Content strategy",
       "Copywriting",
       "SEO content",
@@ -298,6 +321,23 @@ describe("UI-T-068 contact form: selects and labels", () => {
     expect(emailField()).toHaveAttribute("type", "email");
     expect(emailField()).toHaveAttribute("autocomplete", "email");
     expect(screen.getByText(/I use your details only to reply/)).toBeInTheDocument();
+  });
+});
+
+describe("UI-T-124 contact promise from settings (CHG-005)", () => {
+  it("shows settings.contact_promise as plain text under the h1; the old static promise is gone", async () => {
+    const site = {
+      ...fx.site,
+      settings: { ...fx.site.settings, contact_promise: "Fixture promise line <b>x</b>" },
+    };
+    await renderRoute("/contact", createFixtureSource({ site: () => site }));
+    const main = screen.getByRole("main");
+    const promise = within(main).getByText("Fixture promise line <b>x</b>");
+    expect(promise.tagName).toBe("P");
+    expect(promise.querySelector("b")).toBeNull();
+    const h1 = within(main).getByRole("heading", { level: 1 });
+    expect(h1.compareDocumentPosition(promise) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(main).queryByText(/I reply to every enquiry within two working days/)).toBeNull();
   });
 });
 

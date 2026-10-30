@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import logging
 import re
+import threading
 import uuid
 from collections.abc import Awaitable, Callable
 from datetime import timedelta
@@ -129,6 +130,32 @@ async def test_admin_login_wrong_password_and_unknown_email_identical(
     assert len(calls) == 2
     assert calls[1] == security.dummy_hash()
     assert "set-cookie" not in wrong.headers
+
+
+@pytest.mark.be_t("BE-T-038")
+async def test_admin_login_argon2_work_runs_off_the_event_loop_on_both_failure_paths(
+    db_app: FastAPI, db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Review m2: the dummy hash is created and verified in the threadpool, never on the event-loop thread."""
+    await factories.admin_with_password(db_session)
+    loop_thread = threading.get_ident()
+    threads: list[tuple[str, int]] = []
+    real_verify, real_dummy = security.verify_password, security.dummy_hash
+
+    def verify_spy(password_hash: str, password: str) -> bool:
+        threads.append(("verify", threading.get_ident()))
+        return real_verify(password_hash, password)
+
+    def dummy_spy() -> str:
+        threads.append(("dummy", threading.get_ident()))
+        return real_dummy()
+
+    monkeypatch.setattr(security, "verify_password", verify_spy)
+    monkeypatch.setattr(security, "dummy_hash", dummy_spy)
+    assert (await _login(db_app, password="definitely-not-it", ip="10.1.0.3")).status_code == 401
+    assert (await _login(db_app, email="nobody@example.com", ip="10.1.0.4")).status_code == 401
+    assert [name for name, _ in threads] == ["verify", "dummy", "verify"]
+    assert all(ident != loop_thread for _, ident in threads)
 
 
 @pytest.mark.be_t("BE-T-038")
@@ -375,3 +402,38 @@ async def test_logs_hold_no_secrets_or_personal_data(
     assert events == ["auth.login_failed", "auth.login_succeeded", "auth.csrf_failed"]
     access = [record for record in caplog.records if record.getMessage() == "http.request"]
     assert len(access) == 4
+
+
+@pytest.mark.be_t("BE-T-038")
+async def test_password_reset_between_verification_and_session_start_refuses_login(
+    db_app: FastAPI, db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Review round 3: a reset that lands after verification must not let the old password start a session."""
+    from app.repositories import admin_users
+
+    admin = await factories.admin_with_password(db_session)
+    real_lookup = admin_users.get_by_id_for_update
+    new_hash = security.hash_password("a-completely-new-password-123")
+
+    async def reset_then_lookup(session: AsyncSession, admin_id: uuid.UUID) -> AdminUser | None:
+        await admin_users.set_password_hash(session, admin_id, new_hash, now=security_now(), changed=True)
+        return await real_lookup(session, admin_id)
+
+    monkeypatch.setattr(admin_users, "get_by_id_for_update", reset_then_lookup)
+    response = await _login(db_app, ip="10.1.0.9")
+    assert response.status_code == 401
+    assert "mp_session" not in _set_cookies(response)
+    count = (await db_session.execute(select(func.count()).select_from(Session))).scalar_one()
+    assert count == 0
+    stored = (
+        await db_session.execute(
+            select(AdminUser.password_hash).where(AdminUser.id == admin.id).execution_options(populate_existing=True)
+        )
+    ).scalar_one()
+    assert stored != new_hash  # the simulated reset ran inside the refused (rolled back) transaction
+
+
+def security_now() -> Any:
+    from app.services.auth import utcnow
+
+    return utcnow()

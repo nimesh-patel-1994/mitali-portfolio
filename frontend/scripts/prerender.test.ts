@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative, sep } from "node:path";
 import { http, HttpResponse } from "msw";
@@ -8,7 +8,9 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import * as entry from "../src/entry-server";
 import { API_BASE, publicApiHandlers } from "../src/test/handlers";
 import * as fx from "../src/test/fixtures";
-import { fillTemplate, runPrerender, type PrerenderOptions } from "./prerender";
+import { gunzipSync, brotliDecompressSync } from "node:zlib";
+import { compressDir } from "./compress";
+import { fillTemplate, injectBeforeHeadEnd, routeAssetTags, runPrerender, type PrerenderOptions } from "./prerender";
 
 const SITE_URL = "https://mitali.example.com";
 const TEMPLATE = `<!doctype html>
@@ -25,6 +27,34 @@ const TEMPLATE = `<!doctype html>
 </html>
 `;
 
+/** Minimal Vite manifest: the entry, a shared chunk, the lazy Contact route chunk and the admin chunk. */
+const MANIFEST = {
+  "index.html": {
+    file: "assets/index-abc.js",
+    src: "index.html",
+    isEntry: true,
+    imports: ["_shared-aaa.js"],
+    dynamicImports: ["src/features/public/contact/ContactPage.tsx", "src/features/admin/routes.tsx"],
+    css: ["assets/index-abc.css"],
+  },
+  "_shared-aaa.js": { file: "assets/shared-aaa.js" },
+  "_zod-bbb.js": { file: "assets/zod-bbb.js" },
+  "src/features/public/contact/ContactPage.tsx": {
+    file: "assets/ContactPage-ccc.js",
+    src: "src/features/public/contact/ContactPage.tsx",
+    isDynamicEntry: true,
+    imports: ["index.html", "_shared-aaa.js", "_zod-bbb.js"],
+    css: ["assets/ContactPage-ccc.css"],
+  },
+  "src/features/admin/routes.tsx": {
+    file: "assets/routes-ddd.js",
+    src: "src/features/admin/routes.tsx",
+    isDynamicEntry: true,
+    imports: ["index.html", "_zod-bbb.js"],
+    css: ["assets/routes-ddd.css"],
+  },
+};
+
 const server = setupServer(...publicApiHandlers());
 beforeAll(() => server.listen({ onUnhandledFrame: "error" }));
 afterEach(() => server.resetHandlers());
@@ -34,6 +64,8 @@ let distDir: string;
 beforeEach(async () => {
   distDir = await mkdtemp(join(tmpdir(), "mitali-prerender-"));
   await writeFile(join(distDir, "index.html"), TEMPLATE, "utf8");
+  await mkdir(join(distDir, ".vite"));
+  await writeFile(join(distDir, ".vite", "manifest.json"), JSON.stringify(MANIFEST), "utf8");
 });
 afterEach(async () => {
   await rm(distDir, { recursive: true, force: true });
@@ -189,8 +221,77 @@ describe("UI-T-009 prerender failure", () => {
     await expect(runPrerender(options())).rejects.toThrow(/placeholder/);
   });
 
+  it("UI-T-009: a missing placeholder fails before any API call and says to run npm run build:site", async () => {
+    await writeFile(join(distDir, "index.html"), "<html><head></head><body><div id=\"root\"></div></body></html>", "utf8");
+    await expect(runPrerender(options())).rejects.toThrow(/read dist\/index\.html template: .*Run `npm run build:site`/);
+    expect(await exists(join(distDir, "build-info.json"))).toBe(false);
+  });
+
   it("fillTemplate does not interpret $ patterns in content", () => {
     const out = fillTemplate("<!--app-head--><!--app-html--><!--app-data-->", { head: "$&", html: "$'", data: "$1" });
     expect(out).toBe("$&$'$1");
+  });
+});
+
+const APP_JS = "const a = 1;\n".repeat(200);
+
+describe("REQ-NFR-004 lazy route assets and precompressed files", () => {
+  it("routeAssetTags: route CSS then modulepreloads, skipping what the entry already loads", () => {
+    const tags = routeAssetTags(MANIFEST, ["src/features/public/contact/ContactPage.tsx"]);
+    expect(tags.split(/\r?\n/).map((t) => t.trim())).toEqual([
+      '<link rel="stylesheet" crossorigin href="/assets/ContactPage-ccc.css">',
+      '<link rel="modulepreload" crossorigin href="/assets/ContactPage-ccc.js">',
+      '<link rel="modulepreload" crossorigin href="/assets/zod-bbb.js">',
+    ]);
+    expect(routeAssetTags(MANIFEST, [])).toBe("");
+    expect(() => routeAssetTags(MANIFEST, ["src/missing.tsx"])).toThrow(/no entry/);
+    expect(() =>
+      routeAssetTags({ ...MANIFEST, "_zod-bbb.js": { file: "assets/x.js\"><script>" } }, ["src/features/public/contact/ContactPage.tsx"]),
+    ).toThrow(/unexpected asset path/);
+  });
+
+  it("injectBeforeHeadEnd places tags after the entry stylesheet, at the end of <head>", () => {
+    const out = injectBeforeHeadEnd("<head><link rel=\"stylesheet\" href=\"/a.css\"></head><body></body>", "<link x>");
+    expect(out.indexOf("/a.css")).toBeLessThan(out.indexOf("<link x>"));
+    expect(out.indexOf("<link x>")).toBeLessThan(out.indexOf("</head>"));
+    expect(injectBeforeHeadEnd("<head></head>", "")).toBe("<head></head>");
+  });
+
+  it("only the Contact page gets the lazy chunk links", async () => {
+    await runPrerender(options());
+    const contact = await readFile(join(distDir, "contact", "index.html"), "utf8");
+    expect(contact).toContain('<link rel="stylesheet" crossorigin href="/assets/ContactPage-ccc.css">');
+    expect(contact).toContain('<link rel="modulepreload" crossorigin href="/assets/ContactPage-ccc.js">');
+    expect(contact.indexOf("ContactPage-ccc.css")).toBeLessThan(contact.indexOf("</head>"));
+    for (const file of ["index.html", join("work", "index.html"), "404.html", join("admin", "index.html")]) {
+      expect(await readFile(join(distDir, file), "utf8")).not.toContain("ContactPage-ccc");
+    }
+  });
+
+  it("compress option writes .gz and .br variants that decompress to the final files", async () => {
+    await runPrerender(options({ compress: true }));
+    const written = await listFiles(distDir);
+    expect(written).toContain("contact/index.html.gz");
+    expect(written).toContain("contact/index.html.br");
+    expect(written).toContain("sitemap.xml.gz");
+    expect(written.some((f) => f.startsWith(".vite/") && /\.(gz|br)$/.test(f))).toBe(false);
+    const html = await readFile(join(distDir, "contact", "index.html"));
+    expect(gunzipSync(await readFile(join(distDir, "contact", "index.html.gz")))).toEqual(html);
+    expect(brotliDecompressSync(await readFile(join(distDir, "contact", "index.html.br")))).toEqual(html);
+  });
+
+  it("compressDir skips tiny and binary files and replaces stale variants", async () => {
+    await writeFile(join(distDir, "tiny.js"), "x", "utf8");
+    await writeFile(join(distDir, "font.woff2"), "w".repeat(2000), "utf8");
+    await writeFile(join(distDir, "app.js"), APP_JS, "utf8");
+    await writeFile(join(distDir, "app.js.gz"), "stale", "utf8");
+    await writeFile(join(distDir, "gone.css.br"), "stale", "utf8");
+    const summary = await compressDir(distDir);
+    const written = await listFiles(distDir);
+    expect(written).not.toContain("tiny.js.gz");
+    expect(written).not.toContain("font.woff2.gz");
+    expect(written).not.toContain("gone.css.br");
+    expect(gunzipSync(await readFile(join(distDir, "app.js.gz"))).toString("utf8")).toBe(APP_JS);
+    expect(summary.gz).toBeGreaterThan(0);
   });
 });

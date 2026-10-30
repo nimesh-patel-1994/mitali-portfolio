@@ -1,5 +1,9 @@
 """Reference checks for admin inputs (BE-012, TS-010 point 6): referenced media and case studies must exist,
-otherwise 422 ``validation_error`` with the field path (e.g. ``cover_media_id``, ``portrait_media_id``)."""
+otherwise 422 ``validation_error`` with the field path (e.g. ``cover_media_id``, ``portrait_media_id``).
+
+Call these inside the transaction that writes the reference: the checked row stays share-locked until it ends, so a
+concurrent media delete waits and then sees the new reference (409 ``media_in_use``) instead of the FK failing.
+"""
 
 from __future__ import annotations
 

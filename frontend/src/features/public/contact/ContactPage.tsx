@@ -1,5 +1,6 @@
 /**
- * Contact page (UI-033, REQ-042, REQ-006). Dark-olive two-column block: giant h1, promise line and the contact
+ * Contact page (UI-033, REQ-042, REQ-006). Dark-olive two-column block: giant h1, promise line (settings
+ * `contact_promise`, plain text, CHG-005) and the contact
  * email (`mailto:`, mail icon) on the left; the enquiry form on the right (below on mobile). Then the FAQ preview.
  */
 import { useId } from "react";
@@ -20,6 +21,8 @@ export function ContactPage() {
   const site = useSiteData();
   const headingId = useId();
   const email = safeEmail(site?.settings.contact_email);
+  /** Plain text from settings (CHG-005, TS-013); React escapes it. */
+  const promise = site?.settings.contact_promise.trim() ?? "";
   return (
     <>
       <Section surface="dark" aria-labelledby={headingId} className={styles.contact}>
@@ -32,7 +35,7 @@ export function ContactPage() {
                 </span>
               ))}
             </h1>
-            <p className={styles.promise}>{contactPage.promise}</p>
+            {promise !== "" && <p className={styles.promise}>{promise}</p>}
             {email && (
               <p className={styles.emailBlock}>
                 <span className={styles.emailLabel}>{contactPage.emailLabel}</span>

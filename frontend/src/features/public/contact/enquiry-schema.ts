@@ -1,10 +1,12 @@
 /**
  * Enquiry form schema (UI-033, TS-007, UI-REV-013). One Zod schema mirroring the contract's `EnquiryCreate`:
- * name 1..120, email ≤ 254 and valid, enquiry_type enum, budget_range optional enum, company optional ≤ 120,
+ * name 1..120, email ≤ 254 and valid, enquiry_type enum (the empty placeholder value is rejected as required),
+ * budget_range optional enum, company optional ≤ 120,
  * message 1..5000; strings are trimmed before validation. The server stays authoritative (SEC-BE-008).
- * `zod/mini` keeps the public bundle small (functional API, tree-shakable).
+ * `zod/mini` keeps the contact chunk small (functional API, tree-shakable); it is imported through the jitless
+ * wrapper (SEC-010) and lives only in the lazily loaded Contact route chunk, never in the shared entry.
  */
-import * as z from "zod/mini";
+import { z } from "@/shared/zod/mini";
 import type { BudgetRange, EnquiryCreate, EnquiryType } from "@/api/types";
 import { enquiryForm } from "@/features/public/content/copy";
 import { budgetRangeLabels, enquiryTypeLabels } from "@/shared/utils/labels";
@@ -41,7 +43,8 @@ export const FIELD_ORDER: EnquiryField[] = ["name", "email", "enquiry_type", "bu
 export const initialValues: EnquiryFormValues = {
   name: "",
   email: "",
-  enquiry_type: enquiryTypes[0],
+  /** Starts on the "Choose one…" placeholder; "" is never a valid choice (CHG-005, REQ-042). */
+  enquiry_type: "",
   budget_range: "",
   company: "",
   message: "",

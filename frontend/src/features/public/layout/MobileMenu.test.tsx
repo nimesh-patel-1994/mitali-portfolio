@@ -150,3 +150,27 @@ describe("UI-T-038 mobile menu closing and inert background", () => {
     );
   });
 });
+
+describe("UI-T-038 / UI-REV-008 mobile menu: current link and aria-controls", () => {
+  beforeEach(() => {
+    installMatchMedia();
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("closed: no aria-controls (the dialog does not exist); on /work/<slug> Work is the current page", async () => {
+    const user = userEvent.setup();
+    await renderRoute("/work/case-study-1");
+    const button = menuButton();
+    expect(button).not.toHaveAttribute("aria-controls");
+    await user.click(button);
+    const dialog = await screen.findByRole("dialog", { name: "Menu" });
+    expect(button).toHaveAttribute("aria-controls", dialog.id);
+    expect(within(dialog).getByRole("link", { name: "Work" })).toHaveAttribute("aria-current", "page");
+    expect(within(dialog).getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(button).not.toHaveAttribute("aria-controls");
+  });
+});

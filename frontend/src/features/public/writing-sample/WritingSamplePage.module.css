@@ -106,3 +106,35 @@
   line-height: var(--text-h3-lh);
   text-transform: uppercase;
 }
+
+/*
+ * Article-body headings (UI-030, DES-021 note, CHG-005). The page h1 is the sample title, so author Markdown
+ * `#` → h2, `##` → h3, `###`+ → h4 (backend shift, TS-012). Scoped to this article body only; `article` raises the
+ * specificity above the shared `.prose` defaults. Tokens only.
+ */
+article .body h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+  letter-spacing: var(--text-h3-tracking);
+  text-transform: uppercase;
+}
+
+article .body h3 {
+  font-family: var(--font-body);
+  font-size: var(--text-statement);
+  font-weight: var(--text-statement-weight);
+  line-height: var(--text-statement-lh);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+article .body h4 {
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  line-height: var(--text-label-lh);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+}

@@ -3,7 +3,8 @@
  * - giant Wordmark with a small rotated green sub-label tile;
  * - three link groups with green labels: quick links, social links (settings; http(s) only, new tab) and email
  *   (`mailto:` from the validated contact email); the build year (year of `site.generated_at`) top-right;
- * - bottom bar: copyright with the build year, the footer sign-off from settings, and a rights line.
+ * - bottom bar: copyright with the build year, the footer sign-off and the rights line (both from settings, plain
+ *   text; CHG-005).
  * Social links that are not absolute http(s) URLs are omitted (SEC-UI-004); no valid links → group omitted.
  * The year comes from the content snapshot, never the render clock, so server and client match (TS-005 step 10).
  */
@@ -53,6 +54,8 @@ export function Footer({ site }: FooterProps) {
   const socials = safeSocialLinks(site?.settings.social_links);
   const email = safeEmail(site?.settings.contact_email);
   const signoff = site?.settings.footer_signoff.trim() ?? "";
+  /** Plain text from settings (CHG-005, TS-013); React escapes it. */
+  const rights = site?.settings.footer_rights_line.trim() ?? "";
 
   return (
     <footer className={styles.footer} data-surface="dark">
@@ -117,7 +120,7 @@ export function Footer({ site }: FooterProps) {
         <div className={styles.bottom}>
           {year && <p>{footer.copyright(year)}</p>}
           {signoff !== "" && <p>{signoff}</p>}
-          <p>{footer.rights}</p>
+          {rights !== "" && <p>{rights}</p>}
         </div>
       </div>
     </footer>

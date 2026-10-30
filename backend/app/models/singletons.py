@@ -1,7 +1,10 @@
 """Singleton rows ``profile`` and ``site_settings`` (tech-spec section 3.2).
 
 Both rows (``id = 1``) are inserted by migration ``0001_initial_schema`` with the placeholder values below; the
-migration keeps its own frozen copy and a unit test checks that the two stay equal.
+migration keeps its own frozen copy and a unit test checks that the two stay equal. Migration
+``0002_settings_copy_fields`` (CHG-005) adds ``contact_promise`` and ``footer_rights_line`` with the initial copy of
+tech-spec section 3.2 as server defaults (``CONTACT_PROMISE_DEFAULT`` / ``FOOTER_RIGHTS_LINE_DEFAULT``; the migration
+keeps a frozen copy of these too).
 """
 
 from __future__ import annotations
@@ -42,6 +45,22 @@ SETTINGS_PLACEHOLDER: Final[dict[str, Any]] = {
     "footer_signoff": "Add a footer sign-off in the admin",
     "notification_email": None,
 }
+
+
+# Initial copy (tech-spec section 3.2, TS-013); server defaults of migration 0002.
+CONTACT_PROMISE_DEFAULT: Final = "Tell me what you're working on. I reply to every enquiry within two working days."
+FOOTER_RIGHTS_LINE_DEFAULT: Final = "All rights reserved. Words, as always, are my own."
+COPY_FIELD_MAX_LENGTH: Final = 200
+
+
+def sql_string_literal(value: str) -> str:
+    """Single-quoted SQL literal with embedded quotes doubled (used for constant server defaults only)."""
+    return "'" + value.replace("'", "''") + "'"
+
+
+def copy_field_check(column: str) -> CheckConstraint:
+    """``length(btrim(col)) BETWEEN 1 AND 200`` named ``ck_site_settings_<column>_length`` (migration 0002)."""
+    return CheckConstraint(f"length(btrim({column})) BETWEEN 1 AND {COPY_FIELD_MAX_LENGTH}", name=f"{column}_length")
 
 
 def _singleton_id() -> Mapped[int]:
@@ -94,6 +113,8 @@ class SiteSettings(Base):
     booking_url: Mapped[str | None]
     social_links: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, server_default=JSONB_EMPTY_ARRAY)
     footer_signoff: Mapped[str]
+    contact_promise: Mapped[str] = mapped_column(server_default=text(sql_string_literal(CONTACT_PROMISE_DEFAULT)))
+    footer_rights_line: Mapped[str] = mapped_column(server_default=text(sql_string_literal(FOOTER_RIGHTS_LINE_DEFAULT)))
     notification_email: Mapped[str | None]
     content_changed_at: Mapped[datetime] = mapped_column(server_default=func.now())
     seed_key: Mapped[str | None] = mapped_column(unique=True)
@@ -103,4 +124,6 @@ class SiteSettings(Base):
         CheckConstraint("id = 1", name="singleton"),
         jsonb_array("social_links"),
         max_length("footer_signoff", 120),
+        copy_field_check("contact_promise"),
+        copy_field_check("footer_rights_line"),
     )

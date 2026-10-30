@@ -88,7 +88,7 @@ Derived palette (from `palette.py "#70FF00"`) and project tokens:
     and is not used.
   - Stacks: `--font-display: "Antonio", "Oswald", "Arial Narrow", sans-serif`;
     `--font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif`.
-- DES-021 [NEW 2026-10-29 16:06] Type scale and line height (desktop → mobile via `clamp()`):
+- DES-021 [NEW 2026-10-29 16:06] (definition updated 2026-10-30 05:08, CHG-005: article-heading note below) Type scale and line height (desktop → mobile via `clamp()`):
 
 | Token | Size | Line height | Weight | Case / tracking | Use |
 |-------|------|-------------|--------|-----------------|-----|
@@ -104,6 +104,11 @@ Derived palette (from `palette.py "#70FF00"`) and project tokens:
 | `--text-footer-mark` | clamp(96px, 18vw, 300px) | 0.85 | 700 display | uppercase | Footer wordmark |
 
   Body copy line length is capped at about 70 characters (`--measure: 68ch`).
+
+  Note (2026-10-30 05:08, CHG-005; design call delegated by the user): headings inside a writing-sample article body
+  (UI-030). The page `h1` is the sample title, so author Markdown `#` → `h2`, `##` → `h3`, `###` and deeper → `h4`.
+  Styles, scoped to the article body only: `h2` = `--text-h3` (display, uppercase), `h3` = `--text-statement` (body
+  font, bold), `h4` = `--text-label` (display, uppercase); the body keeps `--measure` line length. No new tokens.
 
 ## 4. Reference designs
 | Ref | Kind (URL, screenshot, Figma export, none) | Source | Take from it | Do not copy | Rights |

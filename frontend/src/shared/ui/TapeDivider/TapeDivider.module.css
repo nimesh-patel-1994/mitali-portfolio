@@ -1,10 +1,14 @@
 @import "../../../styles/media.css";
 
-/* Zero-height anchor at the seam; the block extends into both sections but stays within their padding. */
+/* Zero-height, full-width anchor at the seam; the block extends into both sections but stays within their padding.
+   The block deliberately runs past the screen edge; `overflow-x: clip` cuts it at the divider's own (full-width)
+   box so it never widens the page (no horizontal scroll, REQ-NFR-001). `clip` (unlike `hidden`) keeps the
+   vertical overflow visible and creates no scroll container. */
 .tape {
   position: relative;
   z-index: 1;
   height: 0;
+  overflow-x: clip;
   pointer-events: none;
 }
 

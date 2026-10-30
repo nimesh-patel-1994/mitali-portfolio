@@ -51,6 +51,8 @@ export const site: SiteBundle = {
       { label: "Instagram", url: "https://instagram.example.com/mitali" },
     ],
     footer_signoff: "Written with care, edited without mercy.",
+    contact_promise: "Fixture promise: I answer every enquiry within two working days.",
+    footer_rights_line: "Fixture rights line. All words are my own.",
   },
   profile: {
     name: "Mitali",

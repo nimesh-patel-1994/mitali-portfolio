@@ -3,6 +3,10 @@
  * Loaders read only from the content source (TS-005); each route has an error element; admin routes are attached
  * with `lazy` so the admin chunk is never part of the public bundle (UI-REV-015).
  * Route ids are explicit so server hydration data and client routes always line up.
+ * The Contact page is a lazy route (REQ-NFR-004): its form, Zod schema and API client stay out of the shared entry
+ * chunk. The static handler awaits `lazy` while pre-rendering; the client resolves lazy routes of the first page
+ * before hydrating (`resolveLazyMatches`), and the pre-render adds the chunk's modulepreload/stylesheet links
+ * (`LAZY_ROUTE_MODULES` + the Vite manifest).
  */
 import type { RouteObject, ShouldRevalidateFunction } from "react-router";
 import { pages } from "@/features/public/content/copy";
@@ -11,7 +15,6 @@ import { RootErrorBoundary, RouteErrorPage } from "@/features/public/layout/Rout
 import { NotFoundPage } from "@/features/public/not-found/NotFoundPage";
 import { AboutPage } from "@/features/public/about/AboutPage";
 import { CaseStudyPage } from "@/features/public/case-study/CaseStudyPage";
-import { ContactPage } from "@/features/public/contact/ContactPage";
 import { FaqsPage } from "@/features/public/faqs/FaqsPage";
 import { HomePage } from "@/features/public/home/HomePage";
 import { WorkPage } from "@/features/public/work/WorkPage";
@@ -21,6 +24,14 @@ import { defineMeta, notFoundMeta } from "@/features/public/seo/meta";
 import { pageTitle } from "@/features/public/content/copy";
 import { isValidSlug, throwNotFound, type ContentSource } from "./content-source";
 import type { CaseStudyDetail, WritingSampleDetail } from "./content-types";
+
+/**
+ * Source module of each lazy public route, as keyed in the Vite manifest (`dist/.vite/manifest.json`). Must match
+ * the `import()` path in the route's `lazy` (checked by routes.test.ts).
+ */
+export const LAZY_ROUTE_MODULES: Readonly<Record<string, string>> = {
+  contact: "src/features/public/contact/ContactPage.tsx",
+};
 
 export const ROUTE_IDS = {
   root: ROOT_ROUTE_ID,
@@ -133,7 +144,7 @@ export function createRoutes(source: ContentSource): RouteObject[] {
         {
           id: ROUTE_IDS.contact,
           path: "contact",
-          element: <ContactPage />,
+          lazy: async () => ({ Component: (await import("@/features/public/contact/ContactPage")).ContactPage }),
           errorElement,
           loader: () => source.get("contact"),
           handle: { ...defineMeta(() => pages.contact), ...DARK_HERO },

@@ -60,7 +60,7 @@ plugins = ["pydantic.mypy"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["asyncpg.*"]
+module = ["asyncpg.*", "defusedxml.*"]
 ignore_missing_imports = true
 
 [tool.pydantic-mypy]
@@ -85,6 +85,9 @@ filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 [tool.coverage.run]
 source = ["app"]
 branch = true
+# SQLAlchemy's asyncio layer switches greenlets on every DB call; without this, lines after an awaited commit
+# are reported as missed.
+concurrency = ["greenlet", "thread"]
 
 [tool.coverage.report]
 show_missing = true

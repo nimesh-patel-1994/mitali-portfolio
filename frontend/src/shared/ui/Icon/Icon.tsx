@@ -89,3 +89,28 @@ export function MailIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function ChevronUpIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 15l6-6 6 6" />
+    </Svg>
+  );
+}
+
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 9l6 6 6-6" />
+    </Svg>
+  );
+}
+
+/** Drag handle (six dots drawn as short strokes). */
+export function GripIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" strokeWidth={3} />
+    </Svg>
+  );
+}

@@ -142,3 +142,20 @@ BookingUrl = (
     ]
     | None
 )
+
+
+# ------------------------------------------------------------------------------------- alt text (TS-010 point 6)
+
+ALT_REQUIRED_MESSAGE: Final = "Describe the image (alt text is required when an image is set)."
+
+
+def alt_for_media(media_id: object, alt: str | None) -> str | None:
+    """Alt text must be non-blank whenever a media id is set; blank alt is stored as null (REQ-063)."""
+    if media_id is not None and not alt:
+        raise ValueError(ALT_REQUIRED_MESSAGE)
+    return alt or None
+
+
+def optional_text(value: str | None) -> str | None:
+    """Empty optional text (after stripping) is stored as null."""
+    return value or None

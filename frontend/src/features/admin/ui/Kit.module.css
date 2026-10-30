@@ -1,0 +1,523 @@
+/*
+ * Admin form and list kit (UI-040, DES-042): calm light skin on the white content surface. Tokens and surface
+ * aliases only; green is used only as a fill (primary buttons, markers), links use --color-primary-text-on-light.
+ */
+@import "../../../styles/media.css";
+
+/* ---- Page ---- */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.pageHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.pageTitle {
+  font-size: var(--text-h1);
+  font-weight: var(--text-h1-weight);
+  line-height: var(--text-h1-lh);
+  letter-spacing: var(--text-h1-tracking);
+  color: var(--color-dark);
+}
+
+.pageTitle:focus {
+  outline: none;
+}
+
+.pageTitle:focus-visible {
+  outline: var(--focus-width) solid var(--focus-color);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+  letter-spacing: var(--text-h3-tracking);
+  color: var(--color-dark);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
+}
+
+.link {
+  color: var(--color-primary-text-on-light);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--color-white);
+  border: var(--hairline) solid var(--divider);
+  border-radius: var(--radius-1);
+}
+
+/* ---- Forms ---- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: var(--container-max);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-4) 0 0;
+  border: 0;
+  border-block-start: var(--hairline) solid var(--divider);
+}
+
+.legend {
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  font-weight: var(--text-label-weight);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+}
+
+.grid2 {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (--bp-tablet) {
+  .grid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.label {
+  font-weight: var(--weight-semibold);
+}
+
+.required {
+  color: var(--color-danger);
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
+}
+
+.counter {
+  color: var(--color-text-muted);
+  font-size: var(--text-small);
+  line-height: var(--text-small-lh);
+}
+
+.counter[data-over] {
+  color: var(--color-danger);
+  font-weight: var(--weight-semibold);
+}
+
+.error {
+  color: var(--danger-on-surface);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  line-height: var(--text-small-lh);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-white);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-0);
+  color: var(--color-dark);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+  border-width: var(--focus-width);
+}
+
+.input:disabled,
+.input[readonly] {
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-700);
+}
+
+.textarea {
+  min-height: calc(4 * var(--space-6));
+  resize: vertical;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--space-7);
+}
+
+.check input {
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  margin: 0;
+  accent-color: var(--color-dark);
+  flex-shrink: 0;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+}
+
+.radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--space-7);
+}
+
+.radio input {
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  margin: 0;
+  accent-color: var(--color-dark);
+}
+
+.formAlert {
+  padding: var(--space-3) var(--space-4);
+  border: var(--focus-width) solid var(--color-danger);
+  color: var(--color-danger);
+  font-weight: var(--weight-semibold);
+}
+
+.formFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block-start: var(--space-4);
+  border-block-start: var(--hairline) solid var(--divider);
+}
+
+/* ---- String list ---- */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.listRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.listRow > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Small buttons (icon + text) ---- */
+.smallButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-width: var(--space-7);
+  min-height: var(--space-7);
+  padding: var(--space-1) var(--space-3);
+  background-color: var(--color-white);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-0);
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.smallButton:hover {
+  background-color: var(--color-neutral-100);
+}
+
+.smallButton:disabled {
+  background-color: var(--color-neutral-50);
+  border-color: var(--color-neutral-200);
+  color: var(--color-neutral-600);
+  cursor: not-allowed;
+}
+
+.dangerButton {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.dangerButton:hover {
+  background-color: var(--color-danger);
+  color: var(--color-white);
+}
+
+/* ---- States ---- */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: var(--hairline) dashed var(--border);
+  border-radius: var(--radius-1);
+}
+
+.stateTitle {
+  font-size: var(--text-h3);
+  font-weight: var(--text-h3-weight);
+  line-height: var(--text-h3-lh);
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-neutral-700);
+}
+
+.spinner {
+  inline-size: var(--space-4);
+  block-size: var(--space-4);
+  border: var(--focus-width) solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+}
+
+.skeleton {
+  display: block;
+  block-size: var(--space-6);
+  border-radius: var(--radius-1);
+  background-color: var(--color-neutral-100);
+}
+
+/* ---- Data table (stacked cards below 810 px) ---- */
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-3);
+  border-block-end: var(--hairline) solid var(--divider);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table th {
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-700);
+}
+
+@media not all and (--bp-tablet) {
+  .table thead {
+    position: absolute;
+    width: var(--hairline);
+    height: var(--hairline);
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+  }
+
+  .table tr {
+    padding-block: var(--space-3);
+    border-block-end: var(--hairline) solid var(--divider);
+  }
+
+  .table td {
+    padding: var(--space-1) 0;
+    border: 0;
+  }
+
+  .table td[data-label]::before {
+    content: attr(data-label) ": ";
+    font-weight: var(--weight-semibold);
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.thumb {
+  inline-size: calc(2 * var(--space-9));
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-1);
+  background-color: var(--color-neutral-100);
+}
+
+.thumbEmpty {
+  display: block;
+  inline-size: calc(2 * var(--space-9));
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-1);
+  background-color: var(--color-neutral-100);
+}
+
+/* ---- Tabs ---- */
+.tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  border-block-end: var(--hairline) solid var(--divider);
+}
+
+.tab {
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: 0;
+  border-block-end: var(--focus-width) solid transparent;
+  color: var(--color-neutral-700);
+  font-family: var(--font-display);
+  font-size: var(--text-label);
+  letter-spacing: var(--text-label-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  border-block-end-color: var(--color-dark);
+  color: var(--color-dark);
+}
+
+.tab:disabled {
+  color: var(--color-neutral-500);
+  cursor: not-allowed;
+}
+
+/* ---- Side panel (docked ≥ 1200 px, full-screen sheet below 810 px) ---- */
+.split {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (--bp-desktop) {
+  .split[data-panel-open] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.sidePanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--color-white);
+  border: var(--hairline) solid var(--border);
+}
+
+@media not all and (--bp-tablet) {
+  .sidePanel {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    overflow-y: auto;
+  }
+}
+
+.sidePanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-4);
+  border: var(--hairline) solid var(--border);
+  color: var(--color-dark);
+  text-decoration: none;
+}
+
+.segment[aria-current="page"] {
+  background-color: var(--color-dark);
+  color: var(--color-cream);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: kit-spin 800ms linear infinite;
+  }
+
+  .smallButton,
+  .tab {
+    transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+}
+
+@keyframes kit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

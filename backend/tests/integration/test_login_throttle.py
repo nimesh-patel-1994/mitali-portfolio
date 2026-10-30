@@ -2,18 +2,24 @@
 
 from __future__ import annotations
 
+import asyncio
+import threading
+import time
+import uuid
 from collections.abc import Awaitable, Callable
 from datetime import timedelta
 
 import httpx
 import pytest
 from fastapi import FastAPI
-from sqlalchemy import func, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete, func, insert, select, update
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.core import security
 from app.core.config import Settings
+from app.main import create_app
 from app.models import RateLimitCounter
+from app.services import rate_limit
 from app.services.rate_limit import make_key
 from tests import factories
 from tests.conftest import ALLOWED_ORIGIN, api_client
@@ -124,3 +130,108 @@ async def test_blocked_login_does_not_run_argon2(
     monkeypatch.setattr(security, "verify_password", spy)
     assert (await _attempt(db_app, IP_A, password=factories.ADMIN_PASSWORD)).status_code == 429
     assert calls == []
+
+
+@pytest.mark.sec("SEC-BE-006")
+async def test_concurrent_logins_never_verify_more_than_the_failure_limit(
+    db_settings: Settings, db_engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Review m3: real commits on separate pooled connections (no per-test transaction); rows removed afterwards.
+
+    Ten simultaneous wrong attempts for one account from one client: check → verify → count is atomic per key, so
+    at most five reach Argon2 and the rest are refused with 429.
+    """
+    ip = f"198.51.100.{uuid.uuid4().int % 200 + 20}"
+    email = f"race-{uuid.uuid4().hex[:12]}@example.com"
+    lock = threading.Lock()
+    calls: list[str] = []
+
+    def slow_spy(stored: str, _password: str) -> bool:
+        with lock:
+            calls.append(stored)
+        time.sleep(0.05)  # widen the window between check and count
+        return False
+
+    monkeypatch.setattr(security, "verify_password", slow_spy)
+    app = create_app(db_settings)
+    try:
+        async with api_client(app, ip=ip, headers={"Origin": ALLOWED_ORIGIN}) as client:
+            responses = await asyncio.gather(
+                *(client.post(LOGIN, json={"email": email, "password": WRONG_PASSWORD}) for _ in range(10))
+            )
+        statuses = sorted(response.status_code for response in responses)
+        assert len(calls) <= 5
+        assert statuses == [401] * 5 + [429] * 5
+    finally:
+        await app.state.engine.dispose()
+        keys = [make_key(db_settings.hash_key_secret, ip), make_key(db_settings.hash_key_secret, email)]
+        async with db_engine.begin() as connection:
+            await connection.execute(delete(RateLimitCounter).where(RateLimitCounter.key_hash.in_(keys)))
+
+
+@pytest.mark.sec("SEC-BE-006")
+async def test_password_verification_holds_no_database_connection(
+    db_settings: Settings, db_engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Review B-1: six logins (more than the pool's five connections, no overflow) verify at the same time, which is
+    only possible when no connection or transaction is held during Argon2; real commits, rows removed afterwards."""
+    count = 6
+    run = uuid.uuid4().hex[:8]
+    ips = [f"203.0.113.{n + 100}" for n in range(count)]
+    emails = [f"pool-{run}-{n}@example.com" for n in range(count)]
+    app = create_app(db_settings)
+    barrier = threading.Barrier(count, timeout=5)
+    checked_out: list[int] = []
+
+    def blocking_spy(_stored: str, _password: str) -> bool:
+        barrier.wait()  # every login must be inside verification at once
+        checked_out.append(app.state.engine.pool.checkedout())
+        return False
+
+    monkeypatch.setattr(security, "verify_password", blocking_spy)
+
+    async def attempt(ip: str, email: str) -> int:
+        async with api_client(app, ip=ip, headers={"Origin": ALLOWED_ORIGIN}) as client:
+            return (await client.post(LOGIN, json={"email": email, "password": WRONG_PASSWORD})).status_code
+
+    try:
+        statuses = await asyncio.gather(*(attempt(ip, email) for ip, email in zip(ips, emails, strict=True)))
+        assert statuses == [401] * count
+        assert checked_out == [0] * count
+    finally:
+        await app.state.engine.dispose()
+        keys = [make_key(db_settings.hash_key_secret, raw) for raw in [*ips, *emails]]
+        async with db_engine.begin() as connection:
+            await connection.execute(delete(RateLimitCounter).where(RateLimitCounter.key_hash.in_(keys)))
+
+
+@pytest.mark.be_t("BE-T-049")
+async def test_counter_cleanup_skips_rows_locked_by_another_transaction(db_engine: AsyncEngine) -> None:
+    """Review B-2: the stale-counter DELETE uses SKIP LOCKED, so it neither waits on nor deadlocks with an upsert."""
+    key = uuid.uuid4().hex + uuid.uuid4().hex
+    async with db_engine.begin() as connection:
+        await connection.execute(
+            insert(RateLimitCounter).values(
+                bucket="login_ip",
+                key_hash=key,
+                window_start=func.now() - timedelta(days=2),
+                count=1,
+                updated_at=func.now() - timedelta(days=2),
+            )
+        )
+    try:
+        async with AsyncSession(db_engine) as holder, AsyncSession(db_engine) as cleaner:
+            async with holder.begin():
+                locked = select(RateLimitCounter.key_hash).where(RateLimitCounter.key_hash == key).with_for_update()
+                assert (await holder.execute(locked)).scalar_one() == key
+                async with cleaner.begin():
+                    await asyncio.wait_for(rate_limit.cleanup_old_counters(cleaner), timeout=3)
+                still_there = select(func.count()).where(RateLimitCounter.key_hash == key)
+                assert (await holder.execute(still_there)).scalar_one() == 1
+            async with cleaner.begin():
+                await rate_limit.cleanup_old_counters(cleaner)
+            async with cleaner.begin():
+                assert (await cleaner.execute(still_there)).scalar_one() == 0
+    finally:
+        async with db_engine.begin() as connection:
+            await connection.execute(delete(RateLimitCounter).where(RateLimitCounter.key_hash == key))

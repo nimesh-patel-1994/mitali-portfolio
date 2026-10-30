@@ -6,7 +6,10 @@
  * Steps: read the client template → getPublicSite first (generated_at = content snapshot) → list published
  * case-study and writing-sample slugs → render every public route to dist/<route>/index.html with head tags and
  * escaped hydration data → dist/data/<key>.json for every key read → 404.html → admin/index.html (noindex shell)
- * → sitemap.xml → robots.txt → build-info.json LAST (only when everything succeeded).
+ * → sitemap.xml → robots.txt → precompressed .gz/.br variants → build-info.json LAST (only when everything
+ * succeeded). Pages whose route is lazy (LAZY_ROUTE_MODULES) get `<link rel="stylesheet">` and
+ * `<link rel="modulepreload">` tags for the route chunk from the Vite manifest, so the page is styled at first paint
+ * and its chunk downloads in parallel with the entry.
  * Any failure: clear console message naming the step/route, exit code 1, no build-info.json.
  */
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -17,6 +20,7 @@ import type { ApiClientOptions } from "../src/api/client";
 import type { RenderOptions, RenderResult } from "../src/entry-server";
 import type { SitemapEntry } from "../src/features/public/seo/site-files";
 import type { CaseStudySummary, SiteBundle, WritingSampleSummary } from "../src/api/types";
+import { compressDir } from "./compress";
 
 /** The subset of the SSR entry the script uses (injectable for tests). */
 export interface PrerenderEntry {
@@ -26,6 +30,8 @@ export interface PrerenderEntry {
   buildSitemap(entries: SitemapEntry[], siteUrl: string): string;
   buildRobots(siteUrl: string): string;
   buildAdminHead(): string;
+  /** Lazy route id → source module as keyed in the Vite manifest. */
+  LAZY_ROUTE_MODULES?: Readonly<Record<string, string>>;
 }
 
 export interface PrerenderOptions {
@@ -37,6 +43,8 @@ export interface PrerenderOptions {
   fetch?: ApiClientOptions["fetch"];
   now?: () => Date;
   log?: (message: string) => void;
+  /** Write precompressed .gz/.br variants of the text assets (the CLI run does; tests opt in). */
+  compress?: boolean;
 }
 
 export interface PrerenderSummary {
@@ -65,15 +73,81 @@ export class PrerenderError extends Error {
   }
 }
 
-export function fillTemplate(template: string, parts: { head: string; html: string; data: string }): string {
+export const MISSING_PLACEHOLDER_HINT =
+  "dist/index.html is not a fresh client build (it may already be pre-rendered). Run `npm run build:site` to rebuild and pre-render the site.";
+
+/** Throws when the template lacks a placeholder (e.g. `npm run prerender` run twice on the same dist). */
+export function assertTemplate(template: string): void {
   for (const marker of Object.values(PLACEHOLDERS)) {
-    if (!template.includes(marker)) throw new Error(`template is missing the ${marker} placeholder`);
+    if (!template.includes(marker)) throw new Error(`template is missing the ${marker} placeholder. ${MISSING_PLACEHOLDER_HINT}`);
   }
+}
+
+export function fillTemplate(template: string, parts: { head: string; html: string; data: string }): string {
+  assertTemplate(template);
   // Function replacers: no `$&`-style substitution from content.
   return template
     .replace(PLACEHOLDERS.head, () => parts.head)
     .replace(PLACEHOLDERS.html, () => parts.html)
     .replace(PLACEHOLDERS.data, () => parts.data);
+}
+
+/** Subset of a Vite manifest chunk entry (`build.manifest`). */
+export interface ManifestChunk {
+  file: string;
+  src?: string;
+  isEntry?: boolean;
+  isDynamicEntry?: boolean;
+  imports?: string[];
+  css?: string[];
+}
+export type ViteManifest = Record<string, ManifestChunk>;
+
+const ASSET_PATH = /^assets\/[A-Za-z0-9._-]+\.(?:js|css)$/;
+
+function staticClosure(manifest: ViteManifest, keys: string[]): Set<string> {
+  const seen = new Set<string>();
+  const stack = [...keys];
+  while (stack.length > 0) {
+    const key = stack.pop()!;
+    if (seen.has(key)) continue;
+    const chunk = manifest[key];
+    if (!chunk) throw new Error(`manifest has no entry "${key}"`);
+    seen.add(key);
+    stack.push(...(chunk.imports ?? []));
+  }
+  return seen;
+}
+
+/**
+ * Link tags for the lazy route modules of one page: stylesheets first (cascade order after the entry CSS), then
+ * modulepreloads. Chunks and CSS already loaded by the entry are skipped. Paths are validated asset names.
+ */
+export function routeAssetTags(manifest: ViteManifest, moduleKeys: string[]): string {
+  if (moduleKeys.length === 0) return "";
+  const entryKeys = Object.keys(manifest).filter((k) => manifest[k]!.isEntry);
+  const loaded = staticClosure(manifest, entryKeys);
+  const loadedCss = new Set([...loaded].flatMap((k) => manifest[k]!.css ?? []));
+  const chunks = [...staticClosure(manifest, moduleKeys)].filter((k) => !loaded.has(k));
+  // Route module first, then its shared chunks, in a stable order.
+  chunks.sort((a, b) => Number(moduleKeys.includes(b)) - Number(moduleKeys.includes(a)) || a.localeCompare(b));
+  const css = [...new Set(chunks.flatMap((k) => manifest[k]!.css ?? []))].filter((f) => !loadedCss.has(f));
+  const js = chunks.map((k) => manifest[k]!.file);
+  for (const file of [...css, ...js]) {
+    if (!ASSET_PATH.test(file)) throw new Error(`unexpected asset path "${file}" in manifest`);
+  }
+  return [
+    ...css.map((f) => `<link rel="stylesheet" crossorigin href="/${f}">`),
+    ...js.map((f) => `<link rel="modulepreload" crossorigin href="/${f}">`),
+  ].join("\n    ");
+}
+
+/** Adds tags at the end of `<head>`, after the entry's own stylesheet (cascade order). */
+export function injectBeforeHeadEnd(html: string, tags: string): string {
+  if (tags === "") return html;
+  const at = html.indexOf("</head>");
+  if (at < 0) throw new Error("template has no </head>");
+  return `${html.slice(0, at)}  ${tags}\n  ${html.slice(at)}`;
 }
 
 export function routeFile(distDir: string, route: string): string {
@@ -104,7 +178,22 @@ export async function runPrerender(options: PrerenderOptions): Promise<Prerender
   // A stale build-info.json must never survive a failed run.
   await rm(buildInfoFile, { force: true });
 
-  const template = await step("read dist/index.html template", () => readFile(join(distDir, "index.html"), "utf8"));
+  const template = await step("read dist/index.html template", async () => {
+    const text = await readFile(join(distDir, "index.html"), "utf8");
+    assertTemplate(text);
+    return text;
+  });
+  const lazyModules = entry.LAZY_ROUTE_MODULES ?? {};
+  let manifest: ViteManifest | null = null;
+  const lazyTags = async (routeIds: string[]): Promise<string> => {
+    const keys = routeIds.flatMap((id) => (lazyModules[id] ? [lazyModules[id]] : []));
+    if (keys.length === 0) return "";
+    manifest ??= await step("read dist/.vite/manifest.json", async () =>
+      JSON.parse(await readFile(join(distDir, ".vite", "manifest.json"), "utf8")) as ViteManifest,
+    );
+    return routeAssetTags(manifest, keys);
+  };
+
   const source = entry.createRecordingSource(
     entry.createApiContentSource({ baseUrl: options.apiBaseUrl, ...(options.fetch ? { fetch: options.fetch } : {}) }),
   );
@@ -130,10 +219,8 @@ export async function runPrerender(options: PrerenderOptions): Promise<Prerender
     await step(`render ${route}`, async () => {
       const result = await entry.render(route, { source, siteUrl });
       if (result.status !== 200) throw new Error(`status ${result.status}`);
-      await writeOut(
-        routeFile(distDir, route),
-        fillTemplate(template, { head: result.head, html: result.html, data: result.hydrationScript }),
-      );
+      const page = fillTemplate(template, { head: result.head, html: result.html, data: result.hydrationScript });
+      await writeOut(routeFile(distDir, route), injectBeforeHeadEnd(page, await lazyTags(result.routeIds ?? [])));
     });
     log(`  rendered ${route}`);
   }
@@ -160,6 +247,10 @@ export async function runPrerender(options: PrerenderOptions): Promise<Prerender
   );
   await step("write sitemap.xml", () => writeOut(join(distDir, "sitemap.xml"), entry.buildSitemap(sitemap, siteUrl)));
   await step("write robots.txt", () => writeOut(join(distDir, "robots.txt"), entry.buildRobots(siteUrl)));
+  if (options.compress) {
+    const c = await step("write precompressed .gz/.br files", () => compressDir(distDir));
+    log(`  compressed ${c.files} files: ${c.rawBytes} B raw, ${c.gzBytes} B gzip, ${c.brBytes} B brotli`);
+  }
 
   // Last step: only reached when every route succeeded (TS-005 step 9).
   const buildInfo = {
@@ -183,7 +274,7 @@ async function main(): Promise<void> {
   const entryPath = join(frontendDir, "dist-ssr", "entry-server.js");
   const entry = (await import(pathToFileURL(entryPath).href)) as PrerenderEntry;
   console.log(`prerender: API ${apiBaseUrl}, site ${siteUrl}`);
-  await runPrerender({ distDir: join(frontendDir, "dist"), apiBaseUrl, siteUrl, entry, appVersion: pkg.version });
+  await runPrerender({ distDir: join(frontendDir, "dist"), apiBaseUrl, siteUrl, entry, appVersion: pkg.version, compress: true });
 }
 
 const isMain = process.argv[1] !== undefined && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;

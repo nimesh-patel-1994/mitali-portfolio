@@ -1,6 +1,7 @@
 /**
  * TapeDivider (UI-008): decorative rotated green block overlapping the seam between a dark and a cream section.
- * Zero-height, `aria-hidden`, no pointer events; the page clips it horizontally (`overflow-x: clip` on body).
+ * Zero-height, `aria-hidden`, no pointer events; it clips its own block horizontally (`overflow-x: clip`), so it
+ * never makes the page wider than the viewport (REQ-NFR-001, UI-T-103).
  * Place it between two sections and alternate `side` per page.
  */
 import { cx } from "@/shared/utils/cx";

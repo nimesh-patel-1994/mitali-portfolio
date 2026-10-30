@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from app.services import markdown
-from app.services.markdown import render_markdown
+from app.services.markdown import is_allowed_href, normalise_href, render_markdown, sanitize_html
 
 
 @pytest.mark.be_t("BE-T-086")
@@ -56,6 +56,67 @@ def test_render_markdown_safe_links_get_forced_rel() -> None:
     assert html.count('rel="noopener noreferrer nofollow"') == 3
     assert 'href="https://example.com"' in html
     assert 'title="T"' in html
+
+
+@pytest.mark.sec("SEC-BE-013")
+@pytest.mark.parametrize(
+    ("markdown", "href"),
+    [
+        ("[a](https://example.com/x)", "https://example.com/x"),
+        ("[a](http://example.com)", "http://example.com"),
+        ("[a](mailto:hi@example.com)", "mailto:hi@example.com"),
+        ("[a](/work/sample-case)", "/work/sample-case"),
+        ("[a](/)", "/"),
+        ("[a](//evil.example/x)", None),
+        # markdown-it percent-encodes the backslash, so this stays an inert same-site path.
+        ("[a](/\\evil.example/x)", "/%5Cevil.example/x"),
+        ("[a](relative/page)", None),
+        ("[a](../up)", None),
+        ("[a](#section)", None),
+        ("[a](?q=1)", None),
+        ("[a](http:no-host)", None),
+        ("[a](ftp://example.com/f)", None),
+    ],
+)
+def test_render_markdown_link_targets(markdown: str, href: str | None) -> None:
+    """Review n3: http(s), mailto and site-relative ``/path`` only; ``//host`` and other relative forms lose href."""
+    html = render_markdown(markdown).html
+    if href is None:
+        assert "href" not in html
+        assert ">a</a>" in html  # link text kept
+    else:
+        assert f'href="{href}"' in html
+    assert not is_allowed_href("/\\evil.example")
+    assert not is_allowed_href("http://[bad")
+
+
+@pytest.mark.sec("SEC-BE-013")
+@pytest.mark.parametrize(
+    "href",
+    [
+        "/\t/evil.example",
+        "/\n/evil.example",
+        "/\r\n/evil.example",
+        " //evil.example",
+        "\x00//evil.example",
+        "\x1f/\t/evil.example \x01",
+        "java\tscript:alert(1)",
+        "\x08javascript:alert(1)",
+        " relative/page",
+    ],
+)
+def test_href_check_normalises_like_a_browser(href: str) -> None:
+    """Review B-3: tab/LF/CR anywhere and surrounding C0 controls/spaces are ignored by browsers, so by us too."""
+    assert not is_allowed_href(href)
+    assert "href" not in sanitize_html(f'<a href="{href}">x</a>')
+
+
+@pytest.mark.sec("SEC-BE-013")
+def test_allowed_href_is_written_normalised() -> None:
+    assert normalise_href(" \t/work/\nsample \x00") == "/work/sample"
+    assert is_allowed_href(" /work/sample\t")
+    assert 'href="/work/sample"' in sanitize_html('<a href=" /work/sam&#9;ple ">x</a>')
+    assert 'href="https://example.com/a"' in sanitize_html('<a href="https://exa&#10;mple.com/a">x</a>')
 
 
 def test_render_markdown_allow_list_equals_ts_012() -> None:

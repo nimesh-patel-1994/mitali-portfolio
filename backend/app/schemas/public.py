@@ -27,6 +27,8 @@ class PublicSettings(BaseModel):
     booking_url: str | None = Field(description='Absolute http(s) URL, "#" or null (null/"#" means link to /contact)')
     social_links: list[SocialLink]
     footer_signoff: str
+    contact_promise: str = Field(description="Promise line under the Contact page heading; plain text (CHG-005)")
+    footer_rights_line: str = Field(description="Rights line in the footer bottom bar; plain text (CHG-005)")
 
 
 class VisionBlock(BaseModel):

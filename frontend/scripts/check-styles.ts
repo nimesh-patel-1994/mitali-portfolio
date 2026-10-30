@@ -7,6 +7,9 @@
  * 2. Motion rule: every `animation*` / `transition*` declaration (other than `none`) in any stylesheet under `src/`
  *    sits inside `@media (prefers-reduced-motion: no-preference)`.
  *
+ * 3. index.html: the `theme-color` meta is the one literal colour outside tokens.css (HTML cannot read CSS tokens);
+ *    it must equal `--color-bg-deepest` (DES-011).
+ *
  * Usage: `tsx scripts/check-styles.ts` (exit code 1 on any violation).
  */
 import { readdirSync, readFileSync } from "node:fs";
@@ -17,7 +20,7 @@ import postcss, { type AtRule, type ChildNode, type Container, type Declaration 
 export interface Violation {
   file: string;
   line: number;
-  rule: "colour" | "font-family" | "spacing" | "media" | "motion";
+  rule: "colour" | "font-family" | "spacing" | "media" | "motion" | "theme-color";
   message: string;
 }
 
@@ -138,10 +141,36 @@ export function checkStyles(srcDir: string): Violation[] {
   return violations;
 }
 
+const THEME_COLOR_TOKEN = "--color-bg-deepest";
+
+/** The `theme-color` meta in index.html must equal `--color-bg-deepest` from tokens.css. */
+export function checkThemeColor(indexHtml: string, tokensCss: string): Violation[] {
+  const meta = /<meta\s+name="theme-color"\s+content="([^"]*)"/i.exec(indexHtml)?.[1];
+  let token: string | undefined;
+  postcss.parse(tokensCss).walkDecls(THEME_COLOR_TOKEN, (decl) => {
+    token = decl.value.trim();
+  });
+  if (meta !== undefined && token !== undefined && meta.toLowerCase() === token.toLowerCase()) return [];
+  return [
+    {
+      file: "../index.html",
+      line: 0,
+      rule: "theme-color",
+      message: `theme-color "${meta ?? "(missing)"}" must equal ${THEME_COLOR_TOKEN} "${token ?? "(missing)"}" (DES-011)`,
+    },
+  ];
+}
+
 const isMain = process.argv[1] !== undefined && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 if (isMain) {
   const srcDir = fileURLToPath(new URL("../src", import.meta.url));
-  const violations = checkStyles(srcDir);
+  const violations = [
+    ...checkStyles(srcDir),
+    ...checkThemeColor(
+      readFileSync(fileURLToPath(new URL("../index.html", import.meta.url)), "utf8"),
+      readFileSync(join(srcDir, "styles", "tokens.css"), "utf8"),
+    ),
+  ];
   if (violations.length > 0) {
     for (const v of violations) console.error(`src/${v.file}:${v.line} [${v.rule}] ${v.message}`);
     console.error(`\ncheck-styles: ${violations.length} violation(s)`);

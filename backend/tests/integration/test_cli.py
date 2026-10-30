@@ -69,6 +69,20 @@ async def test_cli_create_admin_then_login(
     assert await _login(db_app, EMAIL, PASSWORD) == 200
 
 
+@pytest.mark.be_t("BE-T-050")
+async def test_cli_password_with_surrounding_spaces_logs_in_exactly_as_typed(
+    db_session_factory: Callable[[], AsyncSession], db_settings: Settings, db_session: AsyncSession, db_app: FastAPI
+) -> None:
+    """Review M1: the login body must not strip the password (the CLI hashes the exact string)."""
+    spaced = "  spaced secret phrase  "
+    code, _out, err = await _run(
+        ["create-admin", "--email", EMAIL, "--password-stdin"], db_session_factory, db_settings, spaced
+    )
+    assert (code, err) == (0, "")
+    assert await _login(db_app, EMAIL, spaced) == 200
+    assert await _login(db_app, EMAIL, spaced.strip()) == 401
+
+
 @pytest.mark.be_t("BE-T-051")
 @pytest.mark.parametrize(
     ("email", "password"),

@@ -352,10 +352,11 @@ the main concern once hosting arrives (section 6).
   - Verify: BE-T-057, BE-T-068, BE-T-086, BE-T-088; **new test** `[x](JaVaScRiPt:alert(1))`, `[x](data:text/html,…)`,
     `<a href="vbscript:…">` in raw Markdown → no active link; review BE-REV-014, BE-REV-028.
 
-- SEC-BE-014 [NEW 2026-10-29 16:06] URL and email validation for settings and links (no open redirects)
+- SEC-BE-014 [NEW 2026-10-29 16:06] (definition updated 2026-10-30 05:08, CHG-005: length limit aligned with the
+  contract) URL and email validation for settings and links (no open redirects)
   - `booking_url`: null, `""`, `#`, or an absolute URL parsed with a real parser (`pydantic.HttpUrl` or `urllib.parse`
     plus checks) whose scheme is exactly `http` or `https`, with a host, no userinfo (`user:pass@`), no whitespace or
-    control characters, ≤ 2048 characters. `social_links[].url`: same rule (no `#`/empty). Everything else
+    control characters, ≤ 500 characters (as `SettingsInput.booking_url` and `SocialLink.url` in `api-contract.yaml`). `social_links[].url`: same rule (no `#`/empty). Everything else
     (`javascript:`, `data:`, `vbscript:`, `ftp:`, protocol-relative `//host`, relative paths) → 422.
   - `contact_email`, `notification_email`: valid email (`EmailStr`), no CR/LF, ≤ 254.
   - The backend never issues redirects to stored or client-supplied URLs (the only redirect is the 308 trailing-slash

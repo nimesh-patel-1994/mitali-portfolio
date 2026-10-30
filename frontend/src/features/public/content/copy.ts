@@ -130,7 +130,6 @@ export const footer = {
   navLabel: "Footer",
   builtLabel: "Edition",
   copyright: (year: string) => `© ${year} Mitali`,
-  rights: "All rights reserved. Words, as always, are my own.",
 } as const;
 
 /* ---------------------------------------------------------------- Home (UI-022..UI-026) */
@@ -233,7 +232,6 @@ export const faqsPage = {
 
 export const contactPage = {
   headingLines: ["Let's talk", "words"],
-  promise: "Tell me what you're working on. I reply to every enquiry within two working days.",
   emailLabel: "Prefer email?",
 } as const;
 
@@ -241,6 +239,7 @@ export const enquiryForm = {
   name: "Name",
   email: "Email",
   enquiryType: "Enquiry type",
+  enquiryTypePlaceholder: "Choose one…",
   budgetRange: "Budget range",
   budgetNone: "Prefer not to say",
   company: "Company",

@@ -47,11 +47,14 @@ async def test_validation_error_fields_use_dotted_paths_without_prefix(
     assert admin_error["fields"] == {"unexpected": "Extra inputs are not permitted"}
 
 
+@pytest.mark.be_t("BE-T-010")
 async def test_malformed_json_body_returns_validation_envelope(probe_client: httpx.AsyncClient) -> None:
     response = await probe_client.post(
         "/api/public/_probe", content=b'{"name": ', headers={"Content-Type": "application/json"}
     )
-    _assert_envelope(response, 422, "validation_error")
+    error = _assert_envelope(response, 422, "validation_error")
+    # Review n4: no ``fields`` keyed by a character offset.
+    assert error == {"code": "validation_error", "message": "The request body is not valid JSON."}
 
 
 @pytest.mark.be_t("BE-T-011")

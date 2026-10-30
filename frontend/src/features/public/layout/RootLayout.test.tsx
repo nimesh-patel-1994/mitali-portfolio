@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createRoutes } from "@/app/routes";
 import { createFixtureSource, fixtureData } from "@/test/fixture-source";
 
@@ -67,5 +67,59 @@ describe("UI-002 layout on client navigation", () => {
     });
     expect(await screen.findByRole("heading", { level: 1, name: "This page took a day off" })).toBeInTheDocument();
     await waitFor(() => expect(document.title).toBe("Page not found — Mitali"));
+  });
+});
+
+describe("UI-REV-008 scroll reset and focus after client navigation (UI-002)", () => {
+  it("push to a new path: scrolls to the top, then focuses <main> without scrolling", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo");
+    const focus = vi.spyOn(HTMLElement.prototype, "focus");
+    await renderApp();
+    scrollTo.mockClear();
+    focus.mockClear();
+    await userEvent.setup().click(screen.getAllByRole("link", { name: "About" })[0]!);
+    await screen.findByRole("heading", { level: 1, name: /Clear words/ });
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("main")));
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+    const mainFocus = focus.mock.calls.find((_, i) => focus.mock.contexts[i] === screen.getByRole("main"));
+    expect(mainFocus).toEqual([{ preventScroll: true }]);
+    expect(scrollTo.mock.invocationCallOrder[0]!).toBeLessThan(
+      focus.mock.invocationCallOrder[focus.mock.contexts.indexOf(screen.getByRole("main"))]!,
+    );
+  });
+
+  it("back/forward (POP) to another path: no scroll reset (the browser restores it), focus still moves to <main>", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo");
+    const router = await renderApp();
+    await act(async () => {
+      await router.navigate("/about");
+    });
+    await screen.findByRole("heading", { level: 1, name: /Clear words/ });
+    scrollTo.mockClear();
+    await act(async () => {
+      await router.navigate(-1);
+    });
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("main")));
+    expect(router.state.historyAction).toBe("POP");
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("search-param-only change (writing filter) neither scrolls nor moves focus", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo");
+    const router = await renderApp();
+    await act(async () => {
+      await router.navigate("/writing");
+    });
+    await screen.findByRole("heading", { level: 1, name: "Writing" });
+    scrollTo.mockClear();
+    const before = document.activeElement;
+    await act(async () => {
+      await router.navigate("/writing?format=social");
+    });
+    expect(router.state.location.search).toBe("?format=social");
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(before);
   });
 });

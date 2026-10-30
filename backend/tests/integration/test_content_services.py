@@ -148,7 +148,7 @@ async def test_profile_and_settings_updates_touch_marker(
     before = await _changed_at(db_session)
     settings = (await admin_client.get("/api/admin/settings")).json()
     body = {key: settings[key] for key in ("contact_email", "booking_url", "social_links", "footer_signoff",
-                                           "notification_email")}  # fmt: skip
+                                           "contact_promise", "footer_rights_line", "notification_email")}  # fmt: skip
     assert (await admin_client.put("/api/admin/settings", json=body)).status_code == 200
     middle = await _changed_at(db_session)
     assert middle > before

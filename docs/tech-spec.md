@@ -83,7 +83,7 @@
   `nh3` (SD-009), `python-multipart` (uploads). CLI uses stdlib `argparse` + `getpass` (no extra dependency).
   Frontend: `react-router` (data routers), `@tanstack/react-query`, `react-hook-form`, `zod`, `openapi-fetch`;
   dev: `openapi-typescript`, `tsx`, `vitest`, `@testing-library/react`, `msw`, `@playwright/test`, `@axe-core/playwright`,
-  `@lhci/cli`. All open source, no paid services (REQ-NFR-008).
+  `@axe-core/playwright` (Lighthouse 13 is run as an external binary by the E2E harness, not as a dependency; `@lhci/cli` dropped in CHG-008). All open source, no paid services (REQ-NFR-008).
 - `.gitignore` covers `backend/.env`, `frontend/.env`, `backend/media/uploads/`, `backend/media/seed/`, `frontend/dist/`,
   `frontend/dist-ssr/`, `.dev-pipeline/reference/screenshots/`.
 - Error handling and edge cases: startup fails fast with a clear message when `DATABASE_URL` is missing or the DB on
@@ -91,14 +91,23 @@
 - Open risks: Node 26 is newer than some tooling targets; pin engines in `package.json` and verify Vite/Vitest support at
   build start.
 
-### TS-002 [NEW 2026-10-29 16:06] Data model and migrations
+### TS-002 [NEW 2026-10-29 16:06] (definition updated 2026-10-30 05:08, CHG-005) Data model and migrations
 - Implements: REQ-002, REQ-004, REQ-006, REQ-011, REQ-012, REQ-013, REQ-014, REQ-015, REQ-020, REQ-021, REQ-023, REQ-030,
   REQ-031, REQ-040, REQ-041, REQ-042, REQ-043, REQ-052, REQ-060, REQ-061, REQ-063, REQ-064, REQ-065, REQ-066, REQ-067,
   REQ-NFR-005
 - Components touched: backend (`models/`, `migrations/`)
-- Technical flow: the full schema is in section 3. One Alembic revision `0001_initial_schema` creates every table,
-  constraint and index; it is reviewed as SQL (`alembic upgrade head --sql`). Conventions (per SD-013 and the
-  `stack-postgresql` profile):
+- Technical flow: the full schema is in section 3. Alembic revision `0001_initial_schema` creates every table,
+  constraint and index; it is reviewed as SQL (`alembic upgrade head --sql`). Revision `0001` is already applied to the
+  dev and test databases and is never edited; later schema changes are new revisions:
+  - `0002_settings_copy_fields` (down-revision `0001`, CHG-005, REQ-042, REQ-065): adds to `site_settings`
+    `contact_promise text NOT NULL` and `footer_rights_line text NOT NULL`, each with a server default equal to the
+    initial copy (section 3.2) and `CHECK (length(btrim(col)) BETWEEN 1 AND 200)` (named per the naming convention).
+    `ADD COLUMN … NOT NULL DEFAULT '<text>'` fills the existing singleton row in the same statement, so no separate data
+    step is needed. The single quote in the contact-promise text is escaped (`''`) in the SQL default; check the offline
+    SQL. The server defaults stay in place (the SQLAlchemy model declares the same `server_default`, so `alembic check`
+    shows no drift). Downgrade drops both CHECKs and columns. Verified online: upgrade, `alembic check`, downgrade to
+    `0001`, upgrade again.
+  Conventions (per SD-013 and the `stack-postgresql` profile):
   1. Keys: `uuid` primary keys with `DEFAULT gen_random_uuid()` (built in since PostgreSQL 13; no extension); singletons
      use `smallint id = 1` with a `CHECK (id = 1)`.
   2. Enumerations are `text` + `CHECK (col IN (...))` (easier to extend in Alembic than native enum types).
@@ -151,7 +160,11 @@
      to `dist/<path>/index.html`; `/admin` and `/admin/*` return `dist/admin/index.html`; anything else returns
      `dist/404.html` with **status 404** (REQ-001). Trailing slashes redirect (308) to the
      slash-less canonical path. `build-info.json` is not served publicly (read from disk by the backend, TS-015).
-     HTML responses: `Cache-Control: no-cache`; `/assets/*`: immutable.
+     HTML responses: `Cache-Control: no-cache`; `/assets/*` and `/fonts/*.woff2|.woff`: immutable (fonts are fixed
+     files; a changed font needs a new file name). Compression (CHG-008/010, 2026-10-31 00:12): text types (html, js, mjs, css,
+     json, svg, xml, txt) are sent as the precompressed `.br`/`.gz` written by the pre-render (`scripts/compress.ts`) when
+     the client accepts it, else gzipped on the fly (≥ 256 B); `Vary: Accept-Encoding`; never for `/api/*` (BREACH:
+     admin JSON carries the CSRF token) or `/media`; direct requests for `.br`/`.gz` files return the 404 page.
   9. **Security headers** on HTML and API responses: CSP `default-src 'self'; script-src 'self'; style-src 'self';
      img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';
      frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
@@ -438,8 +451,8 @@
 - Error handling: markdown over 100 000 chars → 422.
 - Open risks: if the allow-list changes later, stored HTML must be re-rendered (one-off script via `/feature`).
 
-### TS-013 [NEW 2026-10-29 16:06] Profile and site settings
-- Implements: REQ-002, REQ-004, REQ-014, REQ-065
+### TS-013 [NEW 2026-10-29 16:06] (definition updated 2026-10-30 05:08, CHG-005) Profile and site settings
+- Implements: REQ-002, REQ-004, REQ-014, REQ-042, REQ-065
 - Components touched: backend (`routers/admin/profile`, `routers/admin/settings`), frontend (admin forms; public layout)
 - Technical flow: operations `getAdminProfile`, `updateAdminProfile`, `getAdminSettings`, `updateAdminSettings`
   (singletons, created by migration with placeholder values so GET never 404s).
@@ -447,10 +460,20 @@
      ≤ 60 chars), `years_experience` (0..60 or null), `origin_statement` (≤ 600), `vision_blocks` (exactly 2 ×
      `{heading ≤ 80, body ≤ 600}`), `portrait_media_id` + `portrait_alt`.
   2. Settings input: `contact_email` (valid email), `booking_url` (empty/null, `#`, or an absolute `http(s)` URL),
-     `social_links` (≤ 8 × `{label ≤ 40, url http(s)}`), `footer_signoff` (≤ 120), `notification_email` (valid email or
-     null; stored only, no email is sent). Invalid values → 422 with field errors and nothing saved (REQ-065).
+     `social_links` (≤ 8 × `{label ≤ 40, url http(s)}`), `footer_signoff` (≤ 120), `contact_promise` (required, plain
+     text, trimmed, 1..200 chars, not blank), `footer_rights_line` (required, plain text, trimmed, 1..200 chars, not
+     blank), `notification_email` (valid email or null; stored only, no email is sent). Invalid values → 422 with field
+     errors and nothing saved (REQ-065).
   3. Both updates call `publishing.touch()` (TS-010). `content_changed_at` is read-only in the API.
-- Error handling: 422 envelope; unknown media id → 422 `fields.portrait_media_id`.
+  4. `contact_promise` and `footer_rights_line` (CHG-005) are also public: `getPublicSite` returns them in
+     `settings` (`PublicSettings`). The Contact page shows `contact_promise` under its heading (REQ-042) and the footer
+     bottom bar shows `footer_rights_line` (replacing the static `copy.ts` strings). Both are rendered as plain text
+     (React escaping; no Markdown, no HTML). Initial values (migration `0002` server defaults, TS-002):
+     - `contact_promise`: `Tell me what you're working on. I reply to every enquiry within two working days.`
+     - `footer_rights_line`: `All rights reserved. Words, as always, are my own.`
+     They reach the public site after the next rebuild, like every other setting (TS-005).
+- Error handling: 422 envelope; unknown media id → 422 `fields.portrait_media_id`; blank or over-long
+  `contact_promise` / `footer_rights_line` → 422 `fields.contact_promise` / `fields.footer_rights_line`.
 - Open risks: none.
 
 ### TS-014 [NEW 2026-10-29 16:06] Enquiry management
@@ -570,7 +593,7 @@
      public route from fixtures (hydration data and head tags).
   4. E2E (Playwright): backend on the seeded test DB with `SERVE_FRONTEND=true` after `npm run build:site`; journeys and
      `@axe-core/playwright` checks at 360, 810 and 1440 px widths (REQ-NFR-001/002).
-  5. Lighthouse CI (local, mobile profile) on every static page and one detail page of each type, assert ≥ 0.9 in all
+  5. Lighthouse 13 via the E2E harness (local, mobile profile; CHG-008) on every static page and one detail page of each type, assert ≥ 0.9 in all
      four categories (REQ-NFR-004).
 - Open risks: E2E needs the backend and DB running locally; documented in the README.
 
@@ -663,6 +686,11 @@ text NOT NULL (≤ 2000, plain text; blank lines become paragraphs)`, `show_in_p
 `social_links jsonb NOT NULL DEFAULT '[]'` (array of `{label, url}`), `footer_signoff text NOT NULL (≤ 120)`,
 `notification_email text NULL`, `content_changed_at timestamptz NOT NULL DEFAULT now()`, `seed_key`, `updated_at`.
 Row inserted by the migration with placeholders.
+Added by migration `0002_settings_copy_fields` (CHG-005, TS-002, TS-013):
+`contact_promise text NOT NULL DEFAULT 'Tell me what you''re working on. I reply to every enquiry within two working
+days.'` and `footer_rights_line text NOT NULL DEFAULT 'All rights reserved. Words, as always, are my own.'`, each with
+`CHECK (length(btrim(col)) BETWEEN 1 AND 200)`. (The contact-promise default is one line in SQL; it is wrapped here
+for width only, with a single space at the break.)
 
 ### 3.3 Enquiries and media
 **enquiries**: `name text NOT NULL (≤ 120)`, `email text NOT NULL (≤ 254)`, `company text NULL (≤ 120)`, `enquiry_type
@@ -816,7 +844,7 @@ sequenceDiagram
 | 1 | Seeded covers are SVG, and most social platforms do not render SVG `og:image` (REQ-050 is still met literally). Should the seed also emit a 1200×630 PNG per cover/thumbnail using Pillow (already a dependency), given REQ-071 says images are generated locally? | SVG used for `og:image` | User | No |
 | 2 | Budget range options and currency for the contact form (REQ-042). | Values `under_1000`, `1000_3000`, `3000_7500`, `7500_15000`, `over_15000`, `not_sure`; labels without a currency symbol until decided | User | No |
 | 3 | REQ-023 says "results and other content seeded as sample data" are labelled, but SD-013 puts `is_sample` only on case studies, results and writing samples. Seeded testimonials (fictional clients), FAQs and profile carry no label. Should testimonials get a sample flag (an SD-013 change)? | No flag on testimonials | User | No |
-| 4 | Hero statements, section headings, CTA bands, the contact promise line and privacy note are not in the profile/settings model (REQ-065), so they are static original copy in the frontend and need a developer to change. OK? | Static copy in `features/public/content/copy.ts` | User | No |
+| 4 | Hero statements, section headings, CTA bands, the contact promise line and privacy note are not in the profile/settings model (REQ-065), so they are static original copy in the frontend and need a developer to change. OK? | Static copy in `features/public/content/copy.ts`. Partly resolved by CHG-005 (2026-10-30 05:08): the contact promise line and the footer rights line moved to settings (`contact_promise`, `footer_rights_line`, TS-013); the rest stays static | User | Partly |
 | 5 | REQ-001's 404 status can only be produced by the production-like preview (FastAPI serving `dist`); the Vite dev server answers 200. Verification of that criterion is done on the preview. OK? | Verified on preview | User | No |
 | 6 | Per-account login blocking (REQ-061) lets anyone lock the admin out for 15 minutes by guessing. Accept, or add a CLI `unlock-login` command (reset-password already clears it)? | Accept; reset-password clears the block | User | No |
 | 7 | Seed re-run policy: default inserts only missing records (keeps admin edits); `--reset` restores seed values. A seeded record the admin deleted is re-created by the next default run. OK? | As described | User | No |

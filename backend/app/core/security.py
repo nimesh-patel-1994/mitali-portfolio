@@ -34,6 +34,18 @@ def dummy_hash() -> str:
     return _hasher.hash(_DUMMY_PASSWORD)
 
 
+def verify_login_password(password_hash: str | None, password: str) -> bool:
+    """Login check, run as one threadpool call: an unknown email (``None``) verifies against the dummy hash.
+
+    The dummy hash is created (first use) and verified inside this blocking call, so neither path does Argon2 work
+    on the event loop and both failure paths cost the same verification.
+    """
+    if password_hash is None:
+        verify_password(dummy_hash(), password)
+        return False
+    return verify_password(password_hash, password)
+
+
 def verify_password(password_hash: str, password: str) -> bool:
     """True when ``password`` matches; False for a mismatch or an unreadable hash (never raises for those)."""
     try:

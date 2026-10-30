@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import Annotated, Literal, TypeVar
 
 from fastapi import Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.errors import ErrorCode
 from app.schemas.base import InputModel
@@ -15,6 +16,7 @@ T = TypeVar("T")
 
 MAX_PAGE_SIZE = 100
 DEFAULT_PAGE_SIZE = 20
+MAX_OFFSET = 2**31 - 1  # far beyond any real row count; keeps OFFSET well inside a PostgreSQL bigint
 
 
 class ErrorBody(BaseModel):
@@ -49,7 +51,11 @@ class PageParams:
 
     @property
     def offset(self) -> int:
-        return (self.page - 1) * self.page_size
+        """Row offset, clamped to ``MAX_OFFSET`` so a huge ``page`` never overflows the database's bigint.
+
+        Any offset at or beyond the total gives an empty page (the repositories skip the query then).
+        """
+        return min((self.page - 1) * self.page_size, MAX_OFFSET)
 
     @property
     def limit(self) -> int:
@@ -67,6 +73,17 @@ class Page[T](BaseModel):
     @classmethod
     def build(cls, items: list[T], total: int, params: PageParams) -> Page[T]:
         return cls(items=items, total=total, page=params.page, page_size=params.page_size)
+
+
+class AdminMeta(BaseModel):
+    """Contract ``AdminMeta``: server-managed fields of every admin content item (never accepted as input)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    position: int = Field(ge=0)
+    created_at: datetime
+    updated_at: datetime
 
 
 class OrderRequest(InputModel):

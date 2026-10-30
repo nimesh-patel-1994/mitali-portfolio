@@ -13,16 +13,18 @@ export interface WordmarkProps {
   size?: "header" | "footer" | "admin";
   /** `onDark`: green (--color-primary); `onLight`: --color-dark (DES-013: never green on cream). */
   tone?: "onDark" | "onLight";
-  /** When set, the wordmark is a link with the accessible name "Mitali, home". */
+  /** When set, the wordmark is a link with the accessible name "Mitali, home" (or `label`). */
   to?: string;
+  /** Accessible name of the link (e.g. the admin's "Mitali admin, dashboard"). */
+  label?: string;
   className?: string;
 }
 
-export function Wordmark({ size = "header", tone = "onDark", to, className }: WordmarkProps) {
+export function Wordmark({ size = "header", tone = "onDark", to, label, className }: WordmarkProps) {
   const classes = cx(styles.wordmark, styles[size], tone === "onDark" ? styles.onDark : styles.onLight, className);
   if (to !== undefined) {
     return (
-      <Link to={to} className={classes} aria-label={a11y.wordmarkHome}>
+      <Link to={to} className={classes} aria-label={label ?? a11y.wordmarkHome}>
         {BRAND_TEXT}
       </Link>
     );

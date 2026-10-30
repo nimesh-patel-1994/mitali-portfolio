@@ -1,7 +1,10 @@
 /**
  * Public root layout (UI-002): skip link (first focusable element) → Header → <main id="main"> → Footer.
  * - Navigation pending: thin top progress bar after 150 ms; `aria-busy` on <main> while loading.
- * - Client navigation to a new path: document title updates from the route meta and focus moves to <main>.
+ * - Client navigation to a new path: document title updates from the route meta; push/replace navigations scroll
+ *   to the top, back/forward (POP) keeps the browser's scroll position; focus then moves to <main> without scrolling.
+ *   Search-only changes (writing filter) neither scroll nor move focus. No <ScrollRestoration> (it uses
+ *   sessionStorage, UI-REV-014).
  * Rendering is deterministic (no clocks, randomness or window reads during render).
  */
 import { useContext, useEffect, useRef, type ReactNode, type RefObject } from "react";
@@ -12,6 +15,7 @@ import {
   useLocation,
   useMatches,
   useNavigation,
+  useNavigationType,
   useRouteLoaderData,
 } from "react-router";
 import type { SiteBundle } from "@/api/types";
@@ -51,15 +55,20 @@ function useDocumentTitle(site: SiteBundle | undefined, status: number): void {
   }, [meta.title]);
 }
 
-/** Moves focus to <main> when the path changes after the first render (route change announcement). */
+/**
+ * After a path change (not the first render): scroll to the top unless the navigation was back/forward (POP), then
+ * move focus to <main> with `preventScroll` (route change announcement). Search-param changes do not count.
+ */
 function useFocusMainOnNavigation(mainRef: RefObject<HTMLElement | null>): void {
   const { pathname } = useLocation();
+  const navigationType = useNavigationType();
   const previous = useRef(pathname);
   useEffect(() => {
     if (previous.current === pathname) return;
     previous.current = pathname;
-    mainRef.current?.focus({ preventScroll: false });
-  }, [pathname, mainRef]);
+    if (navigationType !== "POP") window.scrollTo(0, 0);
+    mainRef.current?.focus({ preventScroll: true });
+  }, [pathname, navigationType, mainRef]);
 }
 
 export interface PublicFrameProps {

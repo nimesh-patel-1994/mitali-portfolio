@@ -149,6 +149,8 @@ def _settings(**overrides: Any) -> dict[str, Any]:
         "booking_url": None,
         "social_links": [],
         "footer_signoff": "Thanks for visiting",
+        "contact_promise": "I reply within two working days.",
+        "footer_rights_line": "All rights reserved.",
         "notification_email": None,
     }
     values.update(overrides)

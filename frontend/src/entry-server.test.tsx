@@ -5,6 +5,7 @@ import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readHydrationPayload, toHydrationState } from "@/app/hydration";
+import { resolveLazyMatches } from "@/app/lazy-routes";
 import { createRoutes } from "@/app/routes";
 import { buildHead } from "@/features/public/seo/head";
 import { resolveMeta } from "@/features/public/seo/meta";
@@ -225,6 +226,8 @@ async function expectCleanHydration(url: string, html: string, script: string, s
   const recoverable: unknown[] = [];
 
   const routes = createRoutes(createFixtureSource());
+  // Same order as entry-client: lazy routes of the first page are loaded before hydrating.
+  await resolveLazyMatches(routes, window.location.pathname);
   const payload = readHydrationPayload(document)!;
   const router = createBrowserRouter(routes, {
     hydrationData: toHydrationState(payload, routes, window.location.pathname),

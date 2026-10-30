@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import postcss from "postcss";
 import { describe, expect, it } from "vitest";
-import { checkMotionRule, checkStyles, checkTokenRule } from "../../scripts/check-styles";
+import { checkMotionRule, checkStyles, checkThemeColor, checkTokenRule } from "../../scripts/check-styles";
 import { Section } from "@/shared/ui/Section/Section";
 import { readRepoFile, SRC_DIR } from "@/test/paths";
 
@@ -119,6 +119,17 @@ describe("UI-T-002 style check script", () => {
     const css = `.a { color: var(--on-surface); margin: 0; padding: var(--space-4); }
       @media (--bp-tablet) { .a { gap: calc(2 * var(--space-2)); } }`;
     expect(checkTokenRule("x.module.css", css)).toEqual([]);
+  });
+});
+
+describe("UI-T-002 / UI-REV-001 index.html theme-color traces to --color-bg-deepest (DES-011)", () => {
+  it("the theme-color meta equals the token, and a drift is reported", () => {
+    const html = readRepoFile("frontend", "index.html");
+    const tokensCss = readRepoFile("frontend", "src", "styles", "tokens.css");
+    expect(html).toMatch(/<!-- theme-color = --color-bg-deepest/);
+    expect(checkThemeColor(html, tokensCss)).toEqual([]);
+    const drifted = html.replace(/content="#[0-9a-fA-F]+"/, 'content="#123456"');
+    expect(checkThemeColor(drifted, tokensCss).map((v) => v.rule)).toEqual(["theme-color"]);
   });
 });
 
