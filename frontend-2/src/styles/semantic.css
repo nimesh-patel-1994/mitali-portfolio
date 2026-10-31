@@ -1,0 +1,174 @@
+/*
+ * Semantic roles (DES-060 file 2): the only file that reads the raw palette (--p-*). Components read these roles
+ * and the surface aliases of surfaces.css, never --p-* and never literals (check-styles, UI-REV-027).
+ * Type, tracking and layout roles are redefined inside the breakpoints (DES-057, DES-060).
+ * The P1 white-base comparison (DES-051) is a dev-only override in src/dev/review-base.css (never in a build).
+ */
+@import "./media.css";
+
+:root {
+  /* ---- Brand ---- */
+  --brand-accent: var(--p-green);
+  --brand-on-accent: var(--p-ink);
+  --brand-accent-text-on-light: var(--p-green-text);
+
+  /* ---- Surface ---- */
+  --surface-base: var(--p-cream);
+  --surface-band: var(--p-white);
+  --surface-deep: var(--p-deep);
+  --surface-deep-alt: var(--p-olive);
+  --surface-skeleton: var(--p-neutral-100);
+  --surface-backdrop: var(--p-ink-60);
+
+  /* ---- Ink ---- */
+  --ink-strong: var(--p-ink);
+  --ink-muted: var(--p-muted);
+  --ink-inverse: var(--p-cream);
+  --ink-inverse-muted: var(--p-muted-on-dark);
+
+  /* ---- Line ---- */
+  --line-hairline: var(--p-ink-15);
+  --line-hairline-inverse: var(--p-cream-20);
+  --line-strong: var(--p-input-border);
+  --line-strong-inverse: var(--p-muted-on-dark);
+  --line-input: var(--p-input-border);
+  --line-width: 1px;
+  --line-width-strong: 2px;
+  --line-width-cta: 4px;
+
+  /* ---- Status ---- */
+  --status-danger: var(--p-danger);
+  --status-danger-on-dark: var(--p-danger-on-dark);
+  --status-warning: var(--p-warning);
+  --status-warning-on-dark: var(--p-warning-on-dark);
+  --status-success: var(--p-success);
+  --status-success-on-dark: var(--p-green);
+
+  /* ---- Type (DES-050, DES-057) ---- */
+  --font-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-label: "Antonio", "Arial Narrow", sans-serif;
+
+  --weight-display: 300;
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-label: 500;
+  --weight-wordmark: 700;
+
+  --text-display-xl: clamp(3rem, 1.4rem + 7.6vw, 8.75rem);
+  --text-display: clamp(2.5rem, 1.25rem + 5.6vw, 6.25rem);
+  --text-h2: clamp(1.875rem, 1.3rem + 2.5vw, 3.125rem);
+  --text-h3: clamp(1.375rem, 1.1rem + 0.9vw, 1.875rem);
+  --text-cta: clamp(3rem, 0.9rem + 9vw, 10rem);
+  --text-lead: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-label: 0.875rem;
+  --text-wordmark: 1.5rem;
+  --text-wordmark-footer: clamp(4rem, 1rem + 14vw, 15rem);
+
+  --leading-display-xl: 0.88;
+  --leading-display: 0.9;
+  --leading-h2: 1;
+  --leading-h3: 1.1;
+  --leading-cta: 0.9;
+  --leading-lead: 1.4;
+  --leading-body: 1.55;
+  --leading-small: 1.45;
+  --leading-label: 1;
+  --leading-wordmark: 0.85;
+
+  --tracking-display: -0.04em;
+  --tracking-heading: -0.03em;
+  --tracking-h3: -0.03em;
+  --tracking-label: 0.06em;
+  --tracking-wordmark: 0.02em;
+  --tracking-normal: normal;
+
+  --measure: 68ch;
+  --underline-offset: 0.2em;
+  --underline-width: 1px;
+  --icon-size: 1em;
+  --icon-size-lg: 1.5em;
+
+  /* ---- Space (4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 160 px) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+  --space-11: 10rem;
+  --section-gap: clamp(4rem, 2rem + 6vw, 8rem);
+
+  /* ---- Layout ---- */
+  --layout-inset: 16px;
+  --layout-gutter: 16px;
+  --layout-max: 1920px;
+  --header-h: 80px;
+  --header-h-compact: 64px;
+  --control-h: 48px;
+  --touch-min: 44px;
+  --menu-row-min: 56px;
+  --progress-h: 3px;
+
+  /* ---- Layers ---- */
+  --z-header: 50;
+  --z-progress: 60;
+  --z-menu: 70;
+  --z-skip: 80;
+  --z-review: 90;
+
+  /* ---- Radius ---- */
+  --radius-sm: 2px;
+  --radius-md: 8px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* ---- Motion (DES-058) ---- */
+  --motion-dur-fast: 150ms;
+  --motion-dur-base: 300ms;
+  --motion-dur-slow: 450ms;
+  --motion-dur-backdrop: 500ms;
+  --motion-dur-reveal: 1150ms;
+  --motion-delay-reveal: 150ms;
+  --motion-stagger-step: 60ms;
+  --motion-reveal-distance: 50px;
+  --motion-ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --motion-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --motion-parallax-shift: 8%;
+  /* Image travel relative to its own (116 %) height, so the drift never uncovers the frame. */
+  --motion-parallax-travel: calc(var(--motion-parallax-shift) / 1.16);
+  --motion-drift-max: 12%;
+  --motion-vt-dur: 250ms;
+
+  /* ---- Focus ---- */
+  --focus-width: 2px;
+  --focus-offset: 2px;
+}
+
+@media (--bp-md) {
+  :root {
+    --tracking-display: -0.055em;
+    --layout-inset: 20px;
+    --layout-gutter: 20px;
+  }
+}
+
+@media (--bp-lg) {
+  :root {
+    --tracking-heading: -0.05em;
+    --layout-inset: 24px;
+    --layout-gutter: 24px;
+  }
+}
+
+@media (--bp-xl) {
+  :root {
+    --tracking-display: -0.07em;
+  }
+}

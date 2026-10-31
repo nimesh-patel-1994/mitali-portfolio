@@ -57,3 +57,8 @@ run/.first-run-done
 run/pids.json
 run/smoke-report.md
 key.properties
+
+# /inspire capture for frontend-2: screenshots and raw probe output stay local (third-party imagery)
+.dev-pipeline/reference/inspiration/screenshots/
+.dev-pipeline/reference/inspiration/motion-probe*.json
+.dev-pipeline/reference/inspiration/probe-motion*.cjs

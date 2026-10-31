@@ -1,0 +1,108 @@
+@import "../../../styles/media.css";
+
+/* ---- Hero ---- */
+.hero {
+  padding-block: var(--space-6) var(--section-gap);
+}
+
+.statement {
+  font-size: var(--text-display-xl);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display-xl);
+}
+
+.line {
+  display: block;
+}
+
+.heroGrid {
+  margin-block-start: var(--space-6);
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.intro {
+  color: var(--on-surface-muted);
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+}
+
+.tagline {
+  font-weight: var(--weight-semibold);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: var(--space-2);
+}
+
+@media (--bp-lg) {
+  .heroGrid {
+    margin-block-start: var(--space-7);
+  }
+}
+
+/* ---- Shared section text ---- */
+.listLabel {
+  color: var(--on-surface);
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-inline-start: var(--space-5);
+}
+
+/* ---- Engagement models ---- */
+.model {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100%;
+}
+
+.modelName {
+  font-size: var(--text-h3);
+  letter-spacing: var(--tracking-h3);
+  line-height: var(--leading-h3);
+}
+
+.modelText {
+  color: var(--on-surface-muted);
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.check {
+  margin-block-start: var(--space-1);
+  color: var(--on-surface);
+}
+
+.modelAction {
+  margin-block-start: auto;
+  padding-block-start: var(--space-3);
+}

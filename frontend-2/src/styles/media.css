@@ -1,0 +1,8 @@
+/*
+ * Breakpoints (DES-055). Mobile-first: below 768 px is the default, no query.
+ * Used only through these custom media (UI-REV-017 read for frontend-2); compiled by postcss-custom-media.
+ * Import this file at the top of any stylesheet that uses them.
+ */
+@custom-media --bp-md (min-width: 768px);
+@custom-media --bp-lg (min-width: 1024px);
+@custom-media --bp-xl (min-width: 1440px);

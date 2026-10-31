@@ -1,0 +1,7 @@
+.section {
+  position: relative;
+}
+
+.padded {
+  padding-block: var(--section-gap);
+}

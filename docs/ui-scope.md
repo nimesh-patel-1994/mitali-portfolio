@@ -13,6 +13,8 @@
 > and, in the browser, from `/data/<key>.json`. The only runtime public call is `createEnquiry`.
 > Layout observations come from `.dev-pipeline/reference/reference-notes.md` sections 2-5 (structure only). No reference
 > text, images, logos, fonts or code are used; all copy is original (DES-003, DES-030).
+> **Second app (CHG-012):** the design variant `frontend-2/` has its own section 7 ("App: frontend-2") with items UI-100.., the
+> screen-parity matrix, review items UI-REV-026.. and tests UI-T-127... Sections 1-6 describe `frontend/` only.
 
 ## 1. Scope items
 
@@ -1087,3 +1089,388 @@ must report no serious or critical violations.
 | UI-T-121 [NEW 2026-10-29 16:06] | Fetch `/sitemap.xml`, `/robots.txt`, `/admin/login` HTML | Sitemap has static + published detail URLs only; robots disallows `/admin`; admin HTML has `noindex, nofollow` | UI-004 |
 | UI-T-122 [NEW 2026-10-29 16:06] | Settings: save invalid booking URL (error), then valid social link; profile: edit a bio paragraph; rebuild | Field error and nothing saved; footer shows the link; StoryBlock shows the new paragraph | UI-055, UI-056, UI-021, UI-018 |
 | UI-T-126 [NEW 2026-10-30 05:08] | (CHG-005) Fresh migrated + seeded DB: open `/contact` and check the footer; then in Settings clear the contact promise (error), set new promise and rights line texts, save; rebuild; reload `/contact` | Before: the initial texts of tech-spec section 3.2; empty value refused with a field error and nothing saved; after rebuild the Contact page and every footer show the new texts | UI-056, UI-033, UI-021 |
+
+## 7. App: frontend-2 (design variant; CHG-012)
+> Header entry: `{ stack: react, role: "design variant frontend-2 (public site + admin)", path: frontend-2 }`; profile `stack-react`.
+> Items are tagged `App: frontend-2` (with `public`, `admin` or `shared` after a slash). Everything in sections 1-6 describes
+> `frontend/` and stays unchanged. frontend-2 shows the **same screens with the same behaviour, states, API operations and SEO
+> outputs** (REQ-080..REQ-097); only the visual and motion design differs (design-brief section 7, DES-050..DES-065, which replace
+> DES-020/021/040 for this app; DES-001..003, DES-010 and the DES-013 colour rule still apply). Design tokens: DES-060 (semantic
+> layer). Phase PH-2 is ACTIVE: UI-100..UI-115 are full items; UI-120..UI-145 (PH-3) and UI-150..UI-152 (PH-4) are outlines.
+> No mock API: development reads the real backend on the dev database; E2E runs on the seeded test database (SD-117).
+> The UI may call only operations in `api-contract.yaml` (unchanged; frontend-2 uses 91 of 92, tech-spec section 2).
+
+### 7.1 Scope items, PH-2 (full)
+
+- UI-100 [IN-PROGRESS 2026-10-31 03:01] @PH-2 frontend-2 app scaffold, tooling and generated API client
+  - App: frontend-2/shared
+  - Implements: REQ-080, REQ-081, REQ-NFR-013, TS-020, TS-033
+  - Uses API: none directly; generates `src/api/schema.d.ts` from `docs/api-contract.yaml` (all 92 operations typed; 91 used)
+  - Files: `frontend-2/package.json`, `package-lock.json`, `tsconfig.json`, `eslint.config.js`, `index.html`, `.env.example`,
+    `src/api/{schema.d.ts,client.ts,types.ts}`, `src/shared/{utils,zod}/` (copied and owned), `src/test/setup.ts`, root `.gitignore`
+    lines (TS-020)
+  - Behaviour: same pinned majors and scripts as TS-020; ESLint rules of `frontend/` plus `no-restricted-imports` for any path into
+    `frontend/`; `generate:api` is the only reader of a file outside `frontend-2/`; jitless zod wrappers copied (CSP).
+  - States: n/a.
+  - Done when: `npm ci`, `npm run lint`, `npm run typecheck`, `npm test -- --run` pass in `frontend-2/` with `frontend/` untouched
+    and not installed; UI-T-127 passes.
+
+- UI-101 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Semantic token layer, fonts, global styles and surfaces
+  - App: frontend-2/shared
+  - Implements: REQ-083, REQ-NFR-012, REQ-082, REQ-NFR-002, TS-021, DES-050, DES-051, DES-055, DES-057, DES-059, DES-060, DES-061
+  - Uses API: none
+  - Files: `src/styles/{palette,semantic,surfaces,media,fonts,global}.css`, `src/shared/ui/Section/`, `scripts/copy-fonts.ts`,
+    `scripts/check-styles.ts`, `public/fonts/*.woff2`, `public/fonts/LICENSES/*.txt`, `index.html` (font preload),
+    `src/dev/review-switch.ts`
+  - Behaviour: DES-060 contract exactly (raw `--p-*` → semantic roles → `[data-surface]` aliases); `Section` renders
+    `<section data-surface="base|band|deep|deep-alt">`; fonts per TS-021 step 3 (Latin files only, `swap`, only Inter Tight 300
+    preloaded, licence check); global styles per TS-021 step 4 (`scroll-padding-top`, focus ring per surface); dev-only
+    `?base=white` switch for the P1 comparison (never in production).
+  - States: base cream (default), base white (dev review only).
+  - Done when: UI-T-128..UI-T-132 pass; fonts load from `/fonts/` with no external request (UI-T-152).
+
+- UI-102 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Motion system (reveal, parallax band, collage drift, hovers)
+  - App: frontend-2/public (admin uses only `--motion-dur-fast/base` state transitions)
+  - Implements: REQ-084, REQ-NFR-009, REQ-NFR-003, TS-022, DES-054, DES-058
+  - Uses API: none
+  - Files: `src/shared/motion/{reveal.ts,index.ts}`, `src/shared/ui/{Reveal,MediaBand,Collage}/`, `src/styles/motion.css`,
+    `scripts/check-motion-size.ts`, `src/entry-client.tsx` (calls `initMotion()` after hydration)
+  - Behaviour: TS-022 steps 1-6. Reveal: opacity + translateY 50 → 0 px, 1.15 s `--motion-ease-out`, 0.15 s delay, at ~85 % of
+    the viewport, once; hidden state only under `html[data-motion="on"]` and no-preference; content visible without JS, before
+    hydration, in print and under reduced motion. Parallax band and collage drift with `animation-timeline: view()` inside
+    `@supports`, static otherwise. One slide-in-from-left variant (`<Reveal variant="slide">`) used once per page at most.
+    No smooth scrolling, no custom cursor, no motion library.
+  - States: motion allowed (JS), reduced motion, no JS / before hydration, print, no IntersectionObserver, no scroll-timeline support.
+  - Done when: UI-T-133..UI-T-135 and E2E UI-T-150 pass.
+
+- UI-103 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Public route tree, root layout, content source and hydration
+  - App: frontend-2/public
+  - Implements: REQ-086, REQ-001, REQ-022, REQ-NFR-004, TS-026, DES-061
+  - Uses API (dev and build time only, via the *api* content source): `getPublicSite`, `listPublicCaseStudies`,
+    `getPublicCaseStudy`, `listPublicServices`, `listPublicEngagementModels`, `listPublicTestimonials`, `listPublicFaqPreview`
+    (PH-2 keys `site`, `home`, `work/<slug>`); browser production: `/data/<key>.json` only (from PH-3)
+  - Files: `src/app/{routes.tsx,content-source.ts,RootLayout.tsx}`, `src/entry-client.tsx`, `src/entry-server.tsx`,
+    `src/features/public/seo/`, `src/features/public/content/copy.ts` (same wording as `frontend/`), `src/shared/hooks/useHydrated.ts`
+  - Behaviour: as `frontend/` UI-002 (one route tree for server and client, `__ROUTER_DATA__`, `hydrateRoot`/`createRoot`, focus
+    to `<main>` and title update after navigation, navigation progress bar after 150 ms with `aria-busy`, deterministic render).
+    PH-2 routes: layout, `/`, `/work/:slug`, `*`; admin routes arrive lazily in PH-3. `handle.meta` → `buildHead` with the same
+    titles/descriptions/canonical/OG rules as UI-004.
+  - States: loading (progress bar), error (route error page, UI-115), not found (UI-115), success.
+  - Done when: UI-T-146 passes (no hydration mismatch for `/` and `/work/<slug>`); UI-T-153 parity for these routes.
+
+- UI-104 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Route view transitions (progressive; keep/drop at P1)
+  - App: frontend-2/public
+  - Implements: REQ-094, TS-024, DES-063
+  - Uses API: none
+  - Files: `src/shared/ui/AppLink/`, `src/app/RootLayout.tsx`, `src/styles/motion.css`
+  - Behaviour: TS-024: internal links request a view transition; cross-fade 250 ms; header/footer named in CSS; instant under
+    reduced motion and without browser support; focus, title and scroll handling unchanged.
+  - States: supported + motion, reduced motion, unsupported.
+  - Done when: UI-T-139 passes and the P1 review keeps the feature (otherwise the item is DEPRECATED with REQ-094).
+
+- UI-105 [IN-PROGRESS 2026-10-31 03:01] @PH-2 `Header` (hide on scroll down, reveal on scroll up, compact, skip link)
+  - App: frontend-2/public
+  - Implements: REQ-085, REQ-002, REQ-003, REQ-082, REQ-NFR-002, TS-023, DES-056, DES-065
+  - Uses API: none (`settings.booking_url` from `site`)
+  - Files: `src/features/public/layout/Header/`, `src/shared/motion/scroll-direction.ts`, `src/shared/ui/{Wordmark,BookCallLink}/`
+  - Behaviour: TS-023 steps 1-2: transparent at the top, compact (64 px, base surface + hairline) after scrolling past its height;
+    `data-hidden` on scroll down, removed on scroll up; always visible with `:focus-within` and while the menu is open; skip link
+    first; `scroll-padding-top` keeps focus targets visible; nav links with grow-bar hover and `aria-current`; "Menu" button below
+    `--bp-md`.
+  - States: top (transparent), compact, hidden, revealed, focus-within, menu open, reduced motion (no animation).
+  - Done when: UI-T-136 and E2E UI-T-151 pass.
+
+- UI-106 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Mobile menu (full screen, hairline rows)
+  - App: frontend-2/public
+  - Implements: REQ-003, REQ-085, REQ-NFR-002, REQ-NFR-003, TS-023, DES-053
+  - Uses API: none
+  - Files: `src/features/public/layout/MobileMenu/`
+  - Behaviour: DES-053 menu row: dialog semantics, focus to first link and trapped, Esc/close returns focus to the Menu button,
+    `inert` background, scroll lock via a class, closes on link choice, route change and at ≥ 768 px; slide 450 ms + backdrop
+    500 ms (instant under reduced motion); rows ≥ 56 px with hairlines; "Book a call" full-width primary.
+  - States: closed, opening, open, closing.
+  - Done when: UI-T-137 and E2E UI-T-148 (menu-open state, axe) pass.
+
+- UI-107 [IN-PROGRESS 2026-10-31 03:01] @PH-2 `Footer` (giant "let's talk" call-to-action, then link columns)
+  - App: frontend-2/public
+  - Implements: REQ-004, REQ-005, REQ-086, REQ-065, TS-023, DES-052, DES-057, DES-065
+  - Uses API: `getPublicSite` (`settings.social_links`, `contact_email`, `footer_signoff`, `footer_rights_line`, `generated_at`)
+  - Files: `src/features/public/layout/Footer/`
+  - Behaviour: TS-023 step 4 on `--surface-deep`: giant two-line "let's talk" `ArrowLink` to `/contact` with a 4 px green underline,
+    hairline, giant wordmark + `mailto:` email, hairline, link columns (quick links incl. FAQs; social links http(s) only with
+    `target`/`rel`; contact), bottom bar with year of `generated_at`, sign-off and rights line as plain text. Links ≥ 44 px tall on
+    touch layouts. Empty social links → group omitted.
+  - States: with / without social links.
+  - Done when: UI-T-138 passes.
+
+- UI-108 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Primitives: `Wordmark`, `Button`/`ButtonLink`/`BookCallLink`, `ArrowLink`, `Chip`/`FilterChip`,
+  `HairlineList`
+  - App: frontend-2/shared
+  - Implements: REQ-002, REQ-005, REQ-NFR-002, TS-023, TS-026, DES-052, DES-065
+  - Uses API: none (`settings.booking_url`)
+  - Files: `src/shared/ui/{Wordmark,Button,ArrowLink,Chip,HairlineList}/`
+  - Behaviour: DES-052 (48 px buttons, 2 px radius, primary green fill + ink text, secondary 2 px border; arrow-swap on
+    hover/focus; chips with text labels and `aria-current` when active); `BookCallLink` and external-link rules as `frontend/`
+    UI-006 (http(s) only, new tab, "(opens in a new tab)"); `Wordmark` "MITALI" with accessible name "Mitali, home".
+  - States: default, hover, focus-visible, active, disabled, loading (Button).
+  - Done when: UI-T-142 passes.
+
+- UI-109 [IN-PROGRESS 2026-10-31 03:01] @PH-2 `ResponsiveImage` (reserved boxes), `MediaBand`, `Collage`; loading polish @PH-3
+  - App: frontend-2/shared
+  - Phase split (G2): PH-2 = component, reserved width/height boxes, MediaBand, Collage; PH-3 = REQ-095 polish (placeholder frames, eager +
+    high priority for the largest image).
+  - Implements: REQ-095 (PH-3 part), REQ-084, REQ-NFR-004, REQ-NFR-011, TS-025, TS-022, DES-062
+  - Uses API: `ImageRef` (`url`, `alt`, `width`, `height`, `mime`, `srcset[]`)
+  - Files: `src/shared/ui/{ResponsiveImage,MediaBand,Collage}/`
+  - Behaviour: TS-025: slot ratio classes, skeleton shimmer behind the image (static under reduced motion), `priority` → eager +
+    `fetchpriority="high"`, others lazy; `/media/` root-relative URLs only, fallback block on missing/error; no inline styles.
+  - States: loading (placeholder), loaded, error (fallback), missing.
+  - Done when: UI-T-141 passes and E2E UI-T-150 measures CLS < 0.05.
+
+- UI-110 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Content components: `Accordion`, `Carousel`, `FaqPreview`, `StoryBlock`, `SampleDataNote`,
+  `SanitizedHtml`, `MetaRow`, `OffsetText`, `IntroSplit`
+  - App: frontend-2/public
+  - Implements: REQ-006, REQ-012, REQ-014, REQ-015, REQ-021, REQ-023, REQ-031, REQ-NFR-002, TS-026, DES-052, DES-061
+  - Uses API: `listPublicFaqPreview` (via aggregates), `listPublicTestimonials`, `getPublicSite` (profile), `is_sample` flags,
+    `problem_html`/`solution_html`
+  - Files: `src/shared/ui/{Accordion,Carousel,FaqPreview,StoryBlock,SampleDataNote,SanitizedHtml,MetaRow,OffsetText,IntroSplit}/`
+  - Behaviour: behaviour identical to `frontend/` UI-011, UI-012, UI-014, UI-015, UI-017, UI-018 (accordion `aria-expanded`/
+    `aria-controls`, content in pre-rendered HTML; carousel no autoplay, wraps, polite live region, swipe; `SanitizedHtml` the only
+    `dangerouslySetInnerHTML`); frontend-2 styling: hairline rows, display-300 headings, `MetaRow` as a `<dl>` in 4/2/1 columns,
+    `OffsetText` at column 5 from `--bp-lg`.
+  - States: per component as in `frontend/` (collapsed/expanded; single/multiple/none; sample/not sample).
+  - Done when: UI-T-143 passes.
+
+- UI-111 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Home page
+  - App: frontend-2/public
+  - Implements: REQ-086, REQ-010, REQ-011, REQ-012, REQ-013, REQ-014, REQ-015, REQ-006, REQ-082, TS-026, DES-051, DES-057, DES-061
+  - Uses API: aggregate `home` (`listPublicCaseStudies?featured=true`, `listPublicServices`, `listPublicEngagementModels`,
+    `listPublicTestimonials`, `listPublicFaqPreview`) + `site` (`getPublicSite`)
+  - Behaviour: TS-026 Home section order and surfaces; one `h1` (`--text-display-xl`), both hero actions visible without scrolling
+    at 1440×900 and 390×844; up to 4 featured units in position order with "View all work"; services accordion; 3 engagement
+    units with `cta_target` actions; story; testimonial carousel; FAQ preview; reveals on blocks below the fold.
+  - States: success; each data section hidden when empty; reduced motion.
+  - Done when: UI-T-144 and E2E UI-T-148 pass.
+
+- UI-112 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Case-study page `/work/:slug`
+  - App: frontend-2/public
+  - Implements: REQ-086, REQ-021, REQ-022, REQ-023, REQ-050, REQ-082, TS-026, TS-025, DES-052, DES-061, DES-062
+  - Uses API: `getPublicCaseStudy` (key `work/<slug>`; results, images, `more_work`) + `site`
+  - Behaviour: TS-026 case-study order: title block with chip and "Sample case study" note; cover as full-bleed parallax band
+    (the LCP image, priority); `MetaRow` (Client, Year, Industry, Timeline, Campaign type, Channels); summary intro split; Problem
+    and Solution offset blocks via `SanitizedHtml`; results on a deep band with "Sample data" note; gallery (full spans; halves side
+    by side from 768 px, stacked below; optional collage drift); "More work" (2 units + "View all work") with the one slide-in
+    heading; unknown/unpublished slug → not-found page.
+  - States: success, not found, sections hidden when empty (no results, no gallery, no more work).
+  - Done when: UI-T-145 and E2E UI-T-148 pass.
+
+- UI-113 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Dev server configuration and the dev-only Origin rewrite
+  - App: frontend-2/shared (tooling)
+  - Implements: REQ-090, REQ-081, TS-027, SD-112, SEC-UI-014
+  - Uses API: none directly (affects every `/api/admin/*` request through the dev server: `adminLogin`, `adminLogout`,
+    `getAdminMe` in PH-2 checks; all admin operations from PH-3)
+  - Files: `frontend-2/vite.config.ts`, `frontend-2/vite/dev-origin.ts` (+ test)
+  - Behaviour: TS-027: port 5174 strict, `localhost` only, proxy `/api` and `/media` to `http://127.0.0.1:8000`; Origin rewritten
+    to `http://127.0.0.1:8000` only for `/api/admin` paths and only when the incoming Origin is the 5174 dev origin; wired only for
+    `command === "serve"` and not preview; never imported by `src/`. Does not touch `ALLOWED_ORIGINS` or any `.env`.
+  - States: dev serve (rewrite active), preview/build (no rewrite).
+  - Done when: UI-T-140 and E2E UI-T-149 pass.
+
+- UI-114 [IN-PROGRESS 2026-10-31 06:36] @PH-2 Run kit entry `web2`
+  - App: frontend-2 (tooling)
+  - Implements: REQ-092, TS-028, SD-116
+  - Uses API: none (`getHealth` is used by the kit for the `api` app only)
+  - Files: `run/run.json` (one new object; `web` unchanged)
+  - Behaviour: TS-028 entry (id `web2`, dir `frontend-2`, port 5174, `npm ci`, `npm run dev`, depends on `api`, opens
+    `http://localhost:5174/`).
+  - States: n/a.
+  - Done when: UI-T-147 passes (`make-run-kit.ps1 -CheckOnly` 0 warnings; `start-classic.cmd -DryRun` output unchanged).
+
+- UI-115 [IN-PROGRESS 2026-10-31 03:01] @PH-2 Not-found page and route error page
+  - App: frontend-2/public
+  - Implements: REQ-001, REQ-022, REQ-086, TS-026, DES-051, DES-057
+  - Uses API: none (layout reads `site`)
+  - Behaviour: as `frontend/` UI-034 (same `h1` copy, "Back to home" and "/work" links, `noindex`, title "Page not found — Mitali";
+    route error page "Something went wrong" with reload link), frontend-2 styling on `--surface-deep`. `404.html` output and the
+    404 status arrive with the pre-render in PH-3 (UI-126).
+  - States: not found, unexpected error.
+  - Done when: UI-T-146 passes.
+
+### 7.2 Scope items, PH-3 and PH-4 (outlines; full detail when the phase becomes ACTIVE)
+- UI-120 [NEW 2026-10-31 02:54] @PH-3 Work page — parity with UI-027 (REQ-087, REQ-020).
+- UI-121 [NEW 2026-10-31 02:54] @PH-3 Writing page with `?format=` filter — parity with UI-029 (REQ-087, REQ-030).
+- UI-122 [NEW 2026-10-31 02:54] @PH-3 Writing-sample page — parity with UI-030 (REQ-087, REQ-031).
+- UI-123 [NEW 2026-10-31 02:54] @PH-3 About page incl. staircase — parity with UI-031 (REQ-087, REQ-040).
+- UI-124 [NEW 2026-10-31 02:54] @PH-3 FAQs page — parity with UI-032 (REQ-087, REQ-041).
+- UI-125 [NEW 2026-10-31 02:54] @PH-3 Contact page with every form state — parity with UI-033 (REQ-087, REQ-042, REQ-043).
+- UI-126 [NEW 2026-10-31 02:54] @PH-3 Pre-render, SEO outputs, compress (TS-029) — parity with UI-004 (REQ-089).
+- UI-127 [NEW 2026-10-31 02:54] @PH-3 JSON-LD structured data (TS-030) (REQ-097).
+- UI-128 [NEW 2026-10-31 02:54] @PH-3 Production-like preview via `FRONTEND_DIST_DIR` process env (TS-032) (REQ-091).
+- UI-129 [NEW 2026-10-31 02:54] @PH-3 Admin API client, session, query plumbing — parity with UI-035 (REQ-088).
+- UI-130 [NEW 2026-10-31 02:54] @PH-3 Admin login — parity with UI-036 (REQ-088, REQ-060, REQ-061).
+- UI-131 [NEW 2026-10-31 02:54] @PH-3 Admin layout, guard, sidebar, logout and admin not-found — parity with UI-037 (REQ-088).
+- UI-132 [NEW 2026-10-31 02:54] @PH-3 Admin dashboard with "needs rebuild" — parity with UI-038 (REQ-088, REQ-052).
+- UI-133 [NEW 2026-10-31 02:54] @PH-3 Admin kit: form fields, `ConfirmDialog`, `Toast`, `SidePanel`, unsaved-changes guard,
+  `NotFoundState` — parity with UI-040; pop-up patterns DES-053 (REQ-088).
+- UI-134 [NEW 2026-10-31 02:54] @PH-3 `ReorderableList` — parity with UI-039 (REQ-088).
+- UI-135 [NEW 2026-10-31 02:54] @PH-3 Markdown editor with preview — parity with UI-041 (REQ-088).
+- UI-136 [NEW 2026-10-31 02:54] @PH-3 Media field, picker and upload — parity with UI-042 (REQ-088).
+- UI-137 [NEW 2026-10-31 02:54] @PH-3 Case studies list — parity with UI-043 (REQ-088, REQ-063).
+- UI-138 [NEW 2026-10-31 02:54] @PH-3 Case-study editor: Details, Results and Gallery tabs — parity with UI-044..UI-046 (REQ-088).
+- UI-139 [NEW 2026-10-31 02:54] @PH-3 Writing samples list and editor — parity with UI-047, UI-048 (REQ-088).
+- UI-140 [NEW 2026-10-31 02:54] @PH-3 Services, engagement models, testimonials, values, process steps — parity with UI-049..UI-051,
+  UI-053, UI-054 (REQ-088).
+- UI-141 [NEW 2026-10-31 02:54] @PH-3 FAQ categories and FAQs — parity with UI-052 (REQ-088).
+- UI-142 [NEW 2026-10-31 02:54] @PH-3 Profile and site settings — parity with UI-055, UI-056 (REQ-088).
+- UI-143 [NEW 2026-10-31 02:54] @PH-3 Enquiries list and detail — parity with UI-057, UI-058 (REQ-088).
+- UI-144 [NEW 2026-10-31 02:54] @PH-3 Admin skeleton loading states for lists, editors and dashboard (DES-064) (REQ-096).
+- UI-145 [NEW 2026-10-31 02:54] @PH-3 Screen-parity matrix complete and the automated parity check (REQ-093).
+- UI-150 [NEW 2026-10-31 02:54] @PH-4 Polish rounds and `/ui-review freeze` (G-D) (REQ-082, REQ-NFR-010).
+- UI-151 [NEW 2026-10-31 02:54] @PH-4 Performance budget: Lighthouse on an idle machine, bundle comparison (REQ-NFR-011).
+- UI-152 [NEW 2026-10-31 02:54] @PH-4 Close-out: README section for frontend-2, run kit check, push plan; `docs/FEATURE.html` unchanged
+  (features identical).
+
+### 7.3 Screen-parity matrix (kept current in every phase; REQ-093)
+Status = the frontend-2 item's status. API operations are taken from the `frontend/` items' "Uses API" lines; both apps must call
+exactly these (public content operations at build time / in dev only; `createEnquiry` and all admin operations at runtime).
+
+| # | Screen | Route | API operations used | frontend/ UI id | frontend-2 UI id | Status |
+|---|--------|-------|---------------------|-----------------|------------------|--------|
+| 1 | Home | `/` | `getPublicSite`, `listPublicCaseStudies` (featured), `listPublicServices`, `listPublicEngagementModels`, `listPublicTestimonials`, `listPublicFaqPreview` | UI-022..UI-026 | UI-111 | NEW (PH-2) |
+| 2 | Work | `/work` | `getPublicSite`, `listPublicCaseStudies`, `listPublicFaqPreview` | UI-027 | UI-120 | NEW, outline (PH-3) |
+| 3 | Case study | `/work/:slug` | `getPublicSite`, `getPublicCaseStudy` | UI-028 | UI-112 | NEW (PH-2) |
+| 4 | Writing (`?format=`) | `/writing` | `getPublicSite`, `listPublicWritingSamples` | UI-029 | UI-121 | NEW, outline (PH-3) |
+| 5 | Writing sample | `/writing/:slug` | `getPublicSite`, `getPublicWritingSample` | UI-030 | UI-122 | NEW, outline (PH-3) |
+| 6 | About | `/about` | `getPublicSite`, `listPublicValues`, `listPublicProcessSteps`, `listPublicFaqPreview` | UI-031 | UI-123 | NEW, outline (PH-3) |
+| 7 | FAQs | `/faqs` | `getPublicSite`, `listPublicFaqGroups` | UI-032 | UI-124 | NEW, outline (PH-3) |
+| 8 | Contact (all form states) | `/contact` | `getPublicSite`, `listPublicFaqPreview`, `createEnquiry` (runtime) | UI-033 | UI-125 | NEW, outline (PH-3) |
+| 9 | Not found / route error | `*`, `404.html` | — (layout `getPublicSite`) | UI-034 | UI-115 (+UI-126 for `404.html`) | NEW (PH-2) |
+| 10 | Header | all public | `getPublicSite` (`booking_url`) | UI-019, UI-005, UI-006 | UI-105, UI-108 | NEW (PH-2) |
+| 11 | Mobile menu | all public, narrow | none | UI-020 | UI-106 | NEW (PH-2) |
+| 12 | Footer | all public | `getPublicSite` | UI-021 | UI-107 | NEW (PH-2) |
+| 13 | FAQ preview | Home, Work, About, Contact | `listPublicFaqPreview` | UI-017, UI-011 | UI-110 | NEW (PH-2) |
+| 14 | Sample-data notes | case study, writing list and sample | `is_sample` from `getPublicCaseStudy`, `listPublicWritingSamples`, `getPublicWritingSample` | UI-015 | UI-110 | NEW (PH-2) |
+| 15 | SEO outputs (pre-render, sitemap, robots, admin shell `noindex`) | build | `getPublicSite`, `listPublicCaseStudies`, `listPublicWritingSamples` + page data | UI-004 | UI-126, UI-127 | NEW, outline (PH-3) |
+| 16 | Admin login | `/admin/login` | `adminLogin`, `getAdminMe` | UI-036 | UI-130 | NEW, outline (PH-3) |
+| 17 | Admin layout, guard, sidebar, logout | `/admin/*` | `getAdminMe`, `getAdminDashboard`, `adminLogout` | UI-037, UI-035 | UI-131, UI-129 | NEW, outline (PH-3) |
+| 18 | Dashboard incl. needs-rebuild | `/admin` | `getAdminDashboard` | UI-038 | UI-132, UI-144 | NEW, outline (PH-3) |
+| 19 | Case studies list | `/admin/case-studies` | `listAdminCaseStudies`, `reorderAdminCaseStudies`, `deleteAdminCaseStudy` | UI-043 | UI-137 | NEW, outline (PH-3) |
+| 20 | Case-study editor: Details | `/admin/case-studies/new`, `/:id` | `createAdminCaseStudy`, `getAdminCaseStudy`, `updateAdminCaseStudy`, `deleteAdminCaseStudy`, `updateAdminCaseStudyResult` | UI-044 | UI-138 | NEW, outline (PH-3) |
+| 21 | Case-study editor: Results | `/admin/case-studies/:id` | `getAdminCaseStudy`, `createAdminCaseStudyResult`, `updateAdminCaseStudyResult`, `deleteAdminCaseStudyResult`, `reorderAdminCaseStudyResults` | UI-045 | UI-138 | NEW, outline (PH-3) |
+| 22 | Case-study editor: Gallery | `/admin/case-studies/:id` | `getAdminCaseStudy`, `createAdminCaseStudyImage`, `updateAdminCaseStudyImage`, `deleteAdminCaseStudyImage`, `reorderAdminCaseStudyImages` + media operations | UI-046 | UI-138 | NEW, outline (PH-3) |
+| 23 | Writing samples list | `/admin/writing` | `listAdminWritingSamples`, `reorderAdminWritingSamples`, `deleteAdminWritingSample` | UI-047 | UI-139 | NEW, outline (PH-3) |
+| 24 | Writing-sample editor | `/admin/writing/new`, `/:id` | `createAdminWritingSample`, `getAdminWritingSample`, `updateAdminWritingSample`, `deleteAdminWritingSample` | UI-048 | UI-139 | NEW, outline (PH-3) |
+| 25 | Services | `/admin/services` | `listAdminServices`, `createAdminService`, `getAdminService`, `updateAdminService`, `deleteAdminService`, `reorderAdminServices` | UI-049 | UI-140 | NEW, outline (PH-3) |
+| 26 | Engagement models | `/admin/engagement-models` | `listAdminEngagementModels`, `createAdminEngagementModel`, `getAdminEngagementModel`, `updateAdminEngagementModel`, `deleteAdminEngagementModel`, `reorderAdminEngagementModels` | UI-050 | UI-140 | NEW, outline (PH-3) |
+| 27 | Testimonials | `/admin/testimonials` | `listAdminTestimonials`, `createAdminTestimonial`, `getAdminTestimonial`, `updateAdminTestimonial`, `deleteAdminTestimonial`, `reorderAdminTestimonials`, `listAdminCaseStudies` | UI-051 | UI-140 | NEW, outline (PH-3) |
+| 28 | FAQs (categories + items) | `/admin/faqs` | `listAdminFaqCategories`, `createAdminFaqCategory`, `getAdminFaqCategory`, `updateAdminFaqCategory`, `deleteAdminFaqCategory`, `reorderAdminFaqCategories`, `listAdminFaqs`, `createAdminFaq`, `getAdminFaq`, `updateAdminFaq`, `deleteAdminFaq`, `reorderAdminFaqs` | UI-052 | UI-141 | NEW, outline (PH-3) |
+| 29 | Values | `/admin/values` | `listAdminValues`, `createAdminValue`, `getAdminValue`, `updateAdminValue`, `deleteAdminValue`, `reorderAdminValues` | UI-053 | UI-140 | NEW, outline (PH-3) |
+| 30 | Process steps | `/admin/process-steps` | `listAdminProcessSteps`, `createAdminProcessStep`, `getAdminProcessStep`, `updateAdminProcessStep`, `deleteAdminProcessStep`, `reorderAdminProcessSteps` | UI-054 | UI-140 | NEW, outline (PH-3) |
+| 31 | Profile | `/admin/profile` | `getAdminProfile`, `updateAdminProfile` (+ media operations) | UI-055 | UI-142 | NEW, outline (PH-3) |
+| 32 | Settings | `/admin/settings` | `getAdminSettings`, `updateAdminSettings` | UI-056 | UI-142 | NEW, outline (PH-3) |
+| 33 | Enquiries list | `/admin/enquiries` (`?status=&page=`) | `listAdminEnquiries` | UI-057 | UI-143 | NEW, outline (PH-3) |
+| 34 | Enquiry detail | `/admin/enquiries/:id` | `getAdminEnquiry`, `updateAdminEnquiryStatus`, `deleteAdminEnquiry` | UI-058 | UI-143 | NEW, outline (PH-3) |
+| 35 | Admin not-found (unknown route or id) | `/admin/*` | — | UI-037, UI-040 (`NotFoundState`) | UI-131, UI-133 | NEW, outline (PH-3) |
+| 36 | Unsaved-changes guard | admin editors | — | UI-040 | UI-133 | NEW, outline (PH-3) |
+| 37 | Confirm dialogs | admin deletes, clear sample flags | the screen's delete/update operation | UI-040 | UI-133 | NEW, outline (PH-3) |
+| 38 | Toasts | admin | — | UI-037, UI-040 | UI-133 | NEW, outline (PH-3) |
+| 39 | Reorder | admin lists | the 11 `reorderAdmin*` operations | UI-039 | UI-134 | NEW, outline (PH-3) |
+| 40 | Markdown editor with preview | case-study and writing editors | `previewAdminMarkdown` | UI-041 | UI-135 | NEW, outline (PH-3) |
+| 41 | Media picker / upload | `MediaField` (cover, thumbnail, portrait, gallery) | `uploadAdminMedia`, `listAdminMedia`, `deleteAdminMedia` | UI-042 | UI-136 | NEW, outline (PH-3) |
+
+### 7.4 Design system, responsive and accessibility rules (frontend-2)
+- Tokens: DES-060 only (`palette.css` → `semantic.css` → `surfaces.css`); components read semantic tokens and surface aliases,
+  never `--p-*`, never literals. Colour rules DES-051 (green only as fills/indicators; never text, icon or thin line on base or
+  band; magenta `#D920E5` never used). Contrast DES-059.
+- Typography DES-050/DES-057; layout DES-061; components DES-052; pop-ups DES-053; motion DES-058; header DES-056; images DES-062.
+- Responsive (DES-055): mobile-first, custom media `--bp-md` 768, `--bp-lg` 1024, `--bp-xl` 1440 only; one column on phones; no
+  horizontal page scroll from 360 to 1920 px; touch targets ≥ 44 × 44 px.
+- Accessibility: same rules as section 3.3 (WCAG 2.1 AA required; 2.4.11, 2.5.8, 3.3.8 adopted from 2.2), plus: header never
+  hidden while it holds focus and never covering focus (REQ-085); no content depends on motion; reveals never hide content without
+  JS, in print or under reduced motion; view transitions do not change focus or scroll handling.
+
+### 7.5 Code review guidelines (frontend-2)
+UI-REV-001..UI-REV-025 apply to frontend-2 as well, read with `frontend-2/` paths and the frontend-2 token names. Additionally:
+- UI-REV-026 [NEW 2026-10-31 02:54] No imports from `../frontend`: no import specifier, relative path, alias, config entry or
+  script path resolves into `frontend/`; the generated client is generated inside `frontend-2/` from `docs/api-contract.yaml`;
+  the ESLint rule and the scan test (UI-T-127) pass (SD-111).
+- UI-REV-027 [NEW 2026-10-31 02:54] No hard-coded values outside the frontend-2 tokens: component CSS uses only semantic tokens and
+  surface aliases (no hex/rgb/hsl, font names, px/rem spacing, radii or durations, no `--p-*` outside `semantic.css`); new
+  token-like values go only into the token files and trace to a DES item; `check:styles` passes (UI-T-128).
+- UI-REV-028 [NEW 2026-10-31 02:54] Reveals are visible without JavaScript, before hydration, in print and under reduced motion: the
+  hidden state exists only under `html[data-motion="on"]` inside `prefers-reduced-motion: no-preference`; the flag is set from
+  the client entry after hydration, never by an inline script (UI-T-133, UI-T-150).
+- UI-REV-029 [NEW 2026-10-31 02:54] The Origin rewrite exists only in the dev server configuration: `vite/dev-origin.ts` is wired
+  only from `server.proxy` for `command === "serve"` (not `preview`), only for `/api/admin` paths and only for the 5174 dev
+  origin; nothing in `src/` imports `vite/`; the dist scan finds no rewrite code (UI-T-140; SEC-UI-014).
+- UI-REV-030 [NEW 2026-10-31 02:54] Motion: no motion library; only `transform`/`opacity` animate (hover colour/underline-colour
+  excepted); every `transition`/`animation` is inside the no-preference block; no scroll listeners except the header's documented
+  one; `check:motion-size` ≤ 2 KB gzip passes (UI-T-134, UI-T-135).
+- UI-REV-031 [NEW 2026-10-31 02:54] No inline styles or scripts anywhere, including view-transition names, drift offsets, image
+  ratios, stagger indices and the motion flag (classes and `data-*` attributes only); JSON-LD only as `application/ld+json`
+  (SEC-UI-015).
+- UI-REV-032 [NEW 2026-10-31 02:54] Colour use follows DES-051 per surface: green never as text, icon or thin line on base/band;
+  muted text per surface; focus ring colour per surface; the derived magenta is never used.
+- UI-REV-033 [NEW 2026-10-31 02:54] Fonts: only the six Fontsource Latin files of TS-021 are shipped, each with its licence text;
+  only Inter Tight 300 is preloaded; no font URL points outside `/fonts/` (SEC-UI-017, REQ-NFR-012).
+- UI-REV-034 [NEW 2026-10-31 02:54] Parity: routes, data keys and API operations per screen match the parity matrix (7.3); the
+  static copy and `buildHead` rules are identical to `frontend/`; the matrix row and status are updated in the same change as the
+  screen (REQ-093).
+- UI-REV-035 [NEW 2026-10-31 02:54] Header and menu: header visible with `:focus-within` and while the menu is open;
+  `scroll-padding-top` set; skip link first; menu dialog rules of DES-053 (Esc, close, focus trap and return, `inert`, scroll lock).
+- UI-REV-036 [NEW 2026-10-31 02:54] Images: one priority image per page (eager + `fetchpriority="high"`), all others lazy; slot
+  ratio classes reserve space; placeholder static under reduced motion (REQ-095).
+- UI-REV-037 [NEW 2026-10-31 02:54] Security items for frontend-2: see `security.md` SEC-UI-013..SEC-UI-019 (inherited SEC-UI
+  controls, dev-only Origin rewrite, CSP compatibility, JSON-LD escaping, no third-party requests, admin session handling,
+  deployment selection).
+
+### 7.6 Unit and component test scenarios (frontend-2)
+Vitest + RTL + MSW typed from the contract (jsdom). The `frontend/` scenarios for duplicated modules (UI-T-010 serializer,
+UI-T-011 static source, UI-T-016..UI-T-034, UI-T-035..UI-T-040 behaviour parts) are ported with them and run in `frontend-2/`.
+
+| ID | Component / unit | Scenario | Expected | Covers |
+|----|------------------|----------|----------|--------|
+| UI-T-127 [NEW 2026-10-31 02:54] | Self-containment scan | Scan `src/`, `scripts/`, `vite/`, `e2e/`, configs for paths/specifiers into `frontend/`; ESLint with a planted `import "../../frontend/src/x"` | Scan finds none (only `../docs/api-contract.yaml` in `generate:api`); ESLint reports the planted import | UI-100, UI-REV-026 |
+| UI-T-128 [NEW 2026-10-31 02:54] | `check-styles.ts` | Run on the stylesheets; plant a hex colour, a `font-family` name, `padding: 12px`, `var(--p-cream)` in a component | Clean run exits 0; each planted value is reported with file and line | UI-101, UI-REV-027 |
+| UI-T-129 [NEW 2026-10-31 02:54] | Token files | Parse `palette.css`, `semantic.css`, `surfaces.css` against the DES-060 list | Every DES-060 token defined once with the documented value; `--p-*` read only in `semantic.css` | UI-101 |
+| UI-T-130 [NEW 2026-10-31 02:54] | `Section` + `surfaces.css` | Render each surface | `data-surface` set; deep surfaces map `--accent-on-surface`/`--focus-on-surface` to green; base/band map them to `#367A00`/ink; muted per surface | UI-101, UI-REV-032 |
+| UI-T-131 [NEW 2026-10-31 02:54] | `copy-fonts.ts` + `fonts.css` + `index.html` | Run with the installed packages; with a licence file that is not OFL | Exactly the six Latin files + licence texts copied, licence name and version printed, every licence is SIL OFL 1.1; non-OFL → exit ≠ 0; every `@font-face` has `font-display: swap` and a `/fonts/` URL; only Inter Tight 300 preloaded | UI-101, UI-REV-033 |
+| UI-T-132 [NEW 2026-10-31 02:54] | White-base review switch | Dev render with `?base=white`; production build | Dev: `<html data-base="white">` and surfaces swapped; build: no `review-switch` module and no `data-base` string in `dist/assets` | UI-101 |
+| UI-T-133 [NEW 2026-10-31 02:54] | `Reveal` + `initMotion` | Before hydration; `matchMedia(reduce)`; no IntersectionObserver; motion allowed with one element above and one below 85 %; intersect twice | Visible in the first three cases (no `data-motion`); above-fold element revealed at once, below-fold revealed on intersect, unobserved, never hidden again | UI-102, UI-REV-028 |
+| UI-T-134 [NEW 2026-10-31 02:54] | CSS motion check | Scan stylesheets | Every `transition`/`animation` inside `prefers-reduced-motion: no-preference`; animated properties only `transform`/`opacity` (hover colour exceptions listed); `@media print` reveal override present; scroll timelines inside `@supports` | UI-102, UI-REV-030 |
+| UI-T-135 [NEW 2026-10-31 02:54] | `check-motion-size.ts` | Bundle `src/shared/motion/index.ts` | gzip ≤ 2048 bytes; no `addEventListener("scroll"` outside `scroll-direction.ts` | UI-102, UI-REV-030 |
+| UI-T-136 [NEW 2026-10-31 02:54] | `Header` | Mock scrollY 0 → 300 → 600 → 500; focus a nav link while hidden; open the menu; routes `/work/x` | Compact after header height; hidden on down, shown on up; focus shows it; menu open keeps it; Work has `aria-current`; skip link first focusable | UI-105, UI-REV-035 |
+| UI-T-137 [NEW 2026-10-31 02:54] | Mobile menu | Open, Tab cycling, Escape, choose a link, resize ≥ 768 | Dialog semantics, focus trapped and returned, `inert` on siblings, scroll-lock class on `<html>`, closes on link/route change/resize | UI-106 |
+| UI-T-138 [NEW 2026-10-31 02:54] | `Footer` | Settings with 2 social links (one `javascript:`), `generated_at` 2026, rights line with `<b>` | "let's talk" link to `/contact`; quick links incl. FAQs; only the http(s) social link rendered with `target`/`rel`; year 2026; rights line as literal text | UI-107 |
+| UI-T-139 [NEW 2026-10-31 02:54] | `AppLink` + RootLayout | `document.startViewTransition` present / absent; reduced motion; navigate `/` → `/work/x` → Back | Transition requested only when present; reduced-motion CSS sets `::view-transition-*` animations to none; focus on `<main>`, title updated, scroll top on push and restored on Back in every case | UI-104 |
+| UI-T-140 [NEW 2026-10-31 02:54] | `devAdminOrigin` + Vite config | Paths `/api/admin/auth/login`, `/api/admin`, `/api/public/site`, `/api/administrator`; origins `http://localhost:5174`, `http://127.0.0.1:5174`, `http://evil.example`, undefined; resolve config for `serve`, `preview` and `build`; scan `dist/` after `vite build` | Rewritten to `http://127.0.0.1:8000` only for the two admin paths with a 5174 origin; everything else unchanged; rewrite wired only for `serve`; `dist/` contains neither `devAdminOrigin` nor a `127.0.0.1:8000` Origin literal | UI-113, UI-REV-029, SEC-UI-014 |
+| UI-T-141 [NEW 2026-10-31 02:54] | `ResponsiveImage` | Raster ref, SVG ref, priority, missing ref, load error, external URL | `srcset`/`sizes`/`alt`; slot ratio class; lazy by default; priority eager + `fetchpriority=high`; fallback in the same frame; external URL → fallback, no `<img src>` | UI-109, SEC-UI-009 |
+| UI-T-142 [NEW 2026-10-31 02:54] | Primitives | `Button` variants/loading; `BookCallLink` with https / null / "#" / `javascript:`; `ArrowLink`; `Chip` active; `Wordmark` | As UI-T-016..UI-T-018, UI-T-021 behaviour; ArrowLink has two `aria-hidden` arrows and one accessible name | UI-108 |
+| UI-T-143 [NEW 2026-10-31 02:54] | Content components | Ports of UI-T-023..UI-T-034 scenarios; `MetaRow` with 6 fields | Same expectations as `frontend/`; `MetaRow` renders a `<dl>` in field order | UI-110 |
+| UI-T-144 [NEW 2026-10-31 02:54] | Home | Render with fixtures; 0 featured; 0 testimonials | One `h1`; sections in the TS-026 order; actions present; empty sections hidden | UI-111 |
+| UI-T-145 [NEW 2026-10-31 02:54] | Case study | Fixture with 3 results (1 sample), gallery full/half/half, `more_work` 2; `is_sample`; 0 results; unknown slug | `h1`, meta `<dl>`, results with "Sample data", "Sample case study" note, tile classes in order, 2 more-work units; sections hidden when empty; not-found page | UI-112 |
+| UI-T-146 [NEW 2026-10-31 02:54] | Route tree + render | `entry-server.render("/")`, `render("/work/<slug>")`, `render("/work/unknown")`, loader 500; hydrate | Head tags as UI-T-004/006; 404 status + not-found; route error page; no hydration mismatch | UI-103, UI-115 |
+| UI-T-147 [NEW 2026-10-31 02:54] | Run kit | Parse `run/run.json`; `make-run-kit.ps1 -CheckOnly`; `start-classic.cmd -DryRun` before/after | `web2` entry as TS-028 and `web` unchanged; check 0 warnings; dry-run output identical | UI-114 |
+
+### 7.7 E2E journeys (frontend-2, Playwright + axe)
+PH-2: backend on the **seeded test database** `mitali_portfolio_test` (stated by the orchestrator before the run), frontend-2 on
+its dev server `http://localhost:5174`. Screenshot and axe contexts use `reducedMotion: "reduce"`. Axe: no serious or critical
+violation. From PH-3 the same journeys also run on the production-like preview (TS-032).
+
+| ID | Journey | Expected | Covers |
+|----|---------|----------|--------|
+| UI-T-148 [NEW 2026-10-31 02:54] | `/` and one case study at 375, 768, 1024, 1440 px; states: top, scrolled (header compact), header hidden, menu open (375, 768 if shown), accordion open, carousel slide 2 | Header and footer present; one `h1`; axe clean in every state and width; `scrollWidth ≤ innerWidth` also at 360 and 1920; touch targets ≥ 44 px on 375; hero actions visible without scrolling at 1440×900 and 390×844 | UI-105..UI-112, REQ-NFR-010 (PH-2 part) |
+| UI-T-149 [NEW 2026-10-31 02:54] | Through `http://localhost:5174`: `POST /api/admin/auth/login` with the test admin (Origin 5174), `GET /api/admin/auth/me`, `POST /api/admin/auth/logout` with `X-CSRF-Token`; then a login with `Origin: http://evil.example` | Login 200 (wrong password → 401, never 403 `origin_rejected`); logout 204; foreign origin → 403 `origin_rejected`; Host `localhost:5174` accepted by the backend | UI-113, REQ-090, SEC-UI-014 |
+| UI-T-150 [NEW 2026-10-31 02:54] | Motion: `no-preference` → scroll to a below-fold block; JS disabled; `reduce`; print emulation; CLS observer across a full scroll of `/` and the case study | Block hidden before and visible after crossing 85 %; JS off, reduce and print: everything visible at once, no transitions; parallax static under reduce; CLS < 0.05 | UI-102, UI-109, REQ-NFR-009 |
+| UI-T-151 [NEW 2026-10-31 02:54] | Header at 1440 and 375: scroll down 800 px, up 100 px; Tab through the page from the top and from mid-page | Hidden after scrolling down, visible after up; while tabbing, the header is visible when it has focus and no focused element is covered by it | UI-105, REQ-085 |
+| UI-T-152 [NEW 2026-10-31 02:54] | Record all requests while loading `/` and a case study | Every request is same-origin (fonts from `/fonts/`, images from `/media/`, data from `/api/public` in dev) | UI-101, SEC-UI-017 |
+| UI-T-153 [NEW 2026-10-31 02:54] | Parity (PH-2 part): render `/` and `/work/<slug>` in both apps against the same API with a recording content source | Same set of public operations per route; identical `<title>`, description, canonical and `og:*` | UI-103, UI-111, UI-112, REQ-093 (partial) |
+| UI-T-154 [NEW 2026-10-31 02:54] | (PH-3 outline) Smoke for every remaining public and admin screen and state on the production-like preview of `frontend-2/dist` (test DB) | Each screen's behavioural criteria pass (ports of UI-T-103..UI-T-126) | UI-120..UI-143 |
+| UI-T-155 [NEW 2026-10-31 02:54] | (PH-3/PH-4 outline) axe on every screen state at 375 / 768 / 1024 / 1440 | No serious or critical violation | REQ-NFR-010 |
+| UI-T-156 [NEW 2026-10-31 02:54] | (PH-3 outline) Full parity check: routes, API operations per screen (matrix 7.3), SEO outputs of both builds from the same snapshot | Identical | UI-145, REQ-093, REQ-089 |
+| UI-T-157 [NEW 2026-10-31 02:54] | (PH-4 outline) Lighthouse 13 mobile on 6 static pages + one case study + one writing sample, idle machine, median of 3 | Performance ≥ 90; Accessibility, Best Practices, SEO = 100; `benchmarkIndex` recorded; public JS ≤ `frontend/` shared entry | UI-151, REQ-NFR-011 |
+| UI-T-158 [NEW 2026-10-31 02:54] | (PH-3 outline) JSON-LD on Home, About, FAQs, case study, writing sample; value with `</script>` | Valid JSON-LD matching the visible content; escaped; no CSP violation | UI-127, REQ-097 |
+| UI-T-159 [NEW 2026-10-31 02:54] | (PH-3 outline) Admin skeletons with a delayed API | Skeleton with `aria-busy`, then content or error state | UI-144, REQ-096 |
+| UI-T-160 [NEW 2026-10-31 02:54] | (PH-3 outline) Preview command: backend with `FRONTEND_DIST_DIR` = `frontend-2/dist` via process env; unknown URL; `.env` files hashed before/after | frontend-2 served; 404 status with the frontend-2 `404.html`; `.env` unchanged; default run still serves `frontend/dist` | UI-128, REQ-091 |
+| UI-T-161 [NEW 2026-10-31 02:54] | (PH-3 outline) Contact form E2E (empty, valid, rate limit) | Same results as UI-T-110/111; enquiries exist only in the test DB | UI-125, REQ-NFR-013 |
+| UI-T-162 [NEW 2026-10-31 02:54] | (PH-3 outline) Dist scan of `frontend-2/dist` | No inline executable script (only `application/json` and `application/ld+json` blocks), no `style=`/`on*=` attributes, no external origins, no origin-rewrite code | UI-126, SEC-UI-015 |

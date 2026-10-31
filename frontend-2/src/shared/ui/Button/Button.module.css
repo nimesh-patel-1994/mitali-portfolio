@@ -1,0 +1,66 @@
+/* Buttons (DES-052): 48 px, near-square radius, body font 600, sentence case; hover = underline, not opacity. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  min-width: var(--touch-min);
+  padding: 0 var(--space-5);
+  border: var(--line-width-strong) solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-label);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary {
+  border-color: var(--brand-accent);
+  background-color: var(--brand-accent);
+  color: var(--brand-on-accent);
+}
+
+.secondary {
+  border-color: var(--on-surface);
+  background-color: transparent;
+  color: var(--on-surface);
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.label {
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--underline-width);
+  text-underline-offset: var(--underline-offset);
+}
+
+.button:hover .label,
+.button:focus-visible .label {
+  text-decoration-color: currentcolor;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border: var(--line-width-strong) solid currentcolor;
+  border-inline-end-color: transparent;
+  border-radius: var(--radius-full);
+}
+
+/* The busy ring is static: nothing loops (DES-058); the label ("Sending…") carries the state. */
+@media (prefers-reduced-motion: no-preference) {
+  .label {
+    transition: text-decoration-color var(--motion-dur-base) var(--motion-ease-out);
+  }
+}

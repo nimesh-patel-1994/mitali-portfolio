@@ -1,0 +1,134 @@
+@import "../../../../styles/media.css";
+
+/* Sentinel at the header's height: when it leaves the viewport the header turns compact. */
+.sentinel {
+  position: absolute;
+  inset-block-start: var(--header-h);
+  inset-inline-start: 0;
+  width: var(--line-width);
+  height: var(--line-width);
+  pointer-events: none;
+}
+
+.header {
+  position: fixed;
+  z-index: var(--z-header);
+  inset-block-start: 0;
+  inset-inline: 0;
+  border-block-end: var(--line-width) solid transparent;
+  view-transition-name: site-header;
+}
+
+/* Transparent at the top (specificity above the [data-surface] background rule). */
+.header:not([data-compact]) {
+  background-color: transparent;
+}
+
+.header[data-compact] {
+  background-color: var(--surface);
+  border-block-end-color: var(--line-on-surface);
+}
+
+/* Hidden on scroll down (transform only); never while it holds focus (CSS safety net, REQ-085). */
+.header[data-hidden] {
+  transform: translateY(-100%);
+}
+
+.header:focus-within {
+  transform: none;
+}
+
+/* Reduced motion: the header never hides. */
+@media (prefers-reduced-motion: reduce) {
+  .header[data-hidden] {
+    transform: none;
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  height: var(--header-h);
+}
+
+.header[data-compact] .inner {
+  height: var(--header-h-compact);
+}
+
+/* Mobile: only the wordmark and the Menu button. */
+.nav,
+.cta {
+  display: none;
+}
+
+.menu {
+  display: inline-flex;
+}
+
+@media (--bp-md) {
+  .nav {
+    display: block;
+    margin-inline-start: auto;
+  }
+
+  .cta {
+    display: block;
+    flex: none;
+  }
+
+  .menu {
+    display: none;
+  }
+}
+
+.list {
+  display: flex;
+  gap: var(--space-5);
+  list-style: none;
+}
+
+@media (--bp-lg) {
+  .list {
+    gap: var(--space-6);
+  }
+}
+
+/* Nav links: body font, grow-bar underline (ink on light) on hover and for the current page. */
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--on-surface);
+  font-size: var(--text-body);
+  text-decoration: none;
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--space-2);
+  height: var(--line-width-strong);
+  background-color: var(--indicator-on-surface);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.link:hover::after,
+.link:focus-visible::after,
+.link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .header {
+    transition: transform var(--motion-dur-base) var(--motion-ease-out);
+  }
+
+  .link::after {
+    transition: transform var(--motion-dur-base) var(--motion-ease-out);
+  }
+}

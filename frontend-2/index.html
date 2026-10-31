@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- theme-color = --p-cream (palette.css, DES-051 base surface); HTML cannot read CSS tokens. Kept in sync by check-styles. -->
+    <meta name="theme-color" content="#FFFDE9" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Only the display font is preloaded (TS-021 step 3, UI-REV-033). -->
+    <link rel="preload" href="/fonts/inter-tight-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <!--app-head-->
+  </head>
+  <body>
+    <div id="root"><!--app-html--></div>
+    <!--app-data-->
+    <script type="module" src="/src/entry-client.tsx"></script>
+  </body>
+</html>

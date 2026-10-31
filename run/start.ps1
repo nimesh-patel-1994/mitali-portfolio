@@ -97,7 +97,13 @@ function Invoke-Step([string]$Dir, [string]$Command, [string]$Label) {
 
 $services = @($m.services | Where-Object { $_ })
 $apps = @($m.apps | Where-Object { $_ })
-if ($Only) { $apps = @($apps | Where-Object { $Only -contains $_.id }) }
+if ($Only) {
+    # start.cmd passes "-Only api,web2" through "powershell -File", which delivers it as ONE string: split it here.
+    $Only = @($Only | ForEach-Object { $_ -split '[,;\s]+' } | Where-Object { $_ })
+    $unknown = @($Only | Where-Object { $_ -notin @($apps | ForEach-Object { $_.id }) })
+    if ($unknown.Count -gt 0) { Fail "Unknown app id(s) for -Only: $($unknown -join ', '). Known: $((@($apps | ForEach-Object { $_.id })) -join ', ')." }
+    $apps = @($apps | Where-Object { $Only -contains $_.id })
+}
 if ($apps.Count -eq 0 -and $services.Count -eq 0) { Fail 'Nothing to start: run\run.json lists no apps or services yet.' }
 $svcIds = @($services | ForEach-Object { $_.id })
 
@@ -146,6 +152,20 @@ $marker = Join-Path $kit '.first-run-done'
 $prepared = @(); if (Test-Path -LiteralPath $marker) { $prepared = @(Get-Content -LiteralPath $marker | Where-Object { $_ }) }
 $pidFile = Join-Path $kit 'pids.json'
 $started = New-Object System.Collections.Generic.List[object]
+# Keep the windows that an earlier start.cmd run (for example "-Only api,web2") opened and that are still open, so a later
+# run adds to the list instead of replacing it and stop.cmd can still close every window start.cmd opened.
+if (Test-Path -LiteralPath $pidFile) {
+    try {
+        # Assign first, then wrap: Windows PowerShell 5.1 emits a JSON array from ConvertFrom-Json as one object.
+        $previous = Get-Content -LiteralPath $pidFile -Raw | ConvertFrom-Json
+        foreach ($old in @($previous)) {
+            if ($old -and $old.pid -and (Get-Process -Id ([int]$old.pid) -ErrorAction SilentlyContinue)) {
+                # Copy into a new object: mixing ConvertFrom-Json objects with new ones breaks ConvertTo-Json in PowerShell 5.1.
+                $started.Add([pscustomobject]@{ id = [string]$old.id; name = [string]$old.name; pid = [int]$old.pid; port = $old.port })
+            }
+        }
+    } catch { Write-Host 'run\pids.json could not be read; it will be rewritten with the windows started now.' }
+}
 $summary = New-Object System.Collections.Generic.List[object]
 $urls = New-Object System.Collections.Generic.List[string]
 
@@ -184,7 +204,8 @@ foreach ($a in $ordered) {
         $proc = Start-Process -FilePath 'cmd.exe' -ArgumentList '/k', $line -PassThru
         $started.Add([pscustomobject]@{ id = $a.id; name = $a.name; pid = $proc.Id; port = $a.port })
         # keep the pid list current even if a later app fails
-        ConvertTo-Json -InputObject @($started) | Set-Content -LiteralPath $pidFile -Encoding UTF8
+        # .ToArray(), not @($started): Windows PowerShell 5.1 throws "Argument types do not match" for a wrapped List.
+        ConvertTo-Json -InputObject $started.ToArray() | Set-Content -LiteralPath $pidFile -Encoding UTF8
     }
 
     $state = 'started'

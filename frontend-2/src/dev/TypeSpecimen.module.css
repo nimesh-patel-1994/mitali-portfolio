@@ -1,0 +1,105 @@
+/* DEV ONLY — type specimen: each sample uses exactly the production text token and its line height/tracking. */
+.title {
+  font-size: var(--text-h2);
+  letter-spacing: var(--tracking-heading);
+  line-height: var(--leading-h2);
+}
+
+.viewport {
+  margin-block: var(--space-4) var(--space-7);
+  color: var(--on-surface-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  list-style: none;
+}
+
+.row {
+  padding-block-start: var(--space-3);
+  border-block-start: var(--line-width) solid var(--line-on-surface);
+}
+
+.meta {
+  margin-block-end: var(--space-3);
+  color: var(--on-surface-muted);
+  font-size: var(--text-small);
+}
+
+.row p:last-child {
+  max-width: none;
+}
+
+.displayXl,
+.display,
+.h2,
+.h3,
+.cta {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+}
+
+.displayXl {
+  font-size: var(--text-display-xl);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display-xl);
+}
+
+.display {
+  font-size: var(--text-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
+}
+
+.h2 {
+  font-size: var(--text-h2);
+  letter-spacing: var(--tracking-heading);
+  line-height: var(--leading-h2);
+}
+
+.h3 {
+  font-size: var(--text-h3);
+  letter-spacing: var(--tracking-h3);
+  line-height: var(--leading-h3);
+}
+
+.cta {
+  font-size: var(--text-cta);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-cta);
+}
+
+.lead {
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+}
+
+.body {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.small {
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.label {
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.wordmark {
+  font-family: var(--font-label);
+  font-size: var(--text-wordmark);
+  font-weight: var(--weight-wordmark);
+  letter-spacing: var(--tracking-wordmark);
+  line-height: var(--leading-wordmark);
+  text-transform: uppercase;
+}

@@ -3,6 +3,18 @@
 > Newest entry on top. Records state only; `docs/` stays the source of truth for scope. Resume with `/resume`
 > (or open the project with its launcher and say "continue batch 3").
 
+## 2026-10-31 06:57: session stopped (usage limit) — read PENDING-WORK.md at the project root first
+
+## 2026-10-31 03:00: frontend-2 G2 approved; PH-2 build running (branch feature/frontend-2, uncommitted)
+- Upgrade merged to main (f90c68b); `feature/frontend-2` created from it. G2 docs: CHG-012 (REQ-080..097, REQ-NFR-009..013,
+  DES-050..065, SD-111..118, TS-020..033, UI-100..152, SEC-UI-013..019), with the user's G2 answers applied.
+- Running: fe-builder for PH-2 (frontend-2 scaffold, tokens, fonts, shell, motion, view transitions, Home + case study, dev proxy
+  with the dev-only Origin rewrite, P1 review aids: white/cream switch, type specimen, view-transition toggle). Resume via SendMessage.
+- Next: orchestrator re-runs checks; adds `web2` to `run/run.json` (5174; `start-classic.cmd` unchanged) and validates with
+  `make-run-kit.ps1 -CheckOnly`; tells the user before any E2E (TEST database only); then the P1 review via `/ui-review`.
+- DB rules: dev DB for dev runs and pre-render; test DB only for E2E; never production; confirm before any build that reads data.
+- Line endings: the working copies of tracked docs are CRLF (index LF); keep CRLF when editing.
+
 ## 2026-10-31 02:29: toolkit upgrade applied on chore/upgrade-toolkit-1.2 (uncommitted); waiting for the user to push and merge
 - CHG-011: upgrade 0.5.0 → 1.2.0 applied and checked (run kit, machine setup, feature guide validators ok; staged secret scan clean).
 - The user commits, pushes and merges the branch. Then: create `feature/frontend-2` from the updated `main` and start the frontend-2

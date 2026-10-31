@@ -59,11 +59,14 @@ Data does not travel through git. Recreate each database, then seed test data:
 - Optional: enable the secret-scan git hook once with 'git config core.hooksPath .githooks'.
 
 ## Starting the apps
-- `start-classic.cmd` is the original launcher for `frontend/`: Brave first (else Chrome, else default), opens `/` and `/admin`,
-  runs migrations on every start, `-Preview` for the production-like build, `-DryRun` to check first.
-- `start.cmd` is the toolkit run kit (from `run/run.json`): Chrome first and only `/`; it migrates once on the first run and creates
-  `frontend/.env` from `frontend/.env.example` on that first run. `stop.cmd` closes what it started.
-- Both use the dev database `mitali_portfolio` on port 5442.
+- `start.cmd` starts all three apps: backend http://127.0.0.1:8000, frontend 1 http://localhost:5173 and frontend-2
+  http://localhost:5174 (Chrome first; opens both front ends once everything answers). `start.cmd -Only api,web2` starts a subset;
+  `stop.cmd` stops everything `start.cmd` started. Its first run creates `frontend/.env` and `frontend-2/.env` from their
+  `.env.example` files (public values only).
+- `start-classic.cmd` is the original launcher for frontend 1 only (Brave first, opens `/` and `/admin`, migrations on every start,
+  `-Preview`, `-DryRun`).
+- In development both front ends share one admin session (cookies ignore the port).
+- Everything uses the dev database `mitali_portfolio` on port 5442.
 
 ## Open and continue
 - Run `open-claude.ps1` from the project folder, or in the desktop app add the project folder and start a session.

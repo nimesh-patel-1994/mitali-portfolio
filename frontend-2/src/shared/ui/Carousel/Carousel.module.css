@@ -1,0 +1,161 @@
+@import "../../../styles/media.css";
+
+/* Testimonial carousel (DES-052): large light quote, hairline arrow buttons, indicator dots (accent on deep). */
+.carousel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "viewport viewport viewport"
+    "prev indicators next";
+  align-items: center;
+  row-gap: var(--space-6);
+  column-gap: var(--space-4);
+}
+
+@media (--bp-lg) {
+  .multiple {
+    grid-template-areas:
+      "prev viewport next"
+      ". indicators .";
+    column-gap: var(--space-7);
+  }
+}
+
+.viewport {
+  grid-area: viewport;
+  min-width: 0;
+  touch-action: pan-y;
+}
+
+.slide {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.quote {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-heading);
+  line-height: var(--leading-h3);
+}
+
+.quote p {
+  max-width: none;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.author {
+  color: var(--on-surface);
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.role {
+  color: var(--on-surface-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.caseLink {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--on-surface);
+  font-size: var(--text-small);
+  text-decoration: underline;
+}
+
+/* 48 px square arrow buttons (≥ 44 px touch target). */
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h);
+  height: var(--control-h);
+  border: var(--line-width) solid var(--line-strong-on-surface);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--on-surface);
+  font-size: var(--text-h3);
+  cursor: pointer;
+}
+
+.arrow:hover {
+  border-color: var(--on-surface);
+}
+
+.prev {
+  grid-area: prev;
+}
+
+.next {
+  grid-area: next;
+}
+
+.indicators {
+  grid-area: indicators;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+/* 44 px hit area with a small visible dot. */
+.dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.dot::before {
+  content: "";
+  width: var(--space-3);
+  height: var(--space-3);
+  border: var(--line-width) solid var(--on-surface);
+  border-radius: var(--radius-full);
+}
+
+.dot[aria-current="true"]::before {
+  background-color: var(--indicator-on-surface);
+  border-color: var(--indicator-on-surface);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .slide:not([hidden]) {
+    animation: f2-slide-in var(--motion-dur-slow) var(--motion-ease-out);
+  }
+
+  .arrow {
+    transition: border-color var(--motion-dur-fast) var(--motion-ease-out);
+  }
+}
+
+@keyframes f2-slide-in {
+  from {
+    opacity: 0;
+  }
+}

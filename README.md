@@ -4,18 +4,28 @@ Portfolio website with a FastAPI backend (`backend/`) and a React frontend (`fro
 
 ## Starting the apps (two launchers)
 
-| Launcher | What it does | Browser | Opens |
-|----------|--------------|---------|-------|
-| **`start-classic.cmd`** (recommended for `frontend/`) | The original hand-made launcher (`run/classic/start-classic.ps1`). Checks PostgreSQL 17 on 5442, prints the target database (host:port/name, no password), installs dependencies if missing, runs `alembic upgrade head` on every start, starts the backend (`127.0.0.1:8000`, auto-reload) and the frontend dev server (`localhost:5173`) in their own windows, reuses anything already running. Options: `-Preview` (rebuild the pre-rendered site from the dev database and serve it production-like on `localhost:8000`), `-NoBrowser`, `-DryRun` (prints what would happen, starts nothing). | Brave, else Chrome, else default | `/` and `/admin` |
-| **`start.cmd`** (toolkit run kit, second option) | Generated from `run/run.json` by the toolkit. Checks the database port, installs and migrates **once** (first run), starts the same two apps in their own windows, waits for their health addresses. `stop.cmd` closes what it started; `smoke.cmd` checks the health addresses. Options: `-DryRun`, `-NoBrowser`, `-Only api,web`, `-Reinstall`. | **Chrome first** (then Edge, Firefox, default); Brave is not supported by the kit yet | **only `/`** |
+| Launcher | What it starts | Browser | Opens |
+|----------|----------------|---------|-------|
+| **`start.cmd`** (toolkit run kit; default for daily work with both front ends) | **All three apps** from `run/run.json`, each in its own window, in dependency order: the backend API (`127.0.0.1:8000`, auto-reload), frontend 1 (`localhost:5173`) and frontend-2 (`localhost:5174`). It waits until each answers, then opens both front ends. Installs and migrates **once** on the first run. `-Only api,web2` starts a subset (ids: `api`, `web`, `web2`); `-DryRun`, `-NoBrowser`, `-Reinstall`. **`stop.cmd` stops everything `start.cmd` started** (every window and its child processes), also across several `start.cmd -Only …` runs. `smoke.cmd` checks the health addresses. | Chrome first (then Edge, Firefox, default); Brave is not supported by the kit yet | `http://localhost:5173/` and `http://localhost:5174/` (`/` only) |
+| **`start-classic.cmd`** (the original hand-made launcher; unchanged) | Backend (`127.0.0.1:8000`) and **frontend 1 only** (`localhost:5173`) (`run/classic/start-classic.ps1`). Checks PostgreSQL 17 on 5442, prints the target database (host:port/name, no password), runs `alembic upgrade head` on every start, reuses anything already running. `-Preview` rebuilds the pre-rendered site from the dev database and serves it production-like on `localhost:8000`; `-NoBrowser`; `-DryRun`. Close its windows to stop it (it is not tracked by `stop.cmd`). | Brave, else Chrome, else default | frontend 1 `/` and `/admin` |
+
+Which address is which:
+
+| Address | App |
+|---------|-----|
+| http://localhost:5173/ (admin: http://localhost:5173/admin) | **frontend 1** (`frontend/`, the current design) |
+| http://localhost:5174/ (admin from PH-3: http://localhost:5174/admin) | **frontend-2** (`frontend-2/`, the design variant) |
+| http://127.0.0.1:8000/api/health | backend API (both front ends use it through their dev proxies) |
 
 Notes:
-- `start.cmd` no longer behaves like the original launcher: it opens Chrome first and only `/`. The original is kept unchanged in
-  behaviour as `start-classic.cmd` (the original `start.cmd` text is saved as `run/classic/start.cmd.original`).
-- On its first real run, the run kit's `start.cmd` creates `frontend/.env` from `frontend/.env.example` (public values only:
-  `VITE_SITE_URL`). `start-classic.cmd` never creates `.env` files. A toolkit option to switch this off is planned.
+- **One admin session for both front ends in development:** browsers ignore the port for cookies, so the admin cookies on
+  `localhost` are shared by 5173 and 5174. Logging in or out on one front end does the same on the other.
+- frontend-2's dev server rewrites the `Origin` header of `/api/admin` requests to the backend's own origin, in development only
+  (SEC-UI-014); builds and previews never do this, and frontend 1 is unchanged.
+- On their first real run through `start.cmd`, `frontend/.env` and `frontend-2/.env` are created from their `.env.example` files
+  (public values only: `VITE_SITE_URL`). `start-classic.cmd` never creates `.env` files.
 - Both launchers start against the **dev** database (`mitali_portfolio`); the tests use `mitali_portfolio_test`.
-- More detail: `start.md`.
+- The original `start.cmd` text is saved as `run/classic/start.cmd.original`. More detail: `start.md`.
 
 
 ## Backend

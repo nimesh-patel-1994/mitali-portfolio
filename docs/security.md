@@ -1,7 +1,8 @@
 # Security Guidelines — mitali-portfolio
 
 > Per-layer security requirements. Written after `backend-scope.md` and `ui-scope.md` (no mobile scope: `mobile: none`;
-> no cloud scope: `cloud: none`), and feeds review criteria back into them (`BE-REV-024..030`, `UI-REV-021..025`).
+> no cloud scope: `cloud: none`), and feeds review criteria back into them (`BE-REV-024..030`, `UI-REV-021..025`; for the
+> frontend-2 variant, CHG-012: `UI-REV-026..037`, items SEC-UI-013..SEC-UI-019 in section 4a).
 > Owned by the `security-guidelines` skill. Status tags: `ID [STATUS YYYY-MM-DD HH:MM]` (see `status-tracker`).
 > Stack (SystemDesign header): backend `python-fastapi`, frontend `react` (one app: pre-rendered public site + client
 > `/admin`), database `postgresql` 17 on port 5442, auth `session-cookie` (SD-007), cloud/iac/ci `none` (SD-012).
@@ -39,6 +40,8 @@ the main concern once hosting arrives (section 6).
 5. Backend → PostgreSQL 17 (app role `mitali_app`, loopback).
 6. User terminal → CLI (`create-admin`, `reset-password`, `seed`) and `setup_db.ps1` (superuser via psql prompt).
 7. Agents → repository and test database (app role only; never the superuser; never `.env` contents in chat).
+8. (CHG-012) Admin browser on `http://localhost:5174` → frontend-2 Vite dev server → `/api/admin/*` with a **dev-only Origin
+   rewrite** (SD-112). Development only; no build, preview or deployment contains it.
 
 ### 1.4 Threats (STRIDE) and mitigations
 | # | Threat | Boundary | Mitigation (SEC IDs) |
@@ -55,6 +58,8 @@ the main concern once hosting arrives (section 6).
 | T10 | Elevation: unprotected admin route, open redirect after login, DNS rebinding | 2 | Deny-by-default router, `next` validation, Host allow-list (SEC-BE-005, SEC-UI-005, SEC-BE-016) |
 | T11 | Supply chain: vulnerable or malicious package, third-party script | build | Lockfiles, audits, no runtime third-party resources (SEC-005, SEC-006, SEC-UI-010) |
 | T12 | Exposure beyond the machine: services bound to all interfaces over plain http | 5, all | Loopback binding, pg_hba loopback-only (SEC-001, SEC-002) |
+| T13 | (CHG-012) Tampering: the frontend-2 dev proxy turns the backend's Origin check (CSRF layer 2) into a no-op for requests that reach it, e.g. from another local web app in the same browser | 8 | Rewrite only for `/api/admin` and only when the incoming Origin is the 5174 dev origin (foreign origins pass through and are rejected); SameSite=Strict + session-bound CSRF header (needs a CORS preflight that no one answers) stay; dev only, never in builds (SEC-UI-014) |
+| T14 | (CHG-012) A second front end weakens shared controls (inline scripts or styles for motion/view transitions, unescaped JSON-LD, CDN fonts, token storage) | 1, 2, 3 | Inherited SEC-UI controls and frontend-2 specifics (SEC-UI-013, SEC-UI-015..SEC-UI-018); one deployed front end (SEC-UI-019) |
 
 ## 2. Cross-cutting
 
@@ -496,6 +501,87 @@ the main concern once hosting arrives (section 6).
     `dist`, SEC-010 headers apply).
   - Verify: review of `vite.config.ts` and `package.json` scripts (UI-REV-025); `npm audit`.
 
+### 4a. Frontend: Variant frontend-2 (CHG-012)
+Applies to `frontend-2/` (SD-111..SD-117, TS-020..TS-033, UI-100..). The backend and its controls (SEC-BE-*) are unchanged and
+protect frontend-2 exactly as `frontend/`.
+
+- SEC-UI-013 [NEW 2026-10-31 02:54] frontend-2 inherits every frontend control unchanged
+  - SEC-UI-001 (output encoding, single `SanitizedHtml`), SEC-UI-002 (escaped hydration data and head tags, `hydrate={false}`),
+    SEC-UI-003 (CSP-compatible output, `assetsInlineLimit: 0`), SEC-UI-004 (http/https external links), SEC-UI-005 (login `next`
+    validation), SEC-UI-007 (contact form honeypot, POST-only, disabled before hydration), SEC-UI-008 (enquiry text as text),
+    SEC-UI-009 (media only via `<img>` and `/media/` URLs), SEC-UI-010 (no third-party code, `npm audit` clean, dev packages not in
+    production code, only `VITE_SITE_URL` exposed), SEC-UI-011 (admin lazy, `noindex`, not linked), SEC-UI-012 (dev server bound to
+    `localhost`, `fs.strict`, default `allowedHosts`) apply to frontend-2 with its own paths. The copied modules keep their
+    security tests; ESLint security rules are the same.
+  - Verify: the ported UI-T scenarios (UI-T-141..UI-T-143 and the PH-3 ports), lint, `npm audit --audit-level=high` in
+    `frontend-2/`; review UI-REV-021..025 read for frontend-2, UI-REV-037.
+
+- SEC-UI-014 [NEW 2026-10-31 02:54] Dev-only Origin rewrite in the frontend-2 Vite dev server (accepted risk, development only)
+  - What: for `/api/admin` requests whose `Origin` is exactly `http://localhost:5174` or `http://127.0.0.1:5174`, the dev proxy
+    replaces `Origin` with `http://127.0.0.1:8000` (TS-027). Reason: the backend's Origin allow-list (SEC-BE-004 layer 2,
+    `ALLOWED_ORIGINS`) contains 5173 and 8000 only, and the user decided not to change `ALLOWED_ORIGINS` or any `.env`.
+  - Risk: for requests that reach the 5174 dev server with the 5174 origin, layer 2 of the CSRF defence is bypassed in development.
+    Residual protection: layer 1 (`SameSite=Strict` cookies: a cross-site page sends none) and layer 3 (session-bound
+    `X-CSRF-Token`; a custom header from any other origin, including another `localhost` port, needs a CORS preflight that neither
+    Vite nor the backend answers, so the browser never sends the request); login CSRF stays blocked by the JSON content type
+    (preflight) and, for foreign origins, by the pass-through. Admin cookies are host-only `localhost` cookies shared by 5173 and
+    5174 (one session for both dev servers; SEC-BE-003 local caveat applies unchanged). Production is unaffected: only one front
+    end is deployed and it is served same-origin by the backend, which receives the browser's real `Origin`.
+  - Rules: rewrite only in `server.proxy` (Vite **dev server**), wired only for `command === "serve"` and not for `vite preview`;
+    only `Origin` (never `Referer`, `Host` or cookies); only `/api/admin`; only the two 5174 origins; implemented in
+    `frontend-2/vite/dev-origin.ts`, which `src/` never imports. `ALLOWED_ORIGINS` and every `.env` stay untouched.
+  - Verify: **unit test of the proxy config** UI-T-140 (pure function cases, config resolved for serve/preview/build); **build
+    output scan** UI-T-140 / UI-T-162 (no rewrite code or helper name in `dist/`); E2E UI-T-149 (5174 origin accepted, foreign
+    origin through 5174 still `403 origin_rejected`); review UI-REV-029.
+  - Required proofs (user, G2 2026-10-31 02:59); each is an automated test:
+    1. The rewrite is **absent from the build and preview output**: no rewrite code or helper name in `frontend-2/dist/` or
+       `dist-ssr/`, and the resolved `vite preview` config has no Origin rewrite (a request through preview keeps its Origin).
+    2. **Other origins still get 403 directly from the backend**: a POST to `http://127.0.0.1:8000/api/admin/auth/login` with a
+       foreign Origin (and with `http://localhost:5174`) returns `403 origin_rejected` without any proxy involved.
+    3. **Frontend 1 is unaffected**: `frontend/` has no diff, its dev proxy still forwards `Origin` unchanged, and an admin
+       request through 5173 behaves as before.
+    4. **Nothing logs cookies**: the dev proxy hook writes no logs of headers; a test captures the dev server's console output
+       during an admin login through 5174 and finds no `Cookie`, `Set-Cookie`, `mp_session` or `mp_csrf` values.
+
+- SEC-UI-015 [NEW 2026-10-31 02:54] CSP compatibility of the frontend-2 design features
+  - The SEC-010 policy is unchanged and applies to frontend-2 when the backend serves it. Therefore: the motion flag
+    (`data-motion`), the white-base review switch and all state are set from external modules after hydration, never by inline
+    scripts; reveal stagger, collage drift offsets, image ratios and `view-transition-name`s come from classes/`data-*` attributes
+    in stylesheets, never `style` attributes or props; scroll-driven animations and view-transition pseudo-elements are plain CSS
+    (`style-src 'self'`); fonts are local files (`font-src 'self'`, no `data:` fonts); JSON-LD is a non-executing
+    `application/ld+json` block (no hash needed). The SEC-UI-002 dist scan is extended for frontend-2 to allow exactly two
+    non-`src` script types: `application/json` (`__ROUTER_DATA__`) and `application/ld+json`.
+  - Verify: dist scan UI-T-162 (PH-3) and the CSP-violation Playwright test of SEC-010 run against the frontend-2 preview (PH-3);
+    UI-T-132, UI-T-133; review UI-REV-028, UI-REV-031.
+
+- SEC-UI-016 [NEW 2026-10-31 02:54] JSON-LD escaping and content (PH-3)
+  - JSON-LD is built only from public loader data (the same fields the public API returns; never settings such as
+    `notification_email`), serialized with the same escaper as the hydration data (`<`, `>`, `&`, U+2028, U+2029 → `\u…`), one
+    helper for all blocks; URLs are absolute from `VITE_SITE_URL` plus validated slugs or `/media/` paths; `sameAs` only for
+    http(s) social links.
+  - Verify: UI-T-158 (value with `</script>` stays inert and valid), dist scan UI-T-162; review UI-REV-031.
+
+- SEC-UI-017 [NEW 2026-10-31 02:54] No third-party requests from frontend-2; fonts from local packages only
+  - Fonts come from the Fontsource npm packages (installed from the lockfile) and are copied into `public/fonts/` with their
+    licence texts; no Google Fonts, CDN, analytics, embeds or hot-linked images. A new font package passes the SEC-005 dependency
+    checks (open licence, maintained, no install scripts that download binaries).
+  - Verify: Playwright same-origin test UI-T-152 (PH-2) and on every page from PH-3; bundle-origin grep (SEC-UI-010 test ported);
+    UI-T-131; review UI-REV-033.
+
+- SEC-UI-018 [NEW 2026-10-31 02:54] Admin session handling in frontend-2 is identical to `frontend/` (PH-3)
+  - Same as SEC-UI-006 and SEC-UI-005: CSRF token in module memory only, `credentials: "same-origin"`, no browser storage of
+    tokens or enquiry data, cache and token cleared on 401 and logout, `next` limited to same-origin `/admin` paths, no service
+    worker. Skeletons and view transitions never render cached admin data after logout. The admin chunk stays lazy and `noindex`.
+  - Verify: ports of UI-T-070..UI-T-076 in `frontend-2/` (PH-3), E2E port of UI-T-113; review UI-REV-024 (read for frontend-2).
+
+- SEC-UI-019 [NEW 2026-10-31 02:54] One deployed front end; selection without touching `.env` (PH-3)
+  - Only one front end is deployed; the backend's existing confinement (SEC-BE-012: files only inside `FRONTEND_DIST_DIR`, never
+    dot-files or `build-info.json`) applies to whichever build is selected. The frontend-2 preview sets `FRONTEND_DIST_DIR` and
+    `SERVE_FRONTEND` only in the process environment of that command and binds `--host 127.0.0.1` (SEC-001); no `.env` value is
+    read, printed or written by agents (SEC-003).
+  - Verify: UI-T-160 (`.env` hashes unchanged, 404 status, default still `frontend/dist`); review of the preview command
+    (UI-REV-037).
+
 ## 5. Mobile
 Not applicable: `mobile: none` in the SystemDesign header (no app; mobile apps are out of scope in requirements
 section 5). No `SEC-MOB-*` items. If an app is added through `/feature`, this section gets MASVS-based items and
@@ -598,6 +684,13 @@ user performs (no agent may report it as passed without the user's statement or 
 | SEC-UI-010 | UI-REV-025 | Playwright same-origin test, new bundle-origin grep | `npm audit` |
 | SEC-UI-011 | UI-REV-015, UI-REV-025 | UI-T-121 | — |
 | SEC-UI-012 | UI-REV-025 | — | `npm audit` |
+| SEC-UI-013 | UI-REV-021..025 (frontend-2), UI-REV-037 | ported UI-T scenarios (UI-T-141..143, PH-3 ports) | `npm audit` in `frontend-2/` |
+| SEC-UI-014 | UI-REV-029 | UI-T-140 (proxy config unit test + dist scan), UI-T-149, UI-T-162 | — |
+| SEC-UI-015 | UI-REV-028, UI-REV-031 | UI-T-132, UI-T-133, UI-T-162, CSP-violation E2E on the frontend-2 preview | — |
+| SEC-UI-016 | UI-REV-031 | UI-T-158, UI-T-162 | — |
+| SEC-UI-017 | UI-REV-033 | UI-T-131, UI-T-152, bundle-origin grep (ported) | `npm audit` |
+| SEC-UI-018 | UI-REV-024, UI-REV-037 | ports of UI-T-070..076, 113 (PH-3) | — |
+| SEC-UI-019 | UI-REV-037 | UI-T-160 | — |
 
 ### 8.2 User checks (local machine; reported only from the user's own statement or output)
 - `pg_hba.conf` of the PostgreSQL 17 instance (port 5442) allows `host` connections only from `127.0.0.1/32` and
@@ -615,3 +708,5 @@ user performs (no agent may report it as passed without the user's statement or 
 | SQ-3 | Lock-out DoS (tech-spec OQ-6): accept the per-account 15 min block locally? | Accepted locally; revisit at hosting (H-4) |
 | SQ-4 | Several verifications are marked **new test**. Should the scope owners add them as `BE-T-*` / `UI-T-*` rows, or may they live as tests marked with the SEC ID? | Tests marked with the SEC ID |
 | SQ-5 | README/preview command must be `uv run fastapi run app/main.py --host 127.0.0.1` (TS-001 step 4 omits `--host`, and `fastapi run` binds `0.0.0.0` by default). OK to apply in BE-026? | Yes, apply |
+| SQ-6 | (CHG-012) Accept the dev-only Origin-check bypass for the 5174 origin (SEC-UI-014), or add `http://localhost:5174` to `ALLOWED_ORIGINS` in the user's own `.env` instead (backend unchanged, but a config change the user decided against)? | Accept the dev-only rewrite as specified |
+| SQ-7 | (CHG-012) The frontend-2 header's scroll-direction listener (requirements OQ-13) has no security impact; noted only because REQ-NFR-009 forbids scroll handlers for animation. | — |

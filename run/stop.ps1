@@ -19,7 +19,9 @@ function Say([string]$Message) { if ($DryRun) { Write-Host "[dry-run] $Message" 
 
 if (Test-Path -LiteralPath $pidFile) {
     $items = @()
-    try { $items = @(Get-Content -LiteralPath $pidFile -Raw | ConvertFrom-Json) } catch { Write-Host 'run\pids.json could not be read; nothing to stop by process id.' }
+    # Assign first, then wrap: in Windows PowerShell 5.1 ConvertFrom-Json emits a JSON array as ONE object, so
+    # @(... | ConvertFrom-Json) would hold the whole array as a single item and every pid cast would fail.
+    try { $parsed = Get-Content -LiteralPath $pidFile -Raw | ConvertFrom-Json; $items = @($parsed) } catch { Write-Host 'run\pids.json could not be read; nothing to stop by process id.' }
     foreach ($i in $items) {
         if (-not $i.pid) { continue }
         $p = Get-Process -Id ([int]$i.pid) -ErrorAction SilentlyContinue

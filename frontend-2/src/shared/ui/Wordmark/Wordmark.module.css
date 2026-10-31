@@ -1,0 +1,20 @@
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--indicator-on-surface);
+  font-family: var(--font-label);
+  font-weight: var(--weight-wordmark);
+  letter-spacing: var(--tracking-wordmark);
+  line-height: var(--leading-wordmark);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.header {
+  min-height: var(--touch-min);
+  font-size: var(--text-wordmark);
+}
+
+.footer {
+  font-size: var(--text-wordmark-footer);
+}

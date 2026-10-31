@@ -53,3 +53,26 @@
 | REQ-NFR-007 | TS-001, TS-006 | UI-001 | SEC-006 | backend/app, frontend/src (see scope items) | UI-T-001..003 | IMPLEMENTED 2026-10-30 18:36 |
 | REQ-NFR-008 | TS-001 | BE-001 | SEC-005 | backend/app, frontend/src (see scope items) | BE-T-001 | IMPLEMENTED 2026-10-30 18:36 |
 | REQ-DOC-001 | — | — (orchestrator, `make-feature-guide.ps1`) | n/a | docs/feature-guide.json, docs/FEATURE.html | `make-feature-guide.ps1 -CheckOnly` (ok, 1 warning: internal REQs deliberately not in the guide) | NEW 2026-10-31 02:21 |
+| REQ-080 (@PH-2) | TS-020, TS-033 | UI-100 | SEC-UI-013 | — | UI-T-127 | NEW 2026-10-31 02:54 |
+| REQ-081 (@PH-2) | TS-020, TS-027, TS-033 | (backend: none, by design); UI-100, UI-113 | SEC-UI-013, SEC-UI-014 | — | UI-T-127, 149, 153 | NEW 2026-10-31 02:54 |
+| REQ-082 (@PH-2) | TS-021, TS-023, TS-026 | UI-101, UI-105, UI-111, UI-112, UI-150 | n/a | — | UI-T-144, 148 | NEW 2026-10-31 02:54 |
+| REQ-083 (@PH-2) | TS-021 | UI-101 | n/a | — | UI-T-128..130, 132 | NEW 2026-10-31 02:54 |
+| REQ-084 (@PH-2) | TS-022 | UI-102, UI-109 | SEC-UI-015 | — | UI-T-133, 134, 150 | NEW 2026-10-31 02:54 |
+| REQ-085 (@PH-2) | TS-023 | UI-105, UI-106 | n/a | — | UI-T-136, 151 | NEW 2026-10-31 02:54 |
+| REQ-086 (@PH-2) | TS-023, TS-026 | UI-103, UI-105..UI-112, UI-115 | SEC-UI-013 | — | UI-T-136..138, 141..146, 148 | NEW 2026-10-31 02:54 |
+| REQ-087 (@PH-3) | TS-029 (outline) | UI-120..UI-125 (outline) | SEC-UI-013 | — | UI-T-154, 161 (outline) | NEW 2026-10-31 02:54 |
+| REQ-088 (@PH-3) | TS-031 (outline) | UI-129..UI-143 (outline) | SEC-UI-013, SEC-UI-018 | — | UI-T-154 (outline) | NEW 2026-10-31 02:54 |
+| REQ-089 (@PH-3) | TS-029 (outline) | UI-126 (outline) | SEC-UI-013, SEC-UI-015 | — | UI-T-156, 162 (outline) | NEW 2026-10-31 02:54 |
+| REQ-090 (@PH-2) | TS-027 | UI-113 | SEC-UI-014 | — | UI-T-140, 149 | NEW 2026-10-31 02:54 |
+| REQ-091 (@PH-3) | TS-032 (outline) | UI-128 (outline) | SEC-UI-019 | — | UI-T-160 (outline) | NEW 2026-10-31 02:54 |
+| REQ-092 (@PH-2) | TS-028 | UI-114 | n/a | — | UI-T-147 | NEW 2026-10-31 02:54 |
+| REQ-093 (@PH-3) | TS-033 | UI-145 (outline), matrix ui-scope 7.3 | n/a | — | UI-T-153, 156 (outline) | NEW 2026-10-31 02:54 |
+| REQ-094 (@PH-2) | TS-024 | UI-104 | SEC-UI-015 | — | UI-T-139 | NEW 2026-10-31 02:54 |
+| REQ-095 (@PH-2) | TS-025 | UI-109 | SEC-UI-013 | — | UI-T-141, 150 | NEW 2026-10-31 02:54 |
+| REQ-096 (@PH-3) | TS-031 (outline) | UI-133, UI-144 (outline) | SEC-UI-018 | — | UI-T-159 (outline) | NEW 2026-10-31 02:54 |
+| REQ-097 (@PH-3) | TS-029, TS-030 (outline) | UI-127 (outline) | SEC-UI-015, SEC-UI-016 | — | UI-T-158, 162 (outline) | NEW 2026-10-31 02:54 |
+| REQ-NFR-009 (@PH-2) | TS-022 | UI-102 | n/a | — | UI-T-134, 135, 150 | NEW 2026-10-31 02:54 |
+| REQ-NFR-010 (@PH-4) | TS-033 | UI-101, UI-105..UI-112, UI-150 (and every PH-3 screen) | n/a | — | UI-T-148, 155 (outline) | NEW 2026-10-31 02:54 |
+| REQ-NFR-011 (@PH-4) | TS-025, TS-029, TS-033 | UI-109, UI-151 (outline) | n/a | — | UI-T-157 (outline) | NEW 2026-10-31 02:54 |
+| REQ-NFR-012 (@PH-2) | TS-021 | UI-101 | SEC-UI-017 | — | UI-T-131, 152 | NEW 2026-10-31 02:54 |
+| REQ-NFR-013 (@PH-2) | TS-020, TS-033 | UI-100 | SEC-003, SEC-UI-019 | — | UI-T-148..153 (test DB), 161 (outline) | NEW 2026-10-31 02:54 |

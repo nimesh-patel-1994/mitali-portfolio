@@ -1,0 +1,32 @@
+/*
+ * Parallax media band (TS-022 step 3). Static fallback: the 116 % image is centred in its frame (the frame clips
+ * it with `overflow: clip`, which is not a scroll container, so `view()` follows the page scroll).
+ */
+.band {
+  width: 100%;
+}
+
+.image {
+  inset-block-start: calc(-1 * var(--motion-parallax-shift));
+  height: calc(100% + 2 * var(--motion-parallax-shift));
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .image {
+      animation: f2-parallax linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+  }
+}
+
+@keyframes f2-parallax {
+  from {
+    transform: translateY(calc(-1 * var(--motion-parallax-travel)));
+  }
+
+  to {
+    transform: translateY(var(--motion-parallax-travel));
+  }
+}

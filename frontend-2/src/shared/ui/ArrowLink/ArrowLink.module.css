@@ -1,0 +1,101 @@
+/* ArrowLink (DES-052): arrow swap on hover/focus (transform only) and an underline on the text. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.text {
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: var(--underline-width);
+  text-underline-offset: var(--underline-offset);
+}
+
+.link:hover .text,
+.link:focus-visible .text {
+  text-decoration-color: currentcolor;
+}
+
+.arrows {
+  position: relative;
+  display: inline-block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  overflow: hidden;
+  flex: none;
+}
+
+.arrow {
+  position: absolute;
+  inset: 0;
+}
+
+.in {
+  transform: translate(-100%, 100%);
+}
+
+.link:hover .out,
+.link:focus-visible .out {
+  transform: translate(100%, -100%);
+}
+
+.link:hover .in,
+.link:focus-visible .in {
+  transform: none;
+}
+
+/* Giant footer call-to-action ("let's talk"): display 300 at --text-cta with a 4 px accent underline bar. */
+.cta {
+  position: relative;
+  align-items: flex-end;
+  gap: var(--space-4);
+  padding-block-end: var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--text-cta);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-cta);
+}
+
+.cta .text {
+  text-decoration: none;
+}
+
+.cta::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: var(--line-width-cta);
+  background-color: var(--indicator-on-surface);
+  transform-origin: left center;
+}
+
+.cta:hover::after,
+.cta:focus-visible::after {
+  transform: scaleX(0.96);
+}
+
+.cta .arrows {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  font-size: var(--text-h2);
+  color: var(--indicator-on-surface);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .arrow,
+  .cta::after {
+    transition: transform var(--motion-dur-base) var(--motion-ease-out);
+  }
+
+  .text {
+    transition: text-decoration-color var(--motion-dur-base) var(--motion-ease-out);
+  }
+}

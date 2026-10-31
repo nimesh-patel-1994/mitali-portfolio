@@ -1,0 +1,49 @@
+@import "../../../styles/media.css";
+
+.layout {
+  row-gap: var(--space-7);
+}
+
+.portrait {
+  grid-column: 1 / -1;
+  max-width: calc(var(--measure) / 1.5);
+}
+
+.text {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.bio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  color: var(--on-surface);
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+}
+
+.signoff {
+  color: var(--on-surface-muted);
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+@media (--bp-lg) {
+  .layout {
+    align-items: start;
+  }
+
+  .portrait {
+    grid-column: 1 / span 4;
+    max-width: none;
+  }
+
+  /* Offset text: starts at column 5 (DES-061). */
+  .text {
+    grid-column: 5 / -1;
+  }
+}

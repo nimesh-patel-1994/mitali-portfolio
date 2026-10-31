@@ -1,0 +1,123 @@
+@import "../../../../styles/media.css";
+
+.footer {
+  view-transition-name: site-footer;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--section-gap) var(--space-6);
+}
+
+.ctaBlock {
+  padding-block-end: var(--space-9);
+}
+
+.ctaLine {
+  display: block;
+}
+
+.brandRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-block: var(--space-7);
+  border-block-start: var(--line-width) solid var(--line-on-surface);
+}
+
+.email {
+  font-size: var(--text-lead);
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7) var(--layout-gutter);
+  padding-block: var(--space-7);
+  border-block-start: var(--line-width) solid var(--line-on-surface);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.label {
+  color: var(--on-surface-muted);
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.list {
+  list-style: none;
+}
+
+/* Links ≥ 44 px tall on touch layouts; cream text with a green grow-bar on hover (deep surface, DES-052). */
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-min);
+  color: var(--on-surface);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--space-2);
+  height: var(--line-width);
+  background-color: var(--indicator-on-surface);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.link:hover::after,
+.link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-block-start: var(--space-5);
+  border-block-start: var(--line-width) solid var(--line-on-surface);
+  color: var(--on-surface-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+@media (--bp-md) {
+  .brandRow {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .groups {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bottom {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-5);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .link::after {
+    transition: transform var(--motion-dur-base) var(--motion-ease-out);
+  }
+}

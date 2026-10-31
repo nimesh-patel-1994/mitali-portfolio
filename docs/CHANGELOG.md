@@ -2,6 +2,63 @@
 
 > Append-only. One entry per change set. Newest first. Times in the user's local timezone.
 
+## CHG-013 — 2026-10-31 06:57 — frontend-2 PH-2 build, browser tests run 1, run kit with three apps, session checkpoint
+- UI-100..UI-115: NEW → IN-PROGRESS (fe-builder 2026-10-31 03:01; UI-114 run kit by the orchestrator). Nothing IMPLEMENTED.
+- frontend-2 PH-2 checks: lint 0, tsc clean, Vitest 234/234, build + dist scan OK, motion 1023 B gzip, entry 112.7 kB gzip.
+- Browser tests run 1 (TEST DB mitali_portfolio_test): 16 passed, 1 skipped, 12 failed (axe label-content-name-mismatch on the footer
+  CTA; reveal-test locator; header tests scrolling before content loaded). Fixes applied in Footer.tsx and the E2E spec; NOT verified.
+  SEC-UI-014 proofs 2-4, UI-T-149, UI-T-152 and UI-T-153 passed. Test backend stopped; test DB left at head 0002, seeded.
+- Run kit: `web2` (frontend-2, 5174) added to `run/run.json` (phase PH-2); `start.cmd` starts backend + frontend 1 + frontend-2
+  and opens both; `-Only` works. Toolkit template fixes (uncommitted in C:/Dev/multi-agent-setup) regenerated into `run/start.ps1`
+  and `run/stop.ps1`: PS 5.1 pid-file write/read, pid-list merge across runs, `-Only id,id` splitting, unknown-id error.
+- README, start.md, NEW-MACHINE-SETUP.new.md: three apps, URLs, shared dev admin session. PENDING-WORK.md added for resuming.
+
+## CHG-012 — 2026-10-31 02:54 — Feature frontend-2 (design variant): G2 documents (branch feature/frontend-2)
+- Scope agreed at G1: a second, self-contained React front end `frontend-2/` with the same screens, behaviour, API usage and SEO
+  outputs as `frontend/`, a new visual/motion design inspired by https://theatlyx.com/sportfolio/ecommerce-brand-identity-redesign/
+  (inspiration only), improvements #1-#7 (#8 light/dark skipped). No API contract, backend, database, `.env` or `frontend/` change.
+  Documents only; no code. Awaiting gate G2.
+- requirements.md: section 3.9 with REQ-080..REQ-097 [NEW] (@PH-2: 080, 081, 082, 083, 084, 085, 086, 090, 092, 094, 095;
+  @PH-3: 087, 088, 089, 091, 093, 096, 097); REQ-NFR-009 [NEW] @PH-2, REQ-NFR-010 [NEW] @PH-4, REQ-NFR-011 [NEW] @PH-4,
+  REQ-NFR-012 [NEW] @PH-2, REQ-NFR-013 [NEW] @PH-2. Priorities proposed (user confirms at G2). Out-of-scope lines for frontend-2;
+  open questions 12-16. Existing REQs unchanged.
+- phases.md: `ui_first: yes` (frontend-2 only), `design_freeze: open` (frontend-2); PH-2 ui-prototype [ACTIVE] (20 points),
+  PH-3 full parity [PLANNED] (16), PH-4 polish/freeze/close-out [PLANNED]; deviation from the ui-first mock rule recorded
+  (real API, no mock); backlog entry moved into the plan.
+- design-brief.md: section 7 "Variant: frontend-2" with DES-050..DES-065 [NEW] (aspect table DES-050..054, breakpoints DES-055,
+  header DES-056, type scale DES-057, motion tokens DES-058, contrast table DES-059, semantic token contract DES-060, grid DES-061,
+  images DES-062, view transitions DES-063, admin skin DES-064, wordmark DES-065), colour derivation, typography pairing with
+  licences (to be verified), pop-up pattern table; open questions 6-11. DES-001..DES-042 and section 6 unchanged.
+- SystemDesign.md: header `frontend` is now a list (frontend, frontend-2); SD-111..SD-117 [NEW] in section 2a (variant app and
+  duplication, dev server + dev-only Origin rewrite, Fontsource fonts, motion without library, deployment via `FRONTEND_DIST_DIR`,
+  run kit `web2`, testing without a mock API); architecture note + diagram, NFR line, three environment rows, seven decision-log rows.
+- tech-spec.md: TS-020..TS-028 [NEW] (full, @PH-2), TS-029..TS-032 [NEW] (outlines, @PH-3), TS-033 [NEW] (test strategy, PH-2 full);
+  section 2 states `api-contract.yaml` unchanged and lists the 91 of 92 operations frontend-2 uses; open questions 10-12.
+- ui-scope.md: section 7 "App: frontend-2": UI-100..UI-115 [NEW] (full, @PH-2), UI-120..UI-145 [NEW] (outlines, @PH-3),
+  UI-150..UI-152 [NEW] (outlines, @PH-4); screen-parity matrix (41 rows); design/responsive/accessibility rules;
+  UI-REV-026..UI-REV-037 [NEW]; UI-T-127..UI-T-153 [NEW] (PH-2), UI-T-154..UI-T-162 [NEW] (outlines).
+- security.md: trust boundary 8, threats T13-T14; section 4a SEC-UI-013..SEC-UI-019 [NEW] (inherited controls, dev-only Origin
+  rewrite with verification, CSP compatibility, JSON-LD escaping, no third-party requests/fonts, admin session handling, one
+  deployed front end); matrix rows; SQ-6, SQ-7.
+- backend-scope.md: note "frontend-2: no backend items (no backend change)". mobile-scope.md, cloud-scope.md, api-contract.yaml:
+  unchanged.
+- traceability.md: rows for REQ-080..REQ-097 and REQ-NFR-009..REQ-NFR-013 (NEW).
+- Not edited (scope items for the build): `run/run.json` (UI-114), `.gitignore` (TS-020).
+- Orchestrator checks after the spec-writer (2026-10-31 02:55): timestamps set from the system clock; DES-059 contrast table recomputed (24
+  pairs, 0 mismatches); font licences verified from the npm registry (all OFL-1.1); FRONTEND_DIST_DIR environment override verified;
+  Vite `proxyReq` and react-router `viewTransition` confirmed in the installed versions. Inspiration capture stored in
+  `.dev-pipeline/reference/inspiration/` (notes, summary and style data committed; screenshots and probe output git-ignored).
+
+- G2 approved by the user (2026-10-31 02:59) with answers: (1) header scroll listener accepted as SD-118, the single exception to REQ-NFR-009
+  (passive, once per frame, class toggle only; ignores < ~8 px; always shown near the top, with keyboard focus inside, with the menu
+  open, and always under reduced motion); (2) REQ-082 agreed — REQ-003, REQ-005, REQ-010, REQ-NFR-003, REQ-NFR-007 marked "frontend 1;
+  variant in REQ-082"; (3) SQ-6 accepted — SEC-UI-014 gains four required automated proofs (absent from build/preview output; other
+  origins 403 directly from the backend; frontend 1 unaffected; nothing logs cookies); (4) rebuild command text accepted as a known
+  difference (backend follow-up only if frontend-2 is chosen); (5) REQ-095 moved to PH-3, REQ-094 stays in PH-2 (PH-2 19 points, PH-3
+  17); (6) MoSCoW confirmed. REQ-084 reveal criteria split into explicit no-JS / print / reduced-motion / screenshot criteria;
+  REQ-085 gains the 8 px, near-top, focus, menu, scroll-padding, skip-link and reduced-motion criteria. Requirements OQ-12..14, 16
+  resolved.
+- Line endings: working copies restored to CRLF (index LF), no mode or binary changes.
 ## CHG-011 — 2026-10-31 02:21 — Toolkit upgrade 0.5.0 → 1.2.0 (/upgrade-project, branch chore/upgrade-toolkit-1.2)
 - Launchers: the original hand-made launcher is kept as `start-classic.cmd` → `run/classic/start-classic.ps1` (project root
   resolved two folders up; new `-DryRun` switch that prints root, folders, ports, target database host:port/name and browser;

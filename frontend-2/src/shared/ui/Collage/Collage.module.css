@@ -1,0 +1,93 @@
+@import "../../../styles/media.css";
+
+.collage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.tile {
+  min-width: 0;
+}
+
+@media (--bp-md) {
+  .collage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .full {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Collage drift (DES-058): per-item variants within ±--motion-drift-max, CSS scroll timelines only. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .drift1,
+    .drift2,
+    .drift3,
+    .drift4 {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+
+    .drift1 {
+      animation-name: f2-drift-up-small;
+    }
+
+    .drift2 {
+      animation-name: f2-drift-down-small;
+    }
+
+    .drift3 {
+      animation-name: f2-drift-up-large;
+    }
+
+    .drift4 {
+      animation-name: f2-drift-down-large;
+    }
+  }
+}
+
+@keyframes f2-drift-up-small {
+  from {
+    transform: translateY(calc(var(--motion-drift-max) * 0.25));
+  }
+
+  to {
+    transform: translateY(calc(var(--motion-drift-max) * -0.25));
+  }
+}
+
+@keyframes f2-drift-down-small {
+  from {
+    transform: translateY(calc(var(--motion-drift-max) * -0.4));
+  }
+
+  to {
+    transform: translateY(calc(var(--motion-drift-max) * 0.4));
+  }
+}
+
+@keyframes f2-drift-up-large {
+  from {
+    transform: translateY(calc(var(--motion-drift-max) * 0.6));
+  }
+
+  to {
+    transform: translateY(calc(var(--motion-drift-max) * -0.6));
+  }
+}
+
+@keyframes f2-drift-down-large {
+  from {
+    transform: translateY(calc(var(--motion-drift-max) * -1));
+  }
+
+  to {
+    transform: translateY(var(--motion-drift-max));
+  }
+}

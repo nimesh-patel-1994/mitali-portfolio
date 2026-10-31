@@ -1,8 +1,13 @@
 {
   "project": "mitali-portfolio",
-  "phase": "PH-1",
-  "generated": "2026-10-31 02:16",
-  "browser_order": ["chrome", "edge", "firefox", "default"],
+  "phase": "PH-2",
+  "generated": "2026-10-31 06:48",
+  "browser_order": [
+    "chrome",
+    "edge",
+    "firefox",
+    "default"
+  ],
   "services": [
     {
       "id": "db",
@@ -20,10 +25,16 @@
       "port": 8000,
       "health": "http://127.0.0.1:8000/api/health",
       "health_timeout_sec": 120,
-      "install": ["python -m uv sync"],
-      "prepare": ["python -m uv run alembic upgrade head"],
+      "install": [
+        "python -m uv sync"
+      ],
+      "prepare": [
+        "python -m uv run alembic upgrade head"
+      ],
       "start": "python -m uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 --no-server-header --no-access-log",
-      "depends_on": ["db"],
+      "depends_on": [
+        "db"
+      ],
       "open_browser": false
     },
     {
@@ -34,11 +45,33 @@
       "port": 5173,
       "health": "http://localhost:5173/",
       "health_timeout_sec": 120,
-      "install": ["npm ci"],
+      "install": [
+        "npm ci"
+      ],
       "start": "npm run dev",
-      "depends_on": ["api"],
+      "depends_on": [
+        "api"
+      ],
       "open_browser": true,
       "open_url": "http://localhost:5173/"
+    },
+    {
+      "id": "web2",
+      "name": "Website variant (frontend-2)",
+      "kind": "web",
+      "dir": "frontend-2",
+      "port": 5174,
+      "health": "http://localhost:5174/",
+      "health_timeout_sec": 120,
+      "install": [
+        "npm ci"
+      ],
+      "start": "npm run dev",
+      "depends_on": [
+        "api"
+      ],
+      "open_browser": true,
+      "open_url": "http://localhost:5174/"
     }
   ],
   "mobile": null

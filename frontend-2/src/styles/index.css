@@ -1,0 +1,7 @@
+/* Global stylesheet entry (imported once by the client entry). Order: raw palette → roles → surfaces → fonts → base. */
+@import "./palette.css";
+@import "./semantic.css";
+@import "./surfaces.css";
+@import "./fonts.css";
+@import "./global.css";
+@import "./motion.css";

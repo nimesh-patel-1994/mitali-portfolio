@@ -1,0 +1,4 @@
+# Test and tooling output (root .gitignore already covers node_modules, dist, dist-ssr, .env)
+coverage/
+playwright-report/
+test-results/

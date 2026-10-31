@@ -1,0 +1,10 @@
+/*
+ * DEV ONLY — P1 white-base comparison (DES-051, TS-021 step 5). Loaded only by src/dev/review-switch.ts behind
+ * `import.meta.env.DEV`, so it never reaches a build (scripts/check-dist.ts). The second file allowed to read the
+ * raw palette besides semantic.css (documented exception in check-styles); removed after the P1 decision.
+ * Only the semantic base/band roles are swapped: every screen changes colour without any component change (REQ-083).
+ */
+html[data-base="white"] {
+  --surface-base: var(--p-white);
+  --surface-band: var(--p-cream);
+}

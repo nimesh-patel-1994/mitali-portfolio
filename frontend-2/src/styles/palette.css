@@ -1,0 +1,40 @@
+/*
+ * Raw palette (DES-060 file 1, DES-051, DES-059). Raw values only, prefix --p-.
+ * Nothing but semantic.css may read these (check-styles, UI-REV-027). A new visual variant replaces this file
+ * and the mapping in semantic.css; components never change.
+ * Note: the derived magenta (#D920E5) of the inspiration analysis is deliberately absent (DES-051).
+ */
+:root {
+  --p-cream: #FFFDE9;
+  --p-white: #FFFFFF;
+  --p-ink: #0F1C00;
+  --p-deep: #030500;
+  --p-olive: #0F1C00;
+  --p-muted: #63635A;
+  --p-muted-on-dark: #A3A396;
+  --p-green: #70FF00;
+  --p-green-text: #367A00;
+  --p-input-border: #8A8A7E;
+  --p-danger: #B3261E;
+  --p-danger-on-dark: #FF8A80;
+  --p-warning: #8C5A00;
+  --p-warning-on-dark: #FFB74D;
+  --p-success: #1E6B2E;
+
+  /* Neutral scale (design-brief section 2). */
+  --p-neutral-50: #F5F5F4;
+  --p-neutral-100: #E8E9E7;
+  --p-neutral-200: #D1D4CE;
+  --p-neutral-300: #B2B7AE;
+  --p-neutral-400: #939A8E;
+  --p-neutral-500: #7A8273;
+  --p-neutral-600: #666C60;
+  --p-neutral-700: #51564D;
+  --p-neutral-800: #3D413A;
+  --p-neutral-900: #292B26;
+
+  /* Translucent mixes (hairlines and the menu backdrop, DES-059 note, DES-053). */
+  --p-ink-15: rgb(15 28 0 / 0.15);
+  --p-cream-20: rgb(255 253 233 / 0.2);
+  --p-ink-60: rgb(15 28 0 / 0.6);
+}

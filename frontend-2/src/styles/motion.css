@@ -1,0 +1,63 @@
+/*
+ * Motion system (TS-022, DES-058, REQ-084, REQ-NFR-009). No library; only transform and opacity animate.
+ * Every transition and animation lives inside `prefers-reduced-motion: no-preference` (UI-REV-030); the hidden
+ * reveal state exists only there AND only after the client entry has set `html[data-motion="on"]` (never an inline
+ * script, SEC-UI-015). Without JS, before hydration, in print and under reduced motion every block is visible in its
+ * final position.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /* ---- Fade-up reveal (plays once; the attribute data-revealed is never removed) ---- */
+  html[data-motion="on"] [data-reveal]:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(var(--motion-reveal-distance));
+  }
+
+  /* The single slide-in-from-left variant (one per page at most). */
+  html[data-motion="on"] [data-reveal="slide"]:not([data-revealed]) {
+    transform: translateX(calc(-1 * var(--motion-reveal-distance)));
+  }
+
+  html[data-motion="on"] [data-reveal] {
+    transition:
+      opacity var(--motion-dur-reveal) var(--motion-ease-out) var(--motion-delay-reveal),
+      transform var(--motion-dur-reveal) var(--motion-ease-out) var(--motion-delay-reveal);
+  }
+
+  /* Optional stagger: +60 ms per sibling, at most 4 items, via :nth-child (never inline styles). */
+  html[data-motion="on"] [data-reveal]:nth-child(2) {
+    transition-delay: calc(var(--motion-delay-reveal) + var(--motion-stagger-step));
+  }
+
+  html[data-motion="on"] [data-reveal]:nth-child(3) {
+    transition-delay: calc(var(--motion-delay-reveal) + 2 * var(--motion-stagger-step));
+  }
+
+  html[data-motion="on"] [data-reveal]:nth-child(4) {
+    transition-delay: calc(var(--motion-delay-reveal) + 3 * var(--motion-stagger-step));
+  }
+
+  /* ---- Route view transitions (TS-024, DES-063): a short cross-fade of the page ---- */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--motion-vt-dur);
+    animation-timing-function: var(--motion-ease-out);
+  }
+}
+
+/* Reduced motion: navigation is instant (the browser still swaps the snapshot, without animating). */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}
+
+/* Print: everything visible in its final position (REQ-084). */
+@media print {
+  [data-reveal],
+  [data-reveal]:not([data-revealed]) {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

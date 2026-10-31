@@ -1,0 +1,98 @@
+/* Article-body prose (DES-057 mapping: h2 = --text-h3, h3 = --text-lead 600 body, h4 = --text-label). */
+.prose {
+  max-width: var(--measure);
+  color: var(--on-surface);
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+}
+
+.prose > * + * {
+  margin-block-start: var(--space-4);
+}
+
+.prose :where(h2, h3, h4) {
+  margin-block-start: var(--space-7);
+}
+
+.prose h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-h3);
+  letter-spacing: var(--tracking-h3);
+}
+
+.prose h3 {
+  font-family: var(--font-body);
+  font-size: var(--text-lead);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-lead);
+}
+
+.prose h4 {
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.prose :where(ul, ol) {
+  padding-inline-start: var(--space-5);
+}
+
+.prose li + li {
+  margin-block-start: var(--space-2);
+}
+
+/* Links: ink (or cream on deep) with an underline; never green text on light (DES-051). */
+.prose a {
+  color: var(--on-surface);
+  text-decoration: underline;
+}
+
+.prose blockquote {
+  margin-inline: 0;
+  padding-inline-start: var(--space-4);
+  border-inline-start: var(--line-width-strong) solid var(--line-strong-on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-h3);
+}
+
+.prose :where(code, pre) {
+  font-size: var(--text-small);
+}
+
+.prose pre {
+  overflow-x: auto;
+  padding: var(--space-4);
+  border: var(--line-width) solid var(--line-on-surface);
+  border-radius: var(--radius-sm);
+}
+
+/* Tables scroll inside their own box so the page never scrolls sideways. */
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose :where(th, td) {
+  padding: var(--space-2) var(--space-3);
+  border-block-end: var(--line-width) solid var(--line-on-surface);
+  text-align: start;
+}
+
+.prose img {
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+.prose hr {
+  border: 0;
+  border-block-start: var(--line-width) solid var(--line-on-surface);
+}

@@ -1,0 +1,48 @@
+/*
+ * Surface aliases (DES-060 file 3, DES-051, DES-059). Every section declares data-surface="base|band|deep|deep-alt";
+ * components read these aliases and so work on light and deep surfaces alike.
+ * Colour rules (DES-051, UI-REV-032): green (--brand-accent) only on deep surfaces as text-free indicators, focus
+ * ring and underline bars; on base/band the accent becomes --brand-accent-text-on-light and the focus ring is ink.
+ * Muted text: --ink-muted on light, --ink-inverse-muted on deep.
+ */
+:root,
+[data-surface="base"],
+[data-surface="band"] {
+  --surface: var(--surface-base);
+  --on-surface: var(--ink-strong);
+  --on-surface-muted: var(--ink-muted);
+  --accent-on-surface: var(--brand-accent-text-on-light);
+  --indicator-on-surface: var(--ink-strong);
+  --line-on-surface: var(--line-hairline);
+  --line-strong-on-surface: var(--line-strong);
+  --focus-on-surface: var(--ink-strong);
+  --danger-on-surface: var(--status-danger);
+  --warning-on-surface: var(--status-warning);
+}
+
+[data-surface="band"] {
+  --surface: var(--surface-band);
+}
+
+[data-surface="deep"],
+[data-surface="deep-alt"] {
+  --surface: var(--surface-deep);
+  --on-surface: var(--ink-inverse);
+  --on-surface-muted: var(--ink-inverse-muted);
+  --accent-on-surface: var(--brand-accent);
+  --indicator-on-surface: var(--brand-accent);
+  --line-on-surface: var(--line-hairline-inverse);
+  --line-strong-on-surface: var(--line-strong-inverse);
+  --focus-on-surface: var(--brand-accent);
+  --danger-on-surface: var(--status-danger-on-dark);
+  --warning-on-surface: var(--status-warning-on-dark);
+}
+
+[data-surface="deep-alt"] {
+  --surface: var(--surface-deep-alt);
+}
+
+[data-surface] {
+  background-color: var(--surface);
+  color: var(--on-surface);
+}

@@ -3,7 +3,9 @@ project: mitali-portfolio
 cloud: none
 iac: none
 backend: python-fastapi
-frontend: react         # one app: public site pre-rendered at build time + client-rendered /admin section (path: frontend/)
+frontend:               # two web apps, same stack; only ONE is deployed at a time (SD-115). frontend/: public site pre-rendered at build time + client-rendered /admin
+  - { stack: react, role: "public site + admin (current)", path: frontend }
+  - { stack: react, role: "design variant frontend-2 (public site + admin)", path: frontend-2 }   # CHG-012, SD-111
 mobile: none
 mobile_platforms: []
 database: postgresql
@@ -42,6 +44,21 @@ A small **modular monolith**, run locally:
 - **Serving locally (single origin)**: in development the Vite dev server (port 5173) proxies `/api` and `/media` to
   FastAPI (port 8000). For a production-like local run FastAPI serves the pre-rendered `frontend/dist` as static files
   plus `/api` and `/media`, so the session cookie is first-party and no CORS is needed.
+- **Design variant `frontend-2/`** (CHG-012, SD-111..SD-117): a second, self-contained React app with the same stack, screens,
+  behaviour, API usage and SEO outputs as `frontend/`, and a new visual and motion design (design-brief section 7). It talks to the
+  same backend (no API, backend or database change). In development it runs on its own Vite dev server (port 5174) with the same
+  `/api` and `/media` proxy, plus a dev-only Origin rewrite for `/api/admin` (SD-112). Only one front end is deployed: the backend
+  serves whichever pre-rendered build `FRONTEND_DIST_DIR` points to (SD-115); `frontend/` stays the default.
+
+```mermaid
+flowchart LR
+  D1[Browser :5173] -->|/api, /media| V1[Vite dev frontend/]
+  D2[Browser :5174] -->|/api, /media| V2[Vite dev frontend-2/<br/>dev-only Origin rewrite for /api/admin]
+  V1 --> BE[FastAPI :8000]
+  V2 --> BE
+  BE --> DB[(PostgreSQL 17 :5442)]
+  P[Production-like preview] -->|FRONTEND_DIST_DIR = frontend/dist (default)<br/>or frontend-2/dist (process env)| BE
+```
 
 ```mermaid
 flowchart LR
@@ -87,6 +104,14 @@ flowchart LR
 | SD-108 | API client | openapi-typescript + openapi-fetch, generated from `api-contract.yaml` | suggested | Profile rule: generated client only | UI-035, contract check | IMPLEMENTED 2026-10-31 02:17 |
 | SD-109 | Auth | Server-side session cookie + CSRF, Argon2id, CLI-only admin | suggested | SD-007 (single admin) | BE-008..011, SEC-BE-001..006 | IMPLEMENTED 2026-10-31 02:17 |
 | SD-110 | Tooling | uv (Python deps), ruff, mypy strict, pytest; Vitest + RTL + MSW, Playwright + axe; Lighthouse 13 via the E2E harness | suggested | SD-011, CHG-008 | backend/frontend checks | IMPLEMENTED 2026-10-31 02:17 |
+| SD-111 | Web app (variant) | **`frontend-2/`: a second, fully self-contained React app** (role "design variant frontend-2 (public site + admin)") with the same major versions and tooling as `frontend/`: React 19.3, React Router 8.5 (data routers), Vite 8.3, TypeScript 5.9 strict, TanStack Query (admin), React Hook Form + Zod through the jitless wrappers (CSP, CHG-008), openapi-typescript + openapi-fetch, Vitest + RTL + MSW, Playwright + axe. Own `package.json`, lockfile, build output (`frontend-2/dist`), pre-render and compress scripts, style check, and its own generated API client from the same `docs/api-contract.yaml`. **Never imports from `frontend/`**. **Known cost (accepted):** the API client, content source/hydration, pre-render, compress script, SEO helpers, shared utils (labels, URL guards, date formatting, zod wrappers) and their tests exist twice; a fix in one must be repeated in the other (the parity check, TS-033, catches behavioural drift). Rejected: a shared package or workspace (couples the two apps and changes `frontend/`), importing from `../frontend` (breaks self-containment), a theme switch inside `frontend/` (touches the delivered app) | developer (G1) | Client wants a second design option without risk to the delivered front end | header `frontend` list, REQ-080, TS-020, UI-100, UI-REV-026 | NEW 2026-10-31 02:54 |
+| SD-112 | Dev server (variant) | frontend-2's Vite dev server on `localhost:5174` (`strictPort`), proxying `/api` and `/media` to `http://127.0.0.1:8000` like `frontend/`. **Dev-only Origin rewrite:** in the Vite **dev server** proxy only, and only for `/api/admin` requests whose `Origin` is the frontend-2 dev origin (`http://localhost:5174` or `http://127.0.0.1:5174`), the `Origin` header is replaced with the backend's own origin `http://127.0.0.1:8000`. Reason: the backend's Origin check (TS-003 step 5, SEC-BE-004) allows only the origins in `ALLOWED_ORIGINS` (5173 and 8000), and the user decided not to change `ALLOWED_ORIGINS` or any `.env`. **Risk:** for requests that already come from the 5174 dev page, the backend's Origin check is bypassed in development (layer 2 of 3); SameSite=Strict and the session-bound CSRF token remain, and other origins are passed through unchanged and still rejected. Never in the build output, `vite preview` or production; production is unaffected because only one front end is deployed and it is served same-origin by the backend. Note: admin cookies are host-only for `localhost` and are shared between 5173 and 5174 in development (one session, logout in one ends both). Verification: SEC-UI-014 | developer (G1) | Run frontend-2's admin in dev without a backend or `.env` change | TS-027, UI-113, UI-REV-029, SEC-UI-014 | NEW 2026-10-31 02:54 |
+| SD-113 | Fonts (variant) | Inter Tight 300 (display), Public Sans 400 / 400 italic / 600 (body), Antonio 500 / 700 (wordmark, labels), **self-hosted from the Fontsource npm packages** (`@fontsource/inter-tight`, `@fontsource/public-sans`, `@fontsource/antonio`), Latin subset files only, `font-display: swap`, display font preloaded; bundled by Vite into `/assets` (served `immutable`, `font-src 'self'`). Licences: SIL OFL 1.1 expected, **to be verified from each package's licence file** (UI-T-131). `frontend/` keeps its official-release WOFF2 files (SD-011) | developer (G1) | Light, tightly tracked display like the inspiration, free licence, no CDN | REQ-NFR-012, DES-050, TS-021 | NEW 2026-10-31 02:54 |
+| SD-114 | Motion (variant) | **No motion library.** One shared `IntersectionObserver` + CSS transitions for reveals; CSS scroll-driven animations (`animation-timeline: view()`) for parallax bands and collage drift with a static fallback; CSS hovers; the View Transitions API for route cross-fades (progressive, off under reduced motion). Budget ≤ 2 KB gzip JS, `transform`/`opacity` only. Rejected: GSAP + ScrollTrigger (≈35-40 KB, proprietary no-charge licence, not open source), Motion (≈15 KB; kept as a later option), smooth-scroll libraries (scroll hijacking) | developer (G1) | Smallest JS, CSP-safe, reduced-motion friendly | REQ-084, REQ-094, REQ-NFR-009, TS-022, TS-024 | NEW 2026-10-31 02:54 |
+| SD-115 | Deployment (variant) | **Only one front end is deployed.** The backend serves the chosen pre-rendered build through its existing `FRONTEND_DIST_DIR` setting (default `../frontend/dist`, unchanged). For a local production-like preview of frontend-2, the start command sets `FRONTEND_DIST_DIR` (and `SERVE_FRONTEND=true`) as **process environment variables for that run only** (they override the dotenv values in `pydantic-settings`), never in `.env`. frontend-2 is never part of `frontend/`'s deployment. The dashboard's "needs rebuild" check then reads the selected build's `build-info.json`; its constant rebuild command still names `frontend` (requirements OQ-16) | developer (G1) | No backend change; one switch | REQ-091, TS-032 | NEW 2026-10-31 02:54 |
+| SD-116 | Run kit (variant) | `run/run.json` gets a second web app `web2` (dir `frontend-2`, port 5174, `npm run dev`, `depends_on: [api]`, opens `http://localhost:5174/`) in PH-2; the existing `web` app and `start-classic.cmd` stay exactly as they are (CLAUDE.md rule 19) | developer (G1) | Start both designs side by side | REQ-092, TS-028, UI-114 | NEW 2026-10-31 02:54 |
+| SD-117 | Testing (variant) | UI-first **without a mock API** (deviation from the `ui-first` skill's mock rule, user decision): development and the P1 review use the real backend on the dev database; Playwright E2E for frontend-2 runs against the real backend on the seeded **test** database (`mitali_portfolio_test`); pre-rendering builds read the dev database through the API, never production. Unit/component tests use MSW typed from the contract, as in `frontend/`. The orchestrator states which database the backend uses before every build or test run | developer (G1) | Real data from day one; no mock to maintain | REQ-081, REQ-NFR-013, TS-033 | NEW 2026-10-31 02:54 |
+| SD-118 | Header scroll listener (variant) | **The single deliberate exception to the motion budget (REQ-NFR-009).** The frontend-2 header (REQ-085) uses exactly one passive `scroll` listener, throttled to once per animation frame, that reads `scrollY` only (no layout reads) and toggles a class on the header. It ignores movements under about 8 px; the header is always shown near the top (within the header height), whenever it contains keyboard focus (`:focus-within`), while the mobile menu is open, and always under `prefers-reduced-motion: reduce` (never hidden). Hiding uses `transform` only. | developer (G2) | Scroll direction is not available from CSS in every browser; agreed at G2 | REQ-085, REQ-NFR-009, UI-T for the header, UI-REV (no other scroll listeners) | NEW 2026-10-31 02:59 |
 
 ## 3. Non-functional targets
 - **Scale:** one admin; low public traffic (hundreds of visits per day at most once hosted). Single backend instance.
@@ -101,6 +126,9 @@ flowchart LR
   the admin, and can be archived or deleted (REQ-NFR-005).
 - **Cost ceiling:** zero running cost; open-source tools and open-licence fonts only (REQ-NFR-008).
 - **Responsive:** 360 px to 1920 px (REQ-NFR-001).
+- **frontend-2 (CHG-012):** Lighthouse mobile ≥ 90 Performance and 100 Accessibility / Best Practices / SEO on every public page on an
+  idle machine (CPU `benchmarkIndex` recorded), public JS ≤ `frontend/`'s shared entry, CLS < 0.05, motion JS ≤ 2 KB gzip
+  (REQ-NFR-009, REQ-NFR-011); axe clean on every screen state at 375 / 768 / 1024 / 1440 px (REQ-NFR-010).
 
 ## 4. Environments and deployment
 | Environment | Where | Database | How it runs |
@@ -108,7 +136,10 @@ flowchart LR
 | dev | User's Windows machine | `mitali_portfolio` on PostgreSQL 17, port 5442 | `uv run fastapi dev` (port 8000) + `npm run dev` (Vite, port 5173, proxy `/api` and `/media` to 8000) |
 | test | Same machine, run by agents and the user | `mitali_portfolio_test`, port 5442 | `uv run pytest`; `npm test`; Playwright E2E against a locally started backend (seeded test DB) and the built site |
 | local preview (production-like) | Same machine | `mitali_portfolio` | `npm run build:site` (pre-render against the running API) then FastAPI serves `frontend/dist` + `/api` + `/media` on one port |
-| prod | Not defined | — | Deferred; hosting will be added through `/feature` |
+| dev (frontend-2) | Same machine | `mitali_portfolio` (through the API) | backend as above + `cd frontend-2; npm run dev` (Vite, port 5174, same proxy + dev-only Origin rewrite, SD-112); or run kit app `web2` |
+| test (frontend-2) | Same machine | `mitali_portfolio_test`, port 5442 | `npm test` in `frontend-2/`; Playwright against the backend on the seeded test DB (dev server in PH-2, production-like preview of `frontend-2/dist` from PH-3) (SD-117) |
+| local preview (frontend-2) | Same machine | `mitali_portfolio` | `npm run build:site` in `frontend-2/` (pre-render against the running API), then the backend started with `FRONTEND_DIST_DIR` pointing at `frontend-2/dist` as a process environment variable (SD-115) |
+| prod | Not defined | — | Deferred; hosting will be added through `/feature`. Only one front end will be deployed (SD-115) |
 
 Branching: `main` is the default branch on the remote; work happens on feature branches merged into `main`. The local
 repository is currently on `master` with no commits; branch alignment happens at the first commit the user asks for.
@@ -148,3 +179,10 @@ No analytics, no third-party scripts, no external fonts or CDNs at runtime.
 | 2026-10-29 | Server-side session cookie instead of OAuth2/JWT (SD-007) | Single admin, minimal surface, revocable | Profile default |
 | 2026-10-29 | Case-study URLs at `/work/<slug>` | Matches the "Work" navigation label | Reference's `/projects/<slug>` |
 | 2026-10-29 | Remote `origin` = github.com/nimesh-patel-1994/mitali-portfolio | Given by the user | — |
+| 2026-10-31 | Second web app `frontend-2/` as a self-contained design variant with the same stack; header `frontend` becomes a list (SD-111) | Client design option without touching the delivered front end | header `frontend: react` |
+| 2026-10-31 | Dev-only Origin rewrite for `/api/admin` in frontend-2's Vite dev server instead of widening `ALLOWED_ORIGINS` (SD-112) | No backend or `.env` change (user decision); production unaffected | — |
+| 2026-10-31 | Fonts for frontend-2 from Fontsource packages (Inter Tight, Public Sans, Antonio) (SD-113) | Free licences, self-hosted, light display style | — |
+| 2026-10-31 | Motion without a library for frontend-2 (SD-114) | ≤ 2 KB JS, CSP-safe, reduced-motion friendly | — |
+| 2026-10-31 | One deployed front end selected by `FRONTEND_DIST_DIR`; frontend-2 preview via process env only (SD-115) | No backend change; `.env` untouched | — |
+| 2026-10-31 | Run kit app `web2` for frontend-2; `start-classic.cmd` unchanged (SD-116) | Both designs runnable side by side | — |
+| 2026-10-31 | frontend-2 UI-first without a mock API; E2E on the test DB (SD-117) | User decision at G1 | `ui-first` mock rule (for this variant) |

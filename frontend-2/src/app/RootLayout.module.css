@@ -1,0 +1,53 @@
+/* Skip link: off-screen until focused, then shown above the fixed header (primary button colours). */
+.skipLink {
+  position: absolute;
+  z-index: var(--z-skip);
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background-color: var(--brand-accent);
+  color: var(--brand-on-accent);
+  font-weight: var(--weight-semibold);
+  transform: translateY(calc(-1 * var(--space-11)));
+}
+
+.skipLink:focus,
+.skipLink:focus-visible {
+  transform: none;
+  outline-color: var(--ink-strong);
+}
+
+/* Thin navigation progress bar (ink indicator on the light page edge), after 150 ms of loading. */
+.progress {
+  position: fixed;
+  z-index: var(--z-progress);
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: var(--progress-h);
+  background-color: var(--ink-strong);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.progress[data-visible="true"] {
+  transform: scaleX(0.7);
+  opacity: 1;
+}
+
+/* The header is fixed: content starts below its full height (no layout shift when it compacts or hides). */
+.main {
+  display: block;
+  padding-block-start: var(--header-h);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .progress[data-visible="true"] {
+    transition:
+      transform var(--motion-dur-reveal) var(--motion-ease-out),
+      opacity var(--motion-dur-fast) var(--motion-ease-out);
+  }
+}

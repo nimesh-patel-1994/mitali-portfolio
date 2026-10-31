@@ -340,6 +340,14 @@ All paths are relative to `backend/` unless stated. "Done when" always includes:
     command `pg_dump -h localhost -p 5442 -U mitali_app -Fc mitali_portfolio > backup.dump` using the full psql bin path;
     no real credentials appear anywhere.
 
+### frontend-2 (CHG-012)
+**frontend-2: no backend items (no backend change).** The design variant `frontend-2/` (REQ-080..REQ-097) uses the existing API,
+database, auth flow and configuration unchanged (REQ-081, SD-111..SD-117). It relies on existing behaviour only: the Origin check
+(`ALLOWED_ORIGINS` is **not** changed; the frontend-2 dev server rewrites `Origin` for `/api/admin` in development only, SD-112,
+SEC-UI-014), the port-agnostic trusted-host check (SEC-BE-016), and `FRONTEND_DIST_DIR` / `SERVE_FRONTEND` read from the process
+environment for a frontend-2 preview (SD-115, verified in PH-3). The dashboard's constant `rebuild_command` still names `frontend`
+(requirements open question 16). No BE, BE-REV or BE-T items are added; existing BE-T scenarios must keep passing.
+
 ## 2. Coding standards
 
 Base: `stack-python-fastapi` (layout, typing, Pydantic/ORM separation, DI, logging, validation commands) and

@@ -1,0 +1,161 @@
+/* Mobile menu (DES-053): full-screen deep panel with hairline rows; slide + backdrop fade (no-preference only). */
+.trigger {
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: var(--line-width) solid var(--line-strong-on-surface);
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--on-surface);
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.triggerIcon {
+  font-size: var(--text-lead);
+}
+
+.layer {
+  position: fixed;
+  z-index: var(--z-menu);
+  inset: 0;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--surface-backdrop);
+}
+
+.dialog {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--header-h);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h);
+  height: var(--control-h);
+  border: var(--line-width) solid var(--line-strong-on-surface);
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--on-surface);
+  cursor: pointer;
+}
+
+.closeIcon {
+  font-size: var(--text-h3);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  padding-block: var(--space-5) var(--space-8);
+}
+
+.list {
+  list-style: none;
+}
+
+.list > li {
+  border-block-end: var(--line-width) solid var(--line-on-surface);
+}
+
+.list > li:first-child {
+  border-block-start: var(--line-width) solid var(--line-on-surface);
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--menu-row-min);
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-h3);
+  text-decoration: none;
+}
+
+/* Current page and hover: a green indicator bar (allowed on deep surfaces, DES-051). */
+.link::before {
+  content: "";
+  position: absolute;
+  inset-block: var(--space-4);
+  inset-inline-start: calc(-1 * var(--space-3));
+  width: var(--line-width-strong);
+  background-color: var(--indicator-on-surface);
+  transform: scaleY(0);
+}
+
+.link:hover::before,
+.link[aria-current="page"]::before {
+  transform: scaleY(1);
+}
+
+.menuCta {
+  display: block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .layer[data-state="open"] .dialog {
+    animation: f2-menu-in var(--motion-dur-slow) var(--motion-ease-in-out);
+  }
+
+  .layer[data-state="open"] .backdrop {
+    animation: f2-fade-in var(--motion-dur-backdrop) var(--motion-ease-in-out);
+  }
+
+  .layer[data-state="closing"] .dialog {
+    animation: f2-menu-out var(--motion-dur-slow) var(--motion-ease-in-out) forwards;
+  }
+
+  .layer[data-state="closing"] .backdrop {
+    animation: f2-fade-out var(--motion-dur-backdrop) var(--motion-ease-in-out) forwards;
+  }
+
+  .link::before {
+    transition: transform var(--motion-dur-base) var(--motion-ease-out);
+  }
+}
+
+@keyframes f2-menu-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes f2-menu-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes f2-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes f2-fade-out {
+  to {
+    opacity: 0;
+  }
+}

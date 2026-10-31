@@ -1,0 +1,16 @@
+.note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--warning-on-surface);
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-label);
+  text-transform: uppercase;
+}
+
+.icon {
+  font-size: var(--text-lead);
+}
