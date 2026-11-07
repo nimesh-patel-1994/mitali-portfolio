@@ -2,6 +2,22 @@
 
 Portfolio website with a FastAPI backend (`backend/`) and a React frontend (`frontend/`).
 
+## Starting the apps (two launchers)
+
+| Launcher | What it does | Browser | Opens |
+|----------|--------------|---------|-------|
+| **`start-classic.cmd`** (recommended for `frontend/`) | The original hand-made launcher (`run/classic/start-classic.ps1`). Checks PostgreSQL 17 on 5442, prints the target database (host:port/name, no password), installs dependencies if missing, runs `alembic upgrade head` on every start, starts the backend (`127.0.0.1:8000`, auto-reload) and the frontend dev server (`localhost:5173`) in their own windows, reuses anything already running. Options: `-Preview` (rebuild the pre-rendered site from the dev database and serve it production-like on `localhost:8000`), `-NoBrowser`, `-DryRun` (prints what would happen, starts nothing). | Brave, else Chrome, else default | `/` and `/admin` |
+| **`start.cmd`** (toolkit run kit, second option) | Generated from `run/run.json` by the toolkit. Checks the database port, installs and migrates **once** (first run), starts the same two apps in their own windows, waits for their health addresses. `stop.cmd` closes what it started; `smoke.cmd` checks the health addresses. Options: `-DryRun`, `-NoBrowser`, `-Only api,web`, `-Reinstall`. | **Chrome first** (then Edge, Firefox, default); Brave is not supported by the kit yet | **only `/`** |
+
+Notes:
+- `start.cmd` no longer behaves like the original launcher: it opens Chrome first and only `/`. The original is kept unchanged in
+  behaviour as `start-classic.cmd` (the original `start.cmd` text is saved as `run/classic/start.cmd.original`).
+- On its first real run, the run kit's `start.cmd` creates `frontend/.env` from `frontend/.env.example` (public values only:
+  `VITE_SITE_URL`). `start-classic.cmd` never creates `.env` files. A toolkit option to switch this off is planned.
+- Both launchers start against the **dev** database (`mitali_portfolio`); the tests use `mitali_portfolio_test`.
+- More detail: `start.md`.
+
+
 ## Backend
 
 FastAPI + PostgreSQL 17. All commands run from the `backend/` folder in PowerShell unless stated otherwise. If `uv` is

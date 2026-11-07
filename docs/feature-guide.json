@@ -1,0 +1,449 @@
+{
+  "product": "Mitali — Content Writer & Marketing Strategist",
+  "tagline": "DRAFT — not yet checked against the built app",
+  "version": "0.1 DRAFT",
+  "updated": "2026-10-31",
+  "brand": {
+    "primary": "#70FF00"
+  },
+  "intro": "DRAFT: this guide has not yet been checked against the built website and may change. The website presents Mitali's work, writing and services to prospective clients and turns visitors into enquiries. Mitali manages all content and enquiries herself in a private admin area.",
+  "paginate": "auto",
+  "include_roadmap": false,
+  "sections": [
+    {
+      "id": "website",
+      "title": "The website",
+      "summary": "What visitors see and how they move around.",
+      "features": [
+        {
+          "req": "REQ-002",
+          "title": "Navigation and “Book a call”",
+          "what": "Every page has a header with links to Work, Writing, About and Contact, and a “Book a call” button.",
+          "how": [
+            "Use the links at the top of any page to move between sections.",
+            "Select “Book a call” to open the booking page in a new tab."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "If no booking link has been set yet, “Book a call” goes to the Contact page instead."
+          ]
+        },
+        {
+          "req": "REQ-003",
+          "title": "Menu on phones",
+          "what": "On small screens the links fold into a menu button that opens a full-screen menu.",
+          "how": [
+            "Tap “Menu”.",
+            "Choose a page; the menu closes and the page opens.",
+            "Close the menu with the close button or the Escape key."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-004",
+          "title": "Footer",
+          "what": "Every page ends with quick links, social links, the contact email and the copyright line.",
+          "how": [
+            "Scroll to the bottom of any page."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "Social links open in a new tab."
+          ]
+        },
+        {
+          "req": "REQ-010",
+          "title": "Home page",
+          "what": "A bold opening statement with a short introduction and two actions: book a call or view the work.",
+          "how": [
+            "Open the website's home page.",
+            "Choose “Book a call” or “View work”."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-011",
+          "title": "Featured work",
+          "what": "The home page shows up to four highlighted case studies, with a link to all work.",
+          "how": [
+            "Scroll down on the home page.",
+            "Select a case study to read it, or “View all work”."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-012",
+          "title": "Services",
+          "what": "The services Mitali offers, each opening to show a description and what is delivered.",
+          "how": [
+            "On the home page, select a service to open it; select it again to close it."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-013",
+          "title": "Ways to work together",
+          "what": "Cards describing the ways to engage Mitali (for example project-based or a monthly retainer), with a list of what each includes.",
+          "how": [
+            "Scroll to the engagement section on the home page.",
+            "Use the button on a card to get in touch."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-014",
+          "title": "About Mitali",
+          "what": "A short personal story with a portrait, shown on the home and About pages.",
+          "how": [
+            "Scroll to the story section on the home or About page."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-015",
+          "title": "Client testimonials",
+          "what": "Quotes from clients, shown one at a time with previous and next buttons.",
+          "how": [
+            "Use the arrows (or the dots) to move between quotes."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "The quotes never change on their own; the visitor controls them."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "work-writing",
+      "title": "Work and writing samples",
+      "summary": "Case studies and writing samples, as visitors browse them.",
+      "features": [
+        {
+          "req": "REQ-020",
+          "title": "Work page",
+          "what": "All published case studies as cards in the order Mitali chooses.",
+          "how": [
+            "Select “Work” in the header.",
+            "Select a card to open the case study."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-021",
+          "title": "Case study page",
+          "what": "Each case study shows the cover, project details, the problem, the solution, the key results, an image gallery and two more case studies to read next.",
+          "how": [
+            "Open a case study from the Work page or the home page.",
+            "Scroll through details, results and gallery.",
+            "Use “More work” at the bottom to continue."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-023",
+          "title": "“Sample data” labels",
+          "what": "Content that is still example content is labelled “Sample data” so it is never mistaken for real results.",
+          "how": [
+            "Look for the “Sample data” note next to results."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "Mitali removes the label in the admin area once real content is in place."
+          ]
+        },
+        {
+          "req": "REQ-030",
+          "title": "Writing page with filter",
+          "what": "All published writing samples, which visitors can filter by format such as blog, email or landing page.",
+          "how": [
+            "Select “Writing” in the header.",
+            "Choose a format to show only those samples; choose “All” to clear the filter."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "A filtered view has its own link, so it can be shared."
+          ]
+        },
+        {
+          "req": "REQ-031",
+          "title": "Writing sample page",
+          "what": "Each writing sample shows its title, format, client, date, reading time and the full text with its formatting.",
+          "how": [
+            "Open a sample from the Writing page."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        }
+      ]
+    },
+    {
+      "id": "about-contact",
+      "title": "About, FAQs and contact",
+      "summary": "Background, answers to common questions and getting in touch.",
+      "features": [
+        {
+          "req": "REQ-040",
+          "title": "About page",
+          "what": "Mitali's story, vision, values and her four-step way of working, ending with an invitation to get in touch.",
+          "how": [
+            "Select “About” in the header and scroll through the page."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-041",
+          "title": "FAQs",
+          "what": "Frequently asked questions grouped by topic; each answer opens when the question is selected.",
+          "how": [
+            "Select “FAQs” in the footer.",
+            "Select a question to show or hide its answer."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-006",
+          "title": "FAQ highlights on other pages",
+          "what": "A short selection of questions appears on several pages, with a link to all FAQs.",
+          "how": [
+            "Scroll to the FAQ section on the home, Work, About or Contact page."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-042",
+          "title": "Contact form",
+          "what": "Visitors send an enquiry with their name, email, what it is about, an optional budget and company, and a message.",
+          "how": [
+            "Open “Contact”.",
+            "Fill in the form and choose what the enquiry is about.",
+            "Select “Send”; a confirmation replaces the form."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "Missing or invalid fields are pointed out before anything is sent.",
+            "If sending fails, the typed text is kept so it can be sent again."
+          ]
+        },
+        {
+          "req": "REQ-043",
+          "title": "Protection against spam",
+          "what": "The contact form quietly blocks automated spam and limits how many messages can be sent in a short time.",
+          "how": [
+            "Nothing to do; it works in the background."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "After several messages in a few minutes, the visitor is asked to try again a little later."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "title": "Search engines and sharing",
+      "summary": "How the site appears in search results and when links are shared.",
+      "features": [
+        {
+          "req": "REQ-050",
+          "title": "Ready for search and sharing",
+          "what": "Every page has its own title, description and preview image, so search results and shared links look right.",
+          "how": [
+            "Share any page link; the preview shows the page title, description and image."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-051",
+          "title": "Sitemap",
+          "what": "Search engines get a list of every published page; the private admin area is never listed.",
+          "how": [
+            "Nothing to do; it is updated whenever the site is rebuilt."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        }
+      ]
+    },
+    {
+      "id": "admin",
+      "title": "Admin area (for Mitali)",
+      "summary": "The private area where Mitali manages content and enquiries.",
+      "features": [
+        {
+          "req": "REQ-060",
+          "title": "Logging in",
+          "what": "Mitali signs in with her email and password; signing out ends the session.",
+          "how": [
+            "Go to the admin login page.",
+            "Enter email and password.",
+            "Use “Log out” when finished."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "After a period of inactivity the session ends and she signs in again."
+          ]
+        },
+        {
+          "req": "REQ-061",
+          "title": "Protection against password guessing",
+          "what": "After several wrong passwords in a short time, sign-in is paused for 15 minutes.",
+          "how": [
+            "Wait 15 minutes, or ask your developer to reset the password."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-062",
+          "title": "Admin account",
+          "what": "There is one admin account, set up and reset by the developer; there is no public sign-up.",
+          "how": [
+            "Ask your developer to create or reset the account."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-063",
+          "title": "Case studies",
+          "what": "Create, edit, publish or hide, reorder and delete case studies, including their results and gallery images.",
+          "how": [
+            "Open “Case studies”.",
+            "Create a new one or open an existing one.",
+            "Fill in Details, then add Results and Gallery images (each image needs a short description).",
+            "Publish when ready; use the move buttons or drag to change the order."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "Deleting a case study asks for confirmation and also removes its results and images.",
+            "Images can be JPEG, PNG, WebP or SVG, up to 10 MB."
+          ]
+        },
+        {
+          "req": "REQ-064",
+          "title": "Writing, services, testimonials, FAQs and more",
+          "what": "Manage writing samples, services, ways to work together, testimonials, FAQ topics and questions, values and process steps in the same way.",
+          "how": [
+            "Open the section in the admin menu.",
+            "Add, edit, publish or hide, reorder or delete items."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "A FAQ topic that still contains questions cannot be deleted until they are moved or removed."
+          ]
+        },
+        {
+          "req": "REQ-065",
+          "title": "Profile and site settings",
+          "what": "Edit the bio, skills, tools, portrait and story texts, and site settings such as the contact email, booking link, social links and footer lines.",
+          "how": [
+            "Open “Profile” or “Settings”.",
+            "Change the fields and save."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "Invalid email addresses or links are pointed out and not saved."
+          ]
+        },
+        {
+          "req": "REQ-066",
+          "title": "Enquiries",
+          "what": "Read enquiries from the contact form, newest first, filter them by status and mark them new, replied or archived.",
+          "how": [
+            "Open “Enquiries”.",
+            "Filter by status if needed.",
+            "Open an enquiry and set its status."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31",
+          "notes": [
+            "The dashboard shows how many new enquiries are waiting."
+          ]
+        },
+        {
+          "req": "REQ-067",
+          "title": "Removing “Sample data” labels",
+          "what": "Clear the sample-data label on a case study, its results or a writing sample once the content is real.",
+          "how": [
+            "Open the item in the admin area.",
+            "Untick the sample-data option and save."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        },
+        {
+          "req": "REQ-052",
+          "title": "Publishing changes to the website",
+          "what": "Changes made in the admin area appear on the public website after the site is rebuilt; the dashboard says when a rebuild is needed.",
+          "how": [
+            "Look for “Site needs rebuilding” on the dashboard.",
+            "Ask your developer (or use the provided command) to rebuild the site."
+          ],
+          "images": [],
+          "since": "PH-1",
+          "updated": "2026-10-31"
+        }
+      ]
+    }
+  ],
+  "whats_new": [
+    {
+      "date": "2026-10-31",
+      "text": "First version of the guide (draft, to be checked against the built website)."
+    }
+  ],
+  "roadmap": [],
+  "contact": ""
+}

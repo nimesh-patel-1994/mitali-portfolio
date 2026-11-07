@@ -1,0 +1,6 @@
+#!/bin/sh
+# dev-pipeline pre-commit hook: blocks a commit that contains a possible secret.
+# Turn it on once per clone:  git config core.hooksPath .githooks
+dir="$(git rev-parse --show-toplevel)"
+if command -v pwsh >/dev/null 2>&1; then PS=pwsh; else PS=powershell; fi
+"$PS" -NoProfile -ExecutionPolicy Bypass -File "$dir/run/secret-scan.ps1" -Staged || { echo "Commit blocked by the secret scan (silence a false alarm with a 'secret-scan:ignore' comment)."; exit 1; }

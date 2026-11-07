@@ -1,0 +1,9 @@
+{
+  "profile": "balanced",
+  "profiles": {
+    "economy":  { "spec-writer": "sonnet", "boilerplate-builder": "haiku", "be-builder": "sonnet", "fe-builder": "sonnet", "mobile-builder": "sonnet", "cloud-builder": "sonnet", "code-reviewer": "sonnet", "tester": "haiku", "reference-analyst": "sonnet", "codebase-analyst": "sonnet", "security-review": "sonnet", "root-cause": "opus" },
+    "balanced": { "spec-writer": "opus",   "boilerplate-builder": "haiku", "be-builder": "sonnet", "fe-builder": "sonnet", "mobile-builder": "sonnet", "cloud-builder": "sonnet", "code-reviewer": "sonnet", "tester": "sonnet", "reference-analyst": "sonnet", "codebase-analyst": "sonnet", "security-review": "opus",   "root-cause": "opus" },
+    "quality":  { "spec-writer": "opus",   "boilerplate-builder": "sonnet", "be-builder": "opus", "fe-builder": "opus", "mobile-builder": "opus", "cloud-builder": "opus", "code-reviewer": "opus", "tester": "sonnet", "reference-analyst": "opus", "codebase-analyst": "opus", "security-review": "opus", "root-cause": "opus" }
+  },
+  "overrides": {}
+}

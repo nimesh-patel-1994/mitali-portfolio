@@ -1,0 +1,45 @@
+{
+  "project": "mitali-portfolio",
+  "phase": "PH-1",
+  "generated": "2026-10-31 02:16",
+  "browser_order": ["chrome", "edge", "firefox", "default"],
+  "services": [
+    {
+      "id": "db",
+      "name": "PostgreSQL 17",
+      "port": 5442,
+      "hint": "Start the 'postgresql-x64-17' Windows service (PostgreSQL 17 on port 5442), then run start.cmd again. First-time setup: backend\\scripts\\setup_db.ps1 (see README.md)."
+    }
+  ],
+  "apps": [
+    {
+      "id": "api",
+      "name": "Backend API",
+      "kind": "backend",
+      "dir": "backend",
+      "port": 8000,
+      "health": "http://127.0.0.1:8000/api/health",
+      "health_timeout_sec": 120,
+      "install": ["python -m uv sync"],
+      "prepare": ["python -m uv run alembic upgrade head"],
+      "start": "python -m uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 --no-server-header --no-access-log",
+      "depends_on": ["db"],
+      "open_browser": false
+    },
+    {
+      "id": "web",
+      "name": "Website (frontend)",
+      "kind": "web",
+      "dir": "frontend",
+      "port": 5173,
+      "health": "http://localhost:5173/",
+      "health_timeout_sec": 120,
+      "install": ["npm ci"],
+      "start": "npm run dev",
+      "depends_on": ["api"],
+      "open_browser": true,
+      "open_url": "http://localhost:5173/"
+    }
+  ],
+  "mobile": null
+}

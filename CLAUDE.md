@@ -30,7 +30,20 @@ This folder is its own git repository and its own Claude session; do not touch o
 11. Reference sites: never copy their text, images, logos, fonts or code into the project; no hot-linking. All content is original
     or dummy data. Reference screenshots stay in `.dev-pipeline/reference/screenshots/` and out of git.
 12. Git: never commit secrets or `.env`. Commit and push only when I ask, and only to the remote I give you.
-    Never force-push and never rewrite history.
+    Never force-push and never rewrite history. Push from a terminal, not through the app's "Continue in cloud" (it skips hooks).
+    Never enable auto-fix or "Merge when ready" on a pull request.
+
+Added by `/upgrade-project` (toolkit 0.5.0 → 1.2.0):
+13. Work in phases (`docs/phases.md`, `/phase`) and follow the `token-economy` skill; models per role are in `.dev-pipeline/models.json` (`/models`).
+14. Long work: keep `.dev-pipeline/HANDOFF.md` current; follow `/budget`, `/handoff`, `/resume`. If `.dev-pipeline/STOP` exists, finish the current unit and stop.
+15. UI-first: a new UI (or UI variant) starts as a prototype phase; after I freeze the design (`/ui-review freeze`) visible changes need an
+    explicit unfreeze (`ui-first` skill). `frontend/` was built before UI-first existed (`ui_first: no`).
+16. Fast path: `/quick` for a small change in one layer with no contract, security or frozen-UI impact; everything else goes through `/feature`.
+17. Before a commit run `run/secret-scan.ps1`; never print a secret value; acceptance criteria need named tests (`test-automation` skill).
+18. Client guide: `docs/FEATURE.html` (skill `feature-guide`) lists only implemented and tested features in plain language; update it after
+    every phase, feature, bug or visible change. `requirements.md` is internal, never for the client.
+19. Launchers: `start-classic.cmd` (hand-made, Brave first, opens `/` and `/admin`, `-Preview`, `-DryRun`) is the reference way to start
+    `frontend/`; `start.cmd` is the toolkit run kit (Chrome first, `/` only). Never change how `start-classic.cmd` starts `frontend/`.
 
 ## Pipeline
-/feature -> requirements -> (G1) -> SystemDesign + specs -> (G2) -> build -> review -> test -> IMPLEMENTED
+/feature -> requirements -> (G1) -> phase plan + SystemDesign + specs for the active phase -> (G2) -> build -> review -> test -> IMPLEMENTED -> phase gate (G-P) -> next phase

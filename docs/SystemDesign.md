@@ -11,6 +11,7 @@ auth: session-cookie    # single admin, email + password (Argon2id), server-side
 ci: none                # local only for now (SD-012)
 stack_profiles: [stack-python-fastapi, stack-react, stack-postgresql]
 mcp_servers: []
+preferences: { database: postgresql, backend: python-fastapi, frontend: react, build_tool: vite, prerender: project-script, orm: sqlalchemy-async, migrations: alembic, server_state: tanstack-query, forms: react-hook-form, validation: zod, api_client: openapi-fetch, auth: server-session-cookie, python_deps: uv }   # source per entry in section 2a
 ---
 
 # System Design — mitali-portfolio
@@ -70,6 +71,22 @@ flowchart LR
 | SD-011 | Tooling | Backend dependencies with **uv** (`pyproject.toml` + `uv.lock`); lint/format `ruff`, types `mypy --strict`, security `pip-audit`, `bandit`. Frontend with npm (`package-lock.json`), ESLint, `tsc --noEmit`, Vitest + React Testing Library + MSW, Playwright for E2E, Lighthouse 13 run by the E2E harness (`frontend/e2e/03-lighthouse.e2e.ts`, `LIGHTHOUSE_BIN`) for REQ-NFR-004 (changed 2026-10-30 14:21, CHG-008: `@lhci/cli` dropped — 13 high-severity transitive advisories and its bundled Lighthouse 12 fails on Chromium 156). API client generated from `docs/api-contract.yaml` with `openapi-typescript` + `openapi-fetch`. Fonts self-hosted from the official Antonio and Public Sans releases. uv is installed under the Python user Scripts folder (not on PATH): agents run it as `python -m uv`. | Matches the profiles; reproducible installs | Poetry (uv is faster and simpler); hand-written API client (profile forbids) | NEW 2026-10-29 16:06 |
 | SD-012 | Cloud / IaC / CI | None for now: local development only. `cloud: none`, `iac: none`, `ci: none`. Repository: `https://github.com/nimesh-patel-1994/mitali-portfolio` (remote `origin`; push only when the user asks). | Hosting deferred by the user | Azure + Terraform (later, via `/feature`) | NEW 2026-10-29 16:06 |
 | SD-013 | Content model | Ordering via an integer `position` per entity; publish via a `is_published` flag; slugs unique per entity; sample-data flag `is_sample` on case studies, results and writing samples; singletons for profile and site settings. Detail in `tech-spec.md`. | Matches REQ-063/064/067 directly | Draft/revision history (not required) | NEW 2026-10-29 16:06 |
+
+### 2a. Architecture decisions
+<!-- From the Technical preferences step (added by /upgrade-project, toolkit 1.2.0, 2026-10-31 02:17). Source: developer = stated by the developer (never overridden); suggested = recommended and accepted. Precedence for every agent: developer, then suggested, then the stack profile default. -->
+| ID | Area | Decision | Source | Why | Enforced by | Status |
+|----|------|----------|--------|-----|-------------|--------|
+| SD-100 | Database | PostgreSQL 17 (local service, port 5442) | developer (G1) | Chosen by the developer at G1 (SD-004) | header `database`, stack-postgresql | IMPLEMENTED 2026-10-31 02:17 |
+| SD-101 | Backend | Python FastAPI | developer (G1) | Chosen by the developer at G1 (SD-001) | header `backend`, stack-python-fastapi | IMPLEMENTED 2026-10-31 02:17 |
+| SD-102 | Web app | React | developer (G1) | Chosen by the developer at G1 (SD-002) | header `frontend`, stack-react | IMPLEMENTED 2026-10-31 02:17 |
+| SD-103 | Build tool | Vite | suggested | Proposed with React at G1; profile default | stack-react | IMPLEMENTED 2026-10-31 02:17 |
+| SD-104 | Pre-rendering | Project script on Vite SSR + React Router static handler | suggested | SD-003 (SEO without a Node server) | TS-005, UI-004 | IMPLEMENTED 2026-10-31 02:17 |
+| SD-105 | Data access | SQLAlchemy 2.0 async (asyncpg) + Alembic migrations | suggested | Profile default; SD-001 | stack-python-fastapi, BE-002 | IMPLEMENTED 2026-10-31 02:17 |
+| SD-106 | Server state (admin) | TanStack Query | suggested | Profile standard (stack-react) | UI-035 | IMPLEMENTED 2026-10-31 02:17 |
+| SD-107 | Forms and validation | React Hook Form + Zod (zod/mini on public pages, jitless) | suggested | Profile standard; CHG-008 jitless for CSP | UI-040, UI-033 | IMPLEMENTED 2026-10-31 02:17 |
+| SD-108 | API client | openapi-typescript + openapi-fetch, generated from `api-contract.yaml` | suggested | Profile rule: generated client only | UI-035, contract check | IMPLEMENTED 2026-10-31 02:17 |
+| SD-109 | Auth | Server-side session cookie + CSRF, Argon2id, CLI-only admin | suggested | SD-007 (single admin) | BE-008..011, SEC-BE-001..006 | IMPLEMENTED 2026-10-31 02:17 |
+| SD-110 | Tooling | uv (Python deps), ruff, mypy strict, pytest; Vitest + RTL + MSW, Playwright + axe; Lighthouse 13 via the E2E harness | suggested | SD-011, CHG-008 | backend/frontend checks | IMPLEMENTED 2026-10-31 02:17 |
 
 ## 3. Non-functional targets
 - **Scale:** one admin; low public traffic (hundreds of visits per day at most once hosted). Single backend instance.

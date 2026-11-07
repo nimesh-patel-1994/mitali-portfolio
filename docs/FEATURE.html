@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mitali — Content Writer &amp; Marketing Strategist: features and how to use them</title>
+<style>
+:root{--primary:#70FF00;--on-primary:#111111;--bg:#ffffff;--fg:#1f2430;--muted:#5b6475;--card:#f6f7fb;--line:#e3e6ee}
+@media (prefers-color-scheme:dark){:root{--bg:#14171f;--fg:#e8eaf0;--muted:#a3abbb;--card:#1d212c;--line:#2b3140}}
+*{box-sizing:border-box}body{margin:0;font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--fg)}
+header.top{background:var(--primary);color:var(--on-primary);padding:20px 24px}header.top h1{margin:0;font-size:1.6rem}header.top p{margin:4px 0 0;opacity:.9}
+.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:10px 24px;border-bottom:1px solid var(--line);background:var(--card)}
+.bar input{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit}
+.bar button,.pager button,.pager a{padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;cursor:pointer;text-decoration:none}
+.layout{display:flex;gap:0;max-width:1100px;margin:0 auto}nav.toc{width:240px;flex:none;padding:20px 16px;position:sticky;top:0;align-self:flex-start;max-height:100vh;overflow:auto}
+nav.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--fg);text-decoration:none}nav.toc a.active,nav.toc a:hover{background:var(--card);font-weight:600}
+nav.toc .grp{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 10px 4px}
+main{flex:1;padding:20px 24px 60px;min-width:0}section.page{margin-bottom:40px}section.page>h2{font-size:1.5rem;margin:0 0 4px;border-bottom:3px solid var(--primary);padding-bottom:6px}
+.summary{color:var(--muted);margin:8px 0 18px}article.feature{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
+article.feature h3{margin:0 0 6px;font-size:1.15rem}article.feature .what{margin:0 0 10px}article.feature h4{margin:12px 0 4px;font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+article.feature ol,article.feature ul{margin:4px 0 4px 20px;padding:0}.tag{display:inline-block;font-size:.75rem;padding:2px 8px;border-radius:999px;background:var(--primary);color:var(--on-primary);margin-left:8px;vertical-align:middle}
+figure{margin:12px 0}figure img{max-width:100%;border:1px solid var(--line);border-radius:8px}figcaption{font-size:.85rem;color:var(--muted);margin-top:4px}
+.pager{display:flex;justify-content:space-between;margin-top:24px}.soon{opacity:.85}.hit{outline:3px solid var(--primary)}
+footer{max-width:1100px;margin:0 auto;padding:0 24px 40px;color:var(--muted);font-size:.85rem}.hidden{display:none!important}
+@media (max-width:800px){.layout{display:block}nav.toc{width:auto;position:static;max-height:none}}
+@media print{.bar,nav.toc,.pager{display:none!important}body.js-pages section.page{display:block!important}header.top{-webkit-print-color-adjust:exact;print-color-adjust:exact}article.feature{break-inside:avoid}}
+</style></head>
+<body data-paginate="true">
+<header class="top"><h1>Mitali — Content Writer &amp; Marketing Strategist</h1>
+<p>DRAFT — not yet checked against the built app</p>
+<p style="font-size:.85rem">Updated 2026-10-31 &middot; 0.1 DRAFT</p></header>
+<div class="bar"><input id="q" type="search" placeholder="Search features..." aria-label="Search features"><button type="button" onclick="window.print()">Print or save as PDF</button></div>
+<div class="layout"><nav class="toc" aria-label="Sections"><a href="#overview" data-page="overview">Overview</a>
+<a href="#website" data-page="website">The website</a>
+<a href="#work-writing" data-page="work-writing">Work and writing samples</a>
+<a href="#about-contact" data-page="about-contact">About, FAQs and contact</a>
+<a href="#search" data-page="search">Search engines and sharing</a>
+<a href="#admin" data-page="admin">Admin area (for Mitali)</a>
+<a href="#whats-new" data-page="whats-new">What's new</a>
+</nav><main id="main">
+<section class="page" id="overview" data-page="overview"><h2>Overview</h2>
+<p>DRAFT: this guide has not yet been checked against the built website and may change. The website presents Mitali&#39;s work, writing and services to prospective clients and turns visitors into enquiries. Mitali manages all content and enquiries herself in a private admin area.</p>
+<p class="summary">30 features across 5 area(s). Use the menu or the search box to find what you need.</p></section>
+<section class="page" id="website" data-page="website"><h2>The website</h2>
+<p class="summary">What visitors see and how they move around.</p>
+<article class="feature" id="website-navigation-and-book-a-call" data-req="REQ-002"><h3>Navigation and “Book a call”<span class="tag">PH-1</span></h3><p class="what">Every page has a header with links to Work, Writing, About and Contact, and a “Book a call” button.</p>
+<h4>How to use it</h4><ol>
+<li>Use the links at the top of any page to move between sections.</li>
+<li>Select “Book a call” to open the booking page in a new tab.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>If no booking link has been set yet, “Book a call” goes to the Contact page instead.</li>
+</ul>
+</article>
+<article class="feature" id="website-menu-on-phones" data-req="REQ-003"><h3>Menu on phones<span class="tag">PH-1</span></h3><p class="what">On small screens the links fold into a menu button that opens a full-screen menu.</p>
+<h4>How to use it</h4><ol>
+<li>Tap “Menu”.</li>
+<li>Choose a page; the menu closes and the page opens.</li>
+<li>Close the menu with the close button or the Escape key.</li>
+</ol>
+</article>
+<article class="feature" id="website-footer" data-req="REQ-004"><h3>Footer<span class="tag">PH-1</span></h3><p class="what">Every page ends with quick links, social links, the contact email and the copyright line.</p>
+<h4>How to use it</h4><ol>
+<li>Scroll to the bottom of any page.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>Social links open in a new tab.</li>
+</ul>
+</article>
+<article class="feature" id="website-home-page" data-req="REQ-010"><h3>Home page<span class="tag">PH-1</span></h3><p class="what">A bold opening statement with a short introduction and two actions: book a call or view the work.</p>
+<h4>How to use it</h4><ol>
+<li>Open the website&#39;s home page.</li>
+<li>Choose “Book a call” or “View work”.</li>
+</ol>
+</article>
+<article class="feature" id="website-featured-work" data-req="REQ-011"><h3>Featured work<span class="tag">PH-1</span></h3><p class="what">The home page shows up to four highlighted case studies, with a link to all work.</p>
+<h4>How to use it</h4><ol>
+<li>Scroll down on the home page.</li>
+<li>Select a case study to read it, or “View all work”.</li>
+</ol>
+</article>
+<article class="feature" id="website-services" data-req="REQ-012"><h3>Services<span class="tag">PH-1</span></h3><p class="what">The services Mitali offers, each opening to show a description and what is delivered.</p>
+<h4>How to use it</h4><ol>
+<li>On the home page, select a service to open it; select it again to close it.</li>
+</ol>
+</article>
+<article class="feature" id="website-ways-to-work-together" data-req="REQ-013"><h3>Ways to work together<span class="tag">PH-1</span></h3><p class="what">Cards describing the ways to engage Mitali (for example project-based or a monthly retainer), with a list of what each includes.</p>
+<h4>How to use it</h4><ol>
+<li>Scroll to the engagement section on the home page.</li>
+<li>Use the button on a card to get in touch.</li>
+</ol>
+</article>
+<article class="feature" id="website-about-mitali" data-req="REQ-014"><h3>About Mitali<span class="tag">PH-1</span></h3><p class="what">A short personal story with a portrait, shown on the home and About pages.</p>
+<h4>How to use it</h4><ol>
+<li>Scroll to the story section on the home or About page.</li>
+</ol>
+</article>
+<article class="feature" id="website-client-testimonials" data-req="REQ-015"><h3>Client testimonials<span class="tag">PH-1</span></h3><p class="what">Quotes from clients, shown one at a time with previous and next buttons.</p>
+<h4>How to use it</h4><ol>
+<li>Use the arrows (or the dots) to move between quotes.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>The quotes never change on their own; the visitor controls them.</li>
+</ul>
+</article>
+</section>
+<section class="page" id="work-writing" data-page="work-writing"><h2>Work and writing samples</h2>
+<p class="summary">Case studies and writing samples, as visitors browse them.</p>
+<article class="feature" id="work-writing-work-page" data-req="REQ-020"><h3>Work page<span class="tag">PH-1</span></h3><p class="what">All published case studies as cards in the order Mitali chooses.</p>
+<h4>How to use it</h4><ol>
+<li>Select “Work” in the header.</li>
+<li>Select a card to open the case study.</li>
+</ol>
+</article>
+<article class="feature" id="work-writing-case-study-page" data-req="REQ-021"><h3>Case study page<span class="tag">PH-1</span></h3><p class="what">Each case study shows the cover, project details, the problem, the solution, the key results, an image gallery and two more case studies to read next.</p>
+<h4>How to use it</h4><ol>
+<li>Open a case study from the Work page or the home page.</li>
+<li>Scroll through details, results and gallery.</li>
+<li>Use “More work” at the bottom to continue.</li>
+</ol>
+</article>
+<article class="feature" id="work-writing-sample-data-labels" data-req="REQ-023"><h3>“Sample data” labels<span class="tag">PH-1</span></h3><p class="what">Content that is still example content is labelled “Sample data” so it is never mistaken for real results.</p>
+<h4>How to use it</h4><ol>
+<li>Look for the “Sample data” note next to results.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>Mitali removes the label in the admin area once real content is in place.</li>
+</ul>
+</article>
+<article class="feature" id="work-writing-writing-page-with-filter" data-req="REQ-030"><h3>Writing page with filter<span class="tag">PH-1</span></h3><p class="what">All published writing samples, which visitors can filter by format such as blog, email or landing page.</p>
+<h4>How to use it</h4><ol>
+<li>Select “Writing” in the header.</li>
+<li>Choose a format to show only those samples; choose “All” to clear the filter.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>A filtered view has its own link, so it can be shared.</li>
+</ul>
+</article>
+<article class="feature" id="work-writing-writing-sample-page" data-req="REQ-031"><h3>Writing sample page<span class="tag">PH-1</span></h3><p class="what">Each writing sample shows its title, format, client, date, reading time and the full text with its formatting.</p>
+<h4>How to use it</h4><ol>
+<li>Open a sample from the Writing page.</li>
+</ol>
+</article>
+</section>
+<section class="page" id="about-contact" data-page="about-contact"><h2>About, FAQs and contact</h2>
+<p class="summary">Background, answers to common questions and getting in touch.</p>
+<article class="feature" id="about-contact-about-page" data-req="REQ-040"><h3>About page<span class="tag">PH-1</span></h3><p class="what">Mitali&#39;s story, vision, values and her four-step way of working, ending with an invitation to get in touch.</p>
+<h4>How to use it</h4><ol>
+<li>Select “About” in the header and scroll through the page.</li>
+</ol>
+</article>
+<article class="feature" id="about-contact-faqs" data-req="REQ-041"><h3>FAQs<span class="tag">PH-1</span></h3><p class="what">Frequently asked questions grouped by topic; each answer opens when the question is selected.</p>
+<h4>How to use it</h4><ol>
+<li>Select “FAQs” in the footer.</li>
+<li>Select a question to show or hide its answer.</li>
+</ol>
+</article>
+<article class="feature" id="about-contact-faq-highlights-on-other-pages" data-req="REQ-006"><h3>FAQ highlights on other pages<span class="tag">PH-1</span></h3><p class="what">A short selection of questions appears on several pages, with a link to all FAQs.</p>
+<h4>How to use it</h4><ol>
+<li>Scroll to the FAQ section on the home, Work, About or Contact page.</li>
+</ol>
+</article>
+<article class="feature" id="about-contact-contact-form" data-req="REQ-042"><h3>Contact form<span class="tag">PH-1</span></h3><p class="what">Visitors send an enquiry with their name, email, what it is about, an optional budget and company, and a message.</p>
+<h4>How to use it</h4><ol>
+<li>Open “Contact”.</li>
+<li>Fill in the form and choose what the enquiry is about.</li>
+<li>Select “Send”; a confirmation replaces the form.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>Missing or invalid fields are pointed out before anything is sent.</li>
+<li>If sending fails, the typed text is kept so it can be sent again.</li>
+</ul>
+</article>
+<article class="feature" id="about-contact-protection-against-spam" data-req="REQ-043"><h3>Protection against spam<span class="tag">PH-1</span></h3><p class="what">The contact form quietly blocks automated spam and limits how many messages can be sent in a short time.</p>
+<h4>How to use it</h4><ol>
+<li>Nothing to do; it works in the background.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>After several messages in a few minutes, the visitor is asked to try again a little later.</li>
+</ul>
+</article>
+</section>
+<section class="page" id="search" data-page="search"><h2>Search engines and sharing</h2>
+<p class="summary">How the site appears in search results and when links are shared.</p>
+<article class="feature" id="search-ready-for-search-and-sharing" data-req="REQ-050"><h3>Ready for search and sharing<span class="tag">PH-1</span></h3><p class="what">Every page has its own title, description and preview image, so search results and shared links look right.</p>
+<h4>How to use it</h4><ol>
+<li>Share any page link; the preview shows the page title, description and image.</li>
+</ol>
+</article>
+<article class="feature" id="search-sitemap" data-req="REQ-051"><h3>Sitemap<span class="tag">PH-1</span></h3><p class="what">Search engines get a list of every published page; the private admin area is never listed.</p>
+<h4>How to use it</h4><ol>
+<li>Nothing to do; it is updated whenever the site is rebuilt.</li>
+</ol>
+</article>
+</section>
+<section class="page" id="admin" data-page="admin"><h2>Admin area (for Mitali)</h2>
+<p class="summary">The private area where Mitali manages content and enquiries.</p>
+<article class="feature" id="admin-logging-in" data-req="REQ-060"><h3>Logging in<span class="tag">PH-1</span></h3><p class="what">Mitali signs in with her email and password; signing out ends the session.</p>
+<h4>How to use it</h4><ol>
+<li>Go to the admin login page.</li>
+<li>Enter email and password.</li>
+<li>Use “Log out” when finished.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>After a period of inactivity the session ends and she signs in again.</li>
+</ul>
+</article>
+<article class="feature" id="admin-protection-against-password-guessing" data-req="REQ-061"><h3>Protection against password guessing<span class="tag">PH-1</span></h3><p class="what">After several wrong passwords in a short time, sign-in is paused for 15 minutes.</p>
+<h4>How to use it</h4><ol>
+<li>Wait 15 minutes, or ask your developer to reset the password.</li>
+</ol>
+</article>
+<article class="feature" id="admin-admin-account" data-req="REQ-062"><h3>Admin account<span class="tag">PH-1</span></h3><p class="what">There is one admin account, set up and reset by the developer; there is no public sign-up.</p>
+<h4>How to use it</h4><ol>
+<li>Ask your developer to create or reset the account.</li>
+</ol>
+</article>
+<article class="feature" id="admin-case-studies" data-req="REQ-063"><h3>Case studies<span class="tag">PH-1</span></h3><p class="what">Create, edit, publish or hide, reorder and delete case studies, including their results and gallery images.</p>
+<h4>How to use it</h4><ol>
+<li>Open “Case studies”.</li>
+<li>Create a new one or open an existing one.</li>
+<li>Fill in Details, then add Results and Gallery images (each image needs a short description).</li>
+<li>Publish when ready; use the move buttons or drag to change the order.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>Deleting a case study asks for confirmation and also removes its results and images.</li>
+<li>Images can be JPEG, PNG, WebP or SVG, up to 10 MB.</li>
+</ul>
+</article>
+<article class="feature" id="admin-writing-services-testimonials-faqs-and-more" data-req="REQ-064"><h3>Writing, services, testimonials, FAQs and more<span class="tag">PH-1</span></h3><p class="what">Manage writing samples, services, ways to work together, testimonials, FAQ topics and questions, values and process steps in the same way.</p>
+<h4>How to use it</h4><ol>
+<li>Open the section in the admin menu.</li>
+<li>Add, edit, publish or hide, reorder or delete items.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>A FAQ topic that still contains questions cannot be deleted until they are moved or removed.</li>
+</ul>
+</article>
+<article class="feature" id="admin-profile-and-site-settings" data-req="REQ-065"><h3>Profile and site settings<span class="tag">PH-1</span></h3><p class="what">Edit the bio, skills, tools, portrait and story texts, and site settings such as the contact email, booking link, social links and footer lines.</p>
+<h4>How to use it</h4><ol>
+<li>Open “Profile” or “Settings”.</li>
+<li>Change the fields and save.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>Invalid email addresses or links are pointed out and not saved.</li>
+</ul>
+</article>
+<article class="feature" id="admin-enquiries" data-req="REQ-066"><h3>Enquiries<span class="tag">PH-1</span></h3><p class="what">Read enquiries from the contact form, newest first, filter them by status and mark them new, replied or archived.</p>
+<h4>How to use it</h4><ol>
+<li>Open “Enquiries”.</li>
+<li>Filter by status if needed.</li>
+<li>Open an enquiry and set its status.</li>
+</ol>
+<h4>Good to know</h4><ul>
+<li>The dashboard shows how many new enquiries are waiting.</li>
+</ul>
+</article>
+<article class="feature" id="admin-removing-sample-data-labels" data-req="REQ-067"><h3>Removing “Sample data” labels<span class="tag">PH-1</span></h3><p class="what">Clear the sample-data label on a case study, its results or a writing sample once the content is real.</p>
+<h4>How to use it</h4><ol>
+<li>Open the item in the admin area.</li>
+<li>Untick the sample-data option and save.</li>
+</ol>
+</article>
+<article class="feature" id="admin-publishing-changes-to-the-website" data-req="REQ-052"><h3>Publishing changes to the website<span class="tag">PH-1</span></h3><p class="what">Changes made in the admin area appear on the public website after the site is rebuilt; the dashboard says when a rebuild is needed.</p>
+<h4>How to use it</h4><ol>
+<li>Look for “Site needs rebuilding” on the dashboard.</li>
+<li>Ask your developer (or use the provided command) to rebuild the site.</li>
+</ol>
+</article>
+</section>
+<section class="page" id="whats-new" data-page="whats-new"><h2>What's new</h2><ul>
+<li><strong>2026-10-31</strong> First version of the guide (draft, to be checked against the built website).</li>
+</ul></section>
+<div class="pager" id="pager"><button type="button" id="prev">&larr; Previous</button><button type="button" id="next">Next &rarr;</button></div>
+</main></div>
+<script>
+(function(){
+var paginated=document.body.getAttribute('data-paginate')==='true';
+var pages=[].slice.call(document.querySelectorAll('section.page'));
+var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+var q=document.getElementById('q');var pager=document.getElementById('pager');
+function show(id){
+  if(!paginated)return;
+  var found=false;pages.forEach(function(p){var on=p.getAttribute('data-page')===id;p.classList.toggle('hidden',!on);if(on)found=true;});
+  if(!found&&pages.length){pages[0].classList.remove('hidden');id=pages[0].getAttribute('data-page');}
+  links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-page')===id);});
+  var i=pages.findIndex(function(p){return p.getAttribute('data-page')===id;});
+  document.getElementById('prev').style.visibility=i>0?'visible':'hidden';
+  document.getElementById('next').style.visibility=i<pages.length-1?'visible':'hidden';
+  window.scrollTo(0,0);
+}
+function go(d){var cur=pages.findIndex(function(p){return !p.classList.contains('hidden');});var n=pages[cur+d];if(n)location.hash=n.getAttribute('data-page');}
+if(paginated){
+  document.body.classList.add('js-pages');
+  window.addEventListener('hashchange',function(){show(location.hash.slice(1)||'overview');});
+  document.getElementById('prev').onclick=function(){go(-1)};document.getElementById('next').onclick=function(){go(1)};
+  show(location.hash.slice(1)||'overview');
+}else{pager.classList.add('hidden');}
+q.addEventListener('input',function(){
+  var t=q.value.trim().toLowerCase();var feats=[].slice.call(document.querySelectorAll('article.feature'));
+  feats.forEach(function(f){f.classList.remove('hit');});
+  if(!t){feats.forEach(function(f){f.classList.remove('hidden');});if(paginated)show(location.hash.slice(1)||'overview');else pages.forEach(function(p){p.classList.remove('hidden');});return;}
+  var first=null;
+  feats.forEach(function(f){var m=f.textContent.toLowerCase().indexOf(t)>-1;f.classList.toggle('hidden',!m);if(m&&!first)first=f;});
+  pages.forEach(function(p){var any=p.querySelector('article.feature:not(.hidden)');p.classList.toggle('hidden',!any);});
+  if(paginated)links.forEach(function(a){a.classList.remove('active');});
+});
+})();
+</script></body></html>
